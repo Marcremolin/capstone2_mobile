@@ -1,5 +1,6 @@
 import 'package:client/Screens/Login/components/already_have_an_account_acheck.dart';
 import 'package:flutter/material.dart';
+import 'package:client/config.dart';
 import 'package:intl/intl.dart';
 import '../../../constants.dart';
 import '../../Login/login_screen.dart';
@@ -188,7 +189,7 @@ class _SignUpFormState extends State<SignUpForm> {
 //FUNCTION TO PASS THE DATA TO BACKEND ---------------------------------------------------
 
   void _registerUser() async {
-    var regBody = {
+    var reqBody = {
       //Objects to send in the Backend
       'lastName': lastNameController.text,
       'firstName': firstNameController.text,
@@ -220,14 +221,12 @@ class _SignUpFormState extends State<SignUpForm> {
           : (_residentClassValue2 ? "Solo Parent" : "OUT OF SCHOOL YOUTH"),
     };
 
-    var url = Uri.parse('http://192.168.0.28:8000/registration');
+    var url = Uri.parse('http://192.168.55.107:8000/registration');
 
     try {
-      var response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(regBody),
-      );
+      var response = await http.post(Uri.parse(registration),
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode(reqBody));
 
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(response.body);

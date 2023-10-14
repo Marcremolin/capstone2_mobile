@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:client/Screens/Homepage/Homepage.dart';
+import 'package:client/config.dart';
 import 'package:flutter/material.dart';
 import '../../Login/components/already_have_an_account_acheck.dart';
 import '../../../constants.dart';
@@ -28,36 +29,34 @@ class _LoginFormState extends State<LoginForm> {
 
   void initSharedPref() async {
     prefs = await SharedPreferences.getInstance();
-    
   }
 
 // ---- DATABASE FUNCTION ----------------
   void loginUser() async {
+
     var reqBody = {
-      //Objects to send in the Backend
       "emailAddress": emailAddressController.text,
       "password": passwordController.text
     };
-
-    var url = Uri.parse('http://192.168.0.28:8000/login');
     try {
-      var response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(reqBody), //REQUEST BODY
-      );
+      var response = await http.post(Uri.parse(login),
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode(reqBody));
+
       var jsonResponse = jsonDecode(response.body);
-      
+
       if (jsonResponse['status']) {
         var myToken = jsonResponse['token'];
-        
+
         prefs.setString('token', myToken);
+
+        print('Token set: $myToken');
         Navigator.push(
             context,
             MaterialPageRoute(
                 builder: (context) => Announcement(token: myToken)));
       } else {
-        print('HTTP Error: ${response.statusCode}');
+        print('Something went wrong');
       }
     } catch (e) {
       print('Error: $e');
@@ -73,7 +72,7 @@ class _LoginFormState extends State<LoginForm> {
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
             cursorColor: kPrimaryColor,
-            onSaved: (email) {},
+            onSaved: (emailAddress) {},
             decoration: const InputDecoration(
               hintText: "Your email",
               prefixIcon: Padding(
@@ -85,7 +84,7 @@ class _LoginFormState extends State<LoginForm> {
               if (value == null || value.isEmpty) {
                 return 'EMAIL IS REQUIRED';
               }
-              return null;
+              return value;
             },
           ),
           Padding(
@@ -105,7 +104,7 @@ class _LoginFormState extends State<LoginForm> {
                 if (value == null || value.isEmpty) {
                   return 'PASSWORD IS REQUIRED';
                 }
-                return null;
+                return value;
               },
             ),
           ),

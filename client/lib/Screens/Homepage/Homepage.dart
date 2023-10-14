@@ -3,24 +3,7 @@ import '../../../Screens/Homepage/bottom_nav.dart';
 import '../AdditionalContentPage.dart';
 import '../../Screens/ProfilePage.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-        // home: Announcement(
-        //   token: null,
-        // ),
-        );
-  }
-}
-
+import 'package:client/config.dart';
 class Announcement extends StatefulWidget {
   final token;
   const Announcement({@required this.token, Key? key}) : super(key: key);
@@ -38,12 +21,12 @@ class _AnnouncementState extends State<Announcement>
   @override
   void initState() {
     super.initState();
-    // Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);
+    Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);
     _tabController = TabController(length: 3, vsync: this);
     _selectedCategory = 'Announcement';
     _tabController.addListener(_handleTabSelection);
 
-    // emailAddress = jwtDecodedToken['email'];
+    emailAddress = jwtDecodedToken['email'];
   }
 
   void _handleTabSelection() {
