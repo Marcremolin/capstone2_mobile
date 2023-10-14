@@ -22,12 +22,13 @@ class UserService {
     civilStatus,
     highestEducation,
     employmentStatus,
-    pensioner,
     password,
     dateOfBirth,
     gender,
     homeOwnership,
     residentClass,
+    // votersRegistration
+
   ) {
 
     try { //store the data that the user has passed
@@ -52,12 +53,13 @@ class UserService {
         civilStatus,
         highestEducation,
         employmentStatus,
-        pensioner,
         password,
         dateOfBirth,
         gender,
         homeOwnership,
-        residentClass
+        residentClass,
+        // votersRegistration
+
       });
 
       return await createUser.save();

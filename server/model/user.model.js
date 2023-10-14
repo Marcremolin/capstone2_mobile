@@ -66,9 +66,7 @@ const userSchema = new Schema({
   employmentStatus: {
     type: String,
   },
-  pensioner: {
-    type: Boolean,
-  },
+ 
   gender: {
     type: String,
     required: true,
@@ -87,6 +85,13 @@ const userSchema = new Schema({
     required: true,
     unique: true,
   },
+
+  // votersRegistration: {
+  //   type: String,
+  //   required: true,
+  // },
+
+
   suffix: String,
   companyName: String,
   position: String,

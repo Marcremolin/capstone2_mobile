@@ -1,3 +1,3 @@
-final url = 'http://192.168.55.107:8000/';
+final url = 'http://192.168.0.28:8000/';
 final registration = url + "registration";
-final login = url + 'login';
+final login = url + "login";
