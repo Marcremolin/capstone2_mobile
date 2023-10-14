@@ -221,8 +221,6 @@ class _SignUpFormState extends State<SignUpForm> {
           : (_residentClassValue2 ? "Solo Parent" : "OUT OF SCHOOL YOUTH"),
     };
 
-    var url = Uri.parse('http://192.168.55.107:8000/registration');
-
     try {
       var response = await http.post(Uri.parse(registration),
           headers: {"Content-Type": "application/json"},
