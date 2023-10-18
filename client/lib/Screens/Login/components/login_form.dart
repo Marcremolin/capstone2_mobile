@@ -33,35 +33,37 @@ class _LoginFormState extends State<LoginForm> {
 
 // ---- DATABASE FUNCTION ----------------
   void loginUser() async {
-
     var reqBody = {
+      //Objects to send in the Backend
       "emailAddress": emailAddressController.text,
       "password": passwordController.text
     };
+
+    var url = Uri.parse('http://192.168.55.107:8000/login');
     try {
-      var response = await http.post(Uri.parse(login),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode(reqBody));
-
+      var response = await http.post(
+         url = Uri.parse(login),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(reqBody), //REQUEST BODY
+      );
       var jsonResponse = jsonDecode(response.body);
-
+      
       if (jsonResponse['status']) {
         var myToken = jsonResponse['token'];
-
+        
         prefs.setString('token', myToken);
-
-        print('Token set: $myToken');
         Navigator.push(
             context,
             MaterialPageRoute(
                 builder: (context) => Announcement(token: myToken)));
       } else {
-        print('Something went wrong');
+        print('HTTP Error: ${response.statusCode}');
       }
     } catch (e) {
       print('Error: $e');
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

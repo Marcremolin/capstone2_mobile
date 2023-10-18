@@ -66,7 +66,6 @@ const userSchema = new Schema({
   employmentStatus: {
     type: String,
   },
- 
   gender: {
     type: String,
     required: true,
@@ -85,12 +84,10 @@ const userSchema = new Schema({
     required: true,
     unique: true,
   },
-
-  // votersRegistration: {
-  //   type: String,
-  //   required: true,
-  // },
-
+  votersRegistration: {
+    type: String,
+    required: true,
+  },
 
   suffix: String,
   companyName: String,
@@ -100,10 +97,13 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
+
+  status: { type: String }
+
 });
 
 //Function to automatically encrypt the password
-userSchema.pre("save", async function () {
+userSchema.pre('save', async function () {
   try {
     var user = this;  //referring to the user SCHEMA
     const salt = await (bcrypt.genSalt(10));

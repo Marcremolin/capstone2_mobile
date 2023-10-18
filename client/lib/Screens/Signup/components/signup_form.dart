@@ -1,11 +1,11 @@
 import 'package:client/Screens/Login/components/already_have_an_account_acheck.dart';
 import 'package:flutter/material.dart';
-import 'package:client/config.dart';
 import 'package:intl/intl.dart';
 import '../../../constants.dart';
 import '../../Login/login_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:client/config.dart';
 
 class SignUpForm extends StatefulWidget {
   const SignUpForm({
@@ -100,6 +100,7 @@ class _SignUpFormState extends State<SignUpForm> {
   final positionController = TextEditingController();
   final phoneNumberController = TextEditingController();
   final emailAddressController = TextEditingController();
+  final votersRegistrationController = TextEditingController();
 
 // FOR DROPDOWNS ---------------------------------------------
   late String selectedCivilStatus;
@@ -131,16 +132,6 @@ class _SignUpFormState extends State<SignUpForm> {
     'Project Based Employee',
   ];
 
-  late String selectedPensioner;
-  List<String> pensionerOptions = [
-    'SSS',
-    'GSIS',
-    'AFP',
-    'PNP',
-    'DOLE',
-    'Others',
-  ];
-
   @override
   // Function to handle dropdowns selection
   void initState() {
@@ -148,7 +139,6 @@ class _SignUpFormState extends State<SignUpForm> {
     selectedCivilStatus = civilStatusOptions[0];
     selectedHighestEducation = highestEducationOptions[0];
     selectedEmploymentStatus = employmentStatusOptions[0];
-    selectedPensioner = pensionerOptions[0];
   }
 
 // Function to handle checkbox selection
@@ -189,7 +179,9 @@ class _SignUpFormState extends State<SignUpForm> {
 //FUNCTION TO PASS THE DATA TO BACKEND ---------------------------------------------------
 
   void _registerUser() async {
-    var reqBody = {
+    var defaultStatus = "Active";
+
+    var regBody = {
       //Objects to send in the Backend
       'lastName': lastNameController.text,
       'firstName': firstNameController.text,
@@ -211,7 +203,6 @@ class _SignUpFormState extends State<SignUpForm> {
       "civilStatus": selectedCivilStatus,
       "HighestEducation": selectedHighestEducation,
       "EmploymentStatus": selectedEmploymentStatus,
-      "Pensioner": selectedPensioner,
       "password": isPasswordVisible,
       "birthday": dateController.text,
       "gender": _checkBoxValue1 ? "Male" : "Female",
@@ -219,12 +210,19 @@ class _SignUpFormState extends State<SignUpForm> {
       "residentClass": _residentClassValue1
           ? "PWD"
           : (_residentClassValue2 ? "Solo Parent" : "OUT OF SCHOOL YOUTH"),
+      "votersRegistrationController": votersRegistrationController.text,
+      "status": defaultStatus,
     };
 
+    var url =
+        Uri.parse('http://192.168.0.28:8000/registration'); //HOME IP ADDRESS
+
     try {
-      var response = await http.post(Uri.parse(registration),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode(reqBody));
+      var response = await http.post(
+        Uri.parse(registration),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(regBody),
+      );
 
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(response.body);
@@ -1085,38 +1083,6 @@ class _SignUpFormState extends State<SignUpForm> {
             thickness: 2,
             height: 1,
           ),
-// PENSIONER ---------------------
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                hintText: 'Pensioner',
-                hintStyle: TextStyle(fontSize: 12),
-              ),
-              value: selectedPensioner,
-              icon: const Icon(Icons.arrow_drop_down),
-              items: pensionerOptions.map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  selectedPensioner = value!;
-                });
-              },
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Pensioner  is Required';
-                }
-                return null;
-              },
-            ),
-          ),
 
           const SizedBox(height: defaultPadding),
 // RESIDENT CLASS ---------------------
@@ -1168,6 +1134,33 @@ class _SignUpFormState extends State<SignUpForm> {
                 ],
               ),
             ],
+          ),
+
+          // VOTERS REGISTRATION ---------------------
+          Container(
+            padding: const EdgeInsets.all(defaultPadding),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: TextFormField(
+              controller: votersRegistrationController,
+              textInputAction: TextInputAction.next,
+              keyboardType: TextInputType.text,
+              cursorColor: kPrimaryColor,
+              decoration: const InputDecoration(
+                hintText: "Voters Registration Number",
+                prefixIcon: Padding(
+                  padding: EdgeInsets.all(defaultPadding),
+                  child: Icon(Icons.person),
+                ),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Voters Registration is required';
+                }
+                return null;
+              },
+            ),
           ),
 // --------------------------------- PASSWORD -------------------------------
           Container(
