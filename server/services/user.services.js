@@ -27,7 +27,7 @@ class UserService {
     gender,
     homeOwnership,
     residentClass,
-    // votersRegistration
+    votersRegistration
 
   ) {
 
@@ -58,7 +58,7 @@ class UserService {
         gender,
         homeOwnership,
         residentClass,
-        // votersRegistration
+        votersRegistration
 
       });
 
@@ -85,11 +85,13 @@ class UserService {
     }
   }
 
-  // ------- data from user controller to generate a JWT token -------
-  static async generateToken(tokenData, secretKey, jwt_expire) {
-    return jwt.sign(tokenData, secretKey, { expiresIn: jwt_expire });
 
-  }
+// ------- data from user controller to generate a JWT token -------
+static async generateToken(tokenData,secretKey,jwt_expire){
+    return jwt.sign(tokenData,secretKey,{expiresIn:jwt_expire});
+
+
+}
 }
 
 module.exports = UserService;

@@ -1,24 +1,11 @@
-import 'package:client/Screens/aboutBarangay.dart';
-import 'package:client/Screens/requestSummary.dart';
 import 'package:flutter/material.dart';
 import 'package:client/Screens/faq.dart';
 import 'package:client/Screens/emergency.dart';
 import 'package:client/Screens/Homepage/Homepage.dart';
 import '../request_document.dart';
-import '../profilePage.dart';
-import '../feedbackpage.dart';
-
-void main() {
-  runApp(
-    const MaterialApp(
-      home: BottomNav(),
-    ),
-  );
-}
 
 class BottomNav extends StatefulWidget {
-  final String? token; // Add token as a parameter
-
+  final String? token; // Make the token parameter optional
   const BottomNav({Key? key, this.token}) : super(key: key);
 
   @override
@@ -28,17 +15,21 @@ class BottomNav extends StatefulWidget {
 class _BottomNavState extends State<BottomNav> {
   var currentIndex = 0;
 
-  List<Widget> screens = [
-    Announcement(),
-    const Documentation(),
-    const Emergency(),
-    const ChatApp(),
-    const ProfilePage(),
-    const FeedbackPage(),
-    const FeedbackPage(),
-    const AboutBarangayPage(),
-    const RequestSummary(),
-  ];
+  List<Widget> screens = [];
+//FOR TOKEN ---------------------------
+  @override
+  void initState() {
+    super.initState();
+    print('Token in BottomNav: ${widget.token}');
+
+    screens = [
+      AnnouncementPage(token: widget.token),
+      Documentation(token: widget.token),
+      Emergency(token: widget.token),
+      const ChatApp(),
+    ];
+  }
+//---------------------------------------------------------------------------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {

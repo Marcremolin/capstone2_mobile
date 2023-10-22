@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:path/path.dart' as path;
+import 'package:jwt_decoder/jwt_decoder.dart';
 import '../../Screens/ProfilePage.dart';
-
-final List<String> dropdownOptions = [
-  'Barangay Clearance',
-  'Business Permit',
-  'Installation Permit',
-  'Certificate of Indulgency',
-  'Construction Permit',
-];
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class Documentation extends StatefulWidget {
-  const Documentation({super.key});
+  // FOR TOKEN -----------------------------
+  final token;
+  const Documentation({Key? key, this.token}) : super(key: key);
+  // -----------------------------------------
 
   @override
   _DocumentationState createState() => _DocumentationState();
@@ -21,13 +17,131 @@ class Documentation extends StatefulWidget {
 
 class _DocumentationState extends State<Documentation>
     with SingleTickerProviderStateMixin {
-  late String _selectedCategory;
-  bool isCashPayment = false;
-  bool isGcashPayment = false;
+  late String userId; //FOR TOKEN
+  late String selectedTypeOfDocuments;
+  List<String> TypeOfDocumentsOptions = [
+    'CertificateOfIndigency',
+    'BarangayCertificate',
+    'BusinessClearance',
+    'BarangayID',
+    'InstallationPermit',
+    'ConstructionPermit'
+  ];
+  String? selectedDate;
   final dateController = TextEditingController();
+
+  final reasonForRequestingController = TextEditingController();
+
+  String? _selectedPaymentMethod;
+  bool isGcashPayment = false;
+  bool iscashPayment = false;
+  bool showBusinessNameField = false;
+  bool showBusinessAddressField = false;
+  final paymentReferenceNumberController = TextEditingController();
   final fileUploadController = TextEditingController();
   String? selectedFilePath;
-  String? selectedDate;
+  final userAddressController = TextEditingController();
+
+  final businessNameController = TextEditingController();
+  final businessAddressController = TextEditingController();
+
+  @override
+  // Function to handle dropdowns selection
+  void initState() {
+    super.initState();
+    if (widget.token != null) {
+      // Decode the JWT token and extract the user ID
+      Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);
+      userId = jwtDecodedToken['_id'];
+
+      selectedTypeOfDocuments = TypeOfDocumentsOptions[0];
+    } else {}
+  }
+
+  // -------------- DATABASE --------------------
+  void requestDocument() async {
+    var defaultStatus = "NEW";
+
+    var regBody = {
+      "userId": userId,
+      "typeOfDocument": selectedTypeOfDocuments,
+      "userAddress": userAddressController.text,
+      "dateOfPickUp": dateController.text,
+      "reasonForRequesting": reasonForRequestingController.text,
+      "paymentMethod": _selectedPaymentMethod,
+      "paymentReferenceNumber": paymentReferenceNumberController.text,
+      "status": defaultStatus,
+    };
+
+    var url =
+        Uri.parse('http://192.168.0.28:8000/requestDocument'); //HOME IP ADDRESS
+
+    var response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(regBody),
+    );
+
+    if (response.statusCode == 200) {
+      var jsonResponse = jsonDecode(response.body);
+      (jsonResponse['status']);
+      showSuccessDialog();
+    } else {
+      ('HTTP Error: ${response.statusCode}');
+    }
+  }
+
+  void showSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50.0),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(24.0),
+            decoration: BoxDecoration(
+              color: Colors.green,
+              borderRadius: BorderRadius.circular(30.0),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Success',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20.0,
+                  ),
+                ),
+                const SizedBox(height: 16.0),
+                const Text(
+                  'Request submitted successfully.',
+                  style: TextStyle(color: Colors.white),
+                ),
+                const SizedBox(height: 16.0),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  style: ButtonStyle(
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(Colors.white),
+                  ),
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(color: Colors.green),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,80 +169,146 @@ class _DocumentationState extends State<Documentation>
             const SizedBox(height: 16.0),
             DropdownButtonFormField<String>(
               decoration: InputDecoration(
-                hintText: 'Type of Documents',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
+                hintText: 'TYPE OF DOCUMENTS',
+                hintStyle: const TextStyle(fontSize: 12),
                 filled: true,
                 fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(40),
+                  borderSide: const BorderSide(color: Colors.white),
+                ),
               ),
-              style: const TextStyle(color: Colors.black),
-              dropdownColor: Colors.white,
-              items: dropdownOptions.map((option) {
+              value: selectedTypeOfDocuments,
+              icon: const Icon(Icons.arrow_drop_down),
+              items: TypeOfDocumentsOptions.map((String value) {
                 return DropdownMenuItem<String>(
-                  value: option,
-                  child: Text(
-                    option,
-                    style: const TextStyle(color: Colors.black),
-                  ),
+                  value: value,
+                  child: Text(value),
                 );
               }).toList(),
-              onChanged: (String? value) {
+              onChanged: (value) {
                 setState(() {
-                  _selectedCategory = value ?? '';
+                  selectedTypeOfDocuments = value!;
+                  if (selectedTypeOfDocuments == 'Business Clearance') {
+                    userAddressController.text = '';
+                  } else {
+                    userAddressController.text = '';
+                  }
                 });
               },
-              padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Type of Documents is Required';
+                }
+                return null;
+              },
             ),
-
-            // ------------------------------------------- DATE OF PICK-UP ---------------------------
             const SizedBox(height: 16.0),
-            Container(
-              padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
+
+// BUSINESS NAME
+            SizedBox(
+              width: 500,
+              child: Visibility(
+                visible: selectedTypeOfDocuments == 'Business Clearance',
+                child: TextFormField(
+                  controller: businessNameController,
+                  style: const TextStyle(color: Colors.black),
+                  decoration: InputDecoration(
+                    hintText: 'Business Name',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the business name';
+                    }
+                    return null;
+                  },
+                ),
               ),
+            ),
+            const SizedBox(height: 16.0),
+
+//USER ADDRESS -----------------
+            SizedBox(
+              width: 500,
+              child: TextFormField(
+                controller: userAddressController,
+                style: const TextStyle(color: Colors.black),
+                decoration: InputDecoration(
+                  hintText: selectedTypeOfDocuments == 'Business Clearance'
+                      ? 'Business Address'
+                      : 'Complete Address',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the payment reference number';
+                  }
+                  return null;
+                },
+              ),
+            ),
+            const SizedBox(height: 16.0),
+// DATE OF PICKUP
+            SizedBox(
+              width: 550,
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(40),
-                  color: const Color.fromARGB(255, 245, 245, 245),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: InkWell(
-                  onTap: () async {
-                    final currentDate = DateTime.now();
-                    final pickedDate = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime(1900),
-                      lastDate: currentDate,
-                    );
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(40),
+                    color: const Color.fromARGB(255, 245, 245, 245),
+                  ),
+                  child: InkWell(
+                    onTap: () async {
+                      final currentDate = DateTime.now();
+                      final pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(1900),
+                        lastDate: currentDate,
+                      );
 
-                    if (pickedDate != null) {
-                      setState(() {
-                        selectedDate =
-                            DateFormat('yyyy-MM-dd').format(pickedDate);
-                      });
-                    }
-                  },
-                  child: ListTile(
-                    title: const Text(
-                      'Date of Pick-up',
-                      style: TextStyle(fontSize: 16.0),
-                    ),
-                    trailing: Text(
-                      selectedDate ?? 'Select date',
-                      style: const TextStyle(fontSize: 16.0),
+                      if (pickedDate != null) {
+                        setState(() {
+                          dateController.text =
+                              DateFormat('yyyy-MM-dd').format(pickedDate);
+                        });
+                      }
+                    },
+                    child: ListTile(
+                      title: const Text(
+                        'Date of Pick-up',
+                        style: TextStyle(fontSize: 16.0),
+                      ),
+                      trailing: Text(
+                        dateController.text.isNotEmpty
+                            ? dateController.text
+                            : 'Select date',
+                        style: const TextStyle(fontSize: 16.0),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
 
-            // ------------------------------------------- REASON FOR REQUESTING ---------------------------
+// REASON FOR REQUESTING
             const SizedBox(height: 16.0),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+            SizedBox(
+              width: 500,
               child: TextFormField(
+                controller: reasonForRequestingController,
                 maxLines: 5,
                 style: const TextStyle(color: Colors.black),
                 decoration: InputDecoration(
@@ -148,46 +328,52 @@ class _DocumentationState extends State<Documentation>
               ),
             ),
 
-            // ------------------------------------------- PAYMENT METHOD CHECKBOX ---------------------------
+// PAYMENT METHOD CHECKBOX
             const SizedBox(height: 16.0),
-            ListTile(
-              title: const Text(
-                'Pay with Cash',
-                style: TextStyle(
-                  color: Colors.white,
+            SizedBox(
+              width: 500,
+              child: RadioListTile<String>(
+                title: const Text(
+                  'Pay with Cash',
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              leading: Checkbox(
-                value: isCashPayment,
-                onChanged: (bool? value) {
+                value: 'Cash',
+                groupValue: _selectedPaymentMethod,
+                onChanged: (String? value) {
                   setState(() {
-                    isCashPayment = value ?? false;
+                    _selectedPaymentMethod = value;
                   });
                 },
               ),
             ),
-            ListTile(
-              title: const Text(
-                'Pay with GCash',
-                style: TextStyle(
-                  color: Colors.white,
+
+            Container(
+              child: RadioListTile<String>(
+                title: const Text(
+                  'Pay with GCash',
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              leading: Checkbox(
-                value: isGcashPayment,
-                onChanged: (bool? value) {
+                value: 'GCash',
+                groupValue: _selectedPaymentMethod,
+                onChanged: (String? value) {
                   setState(() {
-                    isGcashPayment = value ?? false;
+                    _selectedPaymentMethod = value;
                   });
                 },
               ),
             ),
-            // ------------------------------------------- PAYMENT REFERENCE NUMBER ---------------------------
+
+// ------------------------------------------- PAYMENT REFERENCE NUMBER ---------------------------
             Visibility(
-              visible: isGcashPayment,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+              visible: _selectedPaymentMethod == 'GCash',
+              child: SizedBox(
+                width: 500,
                 child: TextFormField(
+                  controller: paymentReferenceNumberController,
                   style: const TextStyle(color: Colors.black),
                   decoration: InputDecoration(
                     hintText: 'Payment Reference Number',
@@ -207,108 +393,13 @@ class _DocumentationState extends State<Documentation>
               ),
             ),
 
-            // -------------------------------------------  UPLOAD GCASH Receipt  ---------------------------
-            Visibility(
-              visible: isGcashPayment,
-              child: Column(
-                children: [
-                  const SizedBox(height: 16.0),
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(40),
-                        color: const Color.fromARGB(255, 245, 245, 245),
-                      ),
-                      child: InkWell(
-                        onTap: () async {
-                          final result = await FilePicker.platform.pickFiles();
-                          if (result != null && result.files.isNotEmpty) {
-                            final file = result.files.first;
-                            final filePath = file.path;
-                            final fileName = path.basename(filePath!);
-
-                            setState(() {
-                              selectedFilePath = filePath;
-                              fileUploadController.text = fileName;
-                            });
-                          }
-                        },
-                        child: const ListTile(
-                          title: Text(
-                            'Upload GCASH Receipt',
-                            style: TextStyle(fontSize: 12.0),
-                          ),
-                          trailing: Icon(
-                            Icons.cloud_upload,
-                            size: 18.0,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
             // -------------------------------------------  SUBMIT BUTTON ---------------------------
             const SizedBox(height: 16.0),
             Padding(
               padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
               child: ElevatedButton(
                 onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return Dialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50.0),
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.all(24.0),
-                          decoration: BoxDecoration(
-                            color: Colors.green,
-                            borderRadius: BorderRadius.circular(30.0),
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text(
-                                'Success',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 20.0,
-                                ),
-                              ),
-                              const SizedBox(height: 16.0),
-                              const Text(
-                                'Request submitted successfully.',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              const SizedBox(height: 16.0),
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                style: ButtonStyle(
-                                  backgroundColor:
-                                      MaterialStateProperty.all<Color>(
-                                          Colors.white),
-                                ),
-                                child: const Text(
-                                  'OK',
-                                  style: TextStyle(color: Colors.green),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  );
+                  requestDocument();
                 },
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.all<Color>(

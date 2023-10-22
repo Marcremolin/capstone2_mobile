@@ -1,8 +1,11 @@
 import 'dart:convert';
-import 'package:client/Screens/Homepage/Homepage.dart';
-import 'package:client/config.dart';
+import 'package:client/Screens/Homepage/bottom_nav.dart';
+
 import 'package:flutter/material.dart';
 import '../../Login/components/already_have_an_account_acheck.dart';
+import '../../ForgetPassword/components/forgetPassword.dart';
+import '../../ForgetPassword/forgetPassword_main.dart';
+
 import '../../../constants.dart';
 import '../../Signup/signup_screen.dart';
 import 'package:http/http.dart' as http;
@@ -33,6 +36,7 @@ class _LoginFormState extends State<LoginForm> {
 
 // ---- DATABASE FUNCTION ----------------
   void loginUser() async {
+<<<<<<< Updated upstream
     var reqBody = {
       //Objects to send in the Backend
       "emailAddress": emailAddressController.text,
@@ -52,12 +56,47 @@ class _LoginFormState extends State<LoginForm> {
         var myToken = jsonResponse['token'];
         
         prefs.setString('token', myToken);
+=======
+    String email = emailAddressController.text;
+    String password = passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      print('Please enter both email and password.');
+      return; // Do not proceed with the request.
+    }
+
+    var reqBody = {"emailAddress": email, "password": password};
+
+    var url = Uri.parse('http://192.168.0.28:8000/login');
+    try {
+      print('Request Payload: ${jsonEncode(reqBody)}');
+      var response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(reqBody),
+      );
+
+      print('Response: ${response.body}');
+
+      var jsonResponse = jsonDecode(response.body);
+      if (jsonResponse['status']) {
+        // Handle successful login
+>>>>>>> Stashed changes
         Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => Announcement(token: myToken)));
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              return const BottomNav();
+            },
+          ),
+        );
       } else {
+<<<<<<< Updated upstream
         print('HTTP Error: ${response.statusCode}');
+=======
+        // Handle login failure
+        print('Login Failed: ${jsonResponse['message']}');
+>>>>>>> Stashed changes
       }
     } catch (e) {
       print('Error: $e');
@@ -72,41 +111,85 @@ class _LoginFormState extends State<LoginForm> {
         children: [
           TextFormField(
             keyboardType: TextInputType.emailAddress,
+            controller: emailAddressController,
             textInputAction: TextInputAction.next,
             cursorColor: kPrimaryColor,
             onSaved: (emailAddress) {},
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: "Your email",
-              prefixIcon: Padding(
+              prefixIcon: const Padding(
                 padding: EdgeInsets.all(defaultPadding),
                 child: Icon(Icons.person),
               ),
+              filled: true,
+              fillColor: const Color.fromARGB(135, 227, 227, 227),
+              hintStyle: const TextStyle(color: Colors.black),
+              contentPadding: const EdgeInsets.all(defaultPadding),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30.0),
+                borderSide: const BorderSide(
+                  color: Colors.blue,
+                  width: 3.0,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30.0),
+                borderSide: const BorderSide(
+                  color: Colors.blue,
+                  width: 3.0,
+                ),
+              ),
+            ),
+            style: const TextStyle(
+              color: Color.fromARGB(255, 27, 25, 25),
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'EMAIL IS REQUIRED';
               }
-              return value;
+              return null;
             },
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: defaultPadding),
             child: TextFormField(
               textInputAction: TextInputAction.done,
+              controller: passwordController,
               obscureText: true,
               cursorColor: kPrimaryColor,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: "Your password",
-                prefixIcon: Padding(
+                prefixIcon: const Padding(
                   padding: EdgeInsets.all(defaultPadding),
                   child: Icon(Icons.lock),
                 ),
+                filled: true,
+                fillColor: const Color.fromARGB(135, 227, 227, 227),
+                hintStyle: const TextStyle(color: Colors.black),
+                contentPadding: const EdgeInsets.all(defaultPadding),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: const BorderSide(
+                    color: Colors.blue,
+                    width: 3.0,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20.0),
+                  borderSide: const BorderSide(
+                    color: Colors.blue,
+                    width: 2.0,
+                  ),
+                ),
+              ),
+              style: const TextStyle(
+                color: Colors.black,
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'PASSWORD IS REQUIRED';
                 }
-                return value;
+                return null;
               },
             ),
           ),
@@ -134,6 +217,20 @@ class _LoginFormState extends State<LoginForm> {
                 ),
               );
             },
+          ),
+          const SizedBox(height: defaultPadding),
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) {
+                    return const ForgetPasswordForm();
+                  },
+                ),
+              );
+            },
+            child: Text("Forgot Password?"),
           ),
         ],
       ),

@@ -84,10 +84,11 @@ const userSchema = new Schema({
     required: true,
     unique: true,
   },
+
   votersRegistration: {
     type: String,
-    required: true,
   },
+
 
   suffix: String,
   companyName: String,
