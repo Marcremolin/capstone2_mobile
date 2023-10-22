@@ -3,30 +3,45 @@ import '../../../Screens/Homepage/bottom_nav.dart';
 import '../AdditionalContentPage.dart';
 import '../../Screens/ProfilePage.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:client/config.dart';
-class Announcement extends StatefulWidget {
-  final token;
-  const Announcement({@required this.token, Key? key}) : super(key: key);
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+class AnnouncementPage extends StatefulWidget {
+  final String? token; // Make the token parameter optional
+  const AnnouncementPage({Key? key, this.token}) : super(key: key);
 
   @override
-  _AnnouncementState createState() => _AnnouncementState();
+  _AnnouncementPageState createState() => _AnnouncementPageState();
 }
 
-class _AnnouncementState extends State<Announcement>
+class _AnnouncementPageState extends State<AnnouncementPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late String _selectedCategory;
-  late String emailAddress;
+
+  // late String emailAddress; //for TOKEN
+  // ------- Part of GET Method-----------
+  List<dynamic> announcementData = []; // Store the fetched data here
+  List<dynamic> livelihoodData = [];
+  List<dynamic> businessPromotionData = [];
 
   @override
   void initState() {
     super.initState();
-    Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);
+
+    // final String? token;
+
+    // Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);
     _tabController = TabController(length: 3, vsync: this);
     _selectedCategory = 'Announcement';
     _tabController.addListener(_handleTabSelection);
 
-    emailAddress = jwtDecodedToken['email'];
+    // ------- Part of GET Method (Make the API request when the app starts) -----------
+    fetchAnnouncementData();
+    fetchLivelihoodData();
+    fetchbusinessPromotionData();
+
+    // emailAddress = jwtDecodedToken['email'];
   }
 
   void _handleTabSelection() {
@@ -47,6 +62,114 @@ class _AnnouncementState extends State<Announcement>
     super.dispose();
   }
 
+//--------------------------- FUNCTION TO HIT THE API ANNOUNCEMENT  --------------------------------
+  void fetchAnnouncementData() async {
+    final url = Uri.parse('http://192.168.0.28:8000/get/announcements');
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          announcementData = data;
+        });
+      } else {
+        throw Exception('Failed to load data: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+//-------------------  FUNCTION TO HIT THE API LIVELIHOOD  ----------------------------
+  void fetchLivelihoodData() async {
+    final url = Uri.parse('http://192.168.0.28:8000/get/livelihood');
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          livelihoodData = data;
+        });
+        for (var livelihood in livelihoodData) {
+          final imageUrl = await fetchImageForLivelihood(livelihood['_id']);
+          livelihood['imageUrl'] = imageUrl;
+        }
+      } else {
+        throw Exception('Failed to load data: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  Future<String> fetchImageForLivelihood(String livelihoodId) async {
+    final imageUrlUrl = Uri.parse(
+        'http://192.168.0.28:8000/get/livelihood/$livelihoodId/image');
+
+    try {
+      final response = await http.get(imageUrlUrl);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['imageUrl'];
+      } else {
+        throw Exception('Failed to load image: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching image: $e');
+      throw Exception('Failed to load image');
+    }
+  }
+
+//--------------------------- FUNCTION TO HIT THE API BUSINESS PROMOTION  --------------------------------
+  void fetchbusinessPromotionData() async {
+    final url = Uri.parse('http://192.168.0.28:8000/get/promoteBusiness');
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          businessPromotionData = data;
+        });
+        for (var promoteBusiness in businessPromotionData) {
+          final imageUrl =
+              await fetchImageForbusinessPromotion(promoteBusiness['_id']);
+          promoteBusiness['imageUrl'] = imageUrl;
+        }
+      } else {
+        throw Exception('Failed to load data: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  Future<String> fetchImageForbusinessPromotion(
+      String promoteBusinessId) async {
+    final imageUrlUrl = Uri.parse(
+        'http://192.168.0.28:8000/get/promoteBusiness/$promoteBusinessId/image');
+
+    try {
+      final response = await http.get(imageUrlUrl);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['imageUrl'];
+      } else {
+        throw Exception('Failed to load image: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching image: $e');
+      throw Exception('Failed to load image');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     List<String> tabs = ['Announcement', 'Livelihood ', 'Business'];
@@ -58,10 +181,14 @@ class _AnnouncementState extends State<Announcement>
         actions: [
           IconButton(
             icon: const Icon(Icons.account_circle), // Profile Icon
+            // ---------------------------------------- PROFILE ICON TO PASS THE TOKEN ----------------------------------------
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const ProfilePage()),
+                MaterialPageRoute(
+                  builder: (context) =>
+                      ProfilePage(token: widget.token), // Pass the token
+                ),
               );
             },
           ),
@@ -80,291 +207,70 @@ class _AnnouncementState extends State<Announcement>
           ),
           Expanded(
             child: TabBarView(controller: _tabController, children: [
-              ListView(
-                // -------------------------------- ANNOUNCEMENT --------------------------------
-                children: [
-                  customListTile(
-                    'assets/images/Announcement1.jpg',
-                    'General Announcement',
-                    'Community Cleanup Day',
-                    'Join us for a Community Cleanup Day on Saturday, September 24, 2023, from 8:00 AM to 12:00 PM at the Barangay Park. We invite all residents, young and old, to come together for a day of community service and environmental stewardship.  (Announcement Description) ',
-                    'Date: Saturday, September 24, 2023 ',
-                    'Time: 8:00 AM - 12:00 PM',
-                    'Location: Barangay Park',
-                    'EVERYONE CAN PARTICIPATE',
-                    'This event is a great opportunity to connect with your neighbors, make a positive impact on our community, and enjoy the outdoors. Lets work together to keep our barangay clean and beautiful.(Closing Tags)',
-                    context,
-                  ),
-                  customListTile(
-                    'assets/images/Announcement1.jpg',
-                    'General Announcement',
-                    'Community Cleanup Day',
-                    'Join us for a Community Cleanup Day on Saturday, September 24, 2023, from 8:00 AM to 12:00 PM at the Barangay Park. We invite all residents, young and old, to come together for a day of community service and environmental stewardship.  (Announcement Description) ',
-                    'Date: Saturday, September 24, 2023 ',
-                    'Time: 8:00 AM - 12:00 PM',
-                    'Location: Barangay Park',
-                    'EVERYONE CAN PARTICIPATE',
-                    'This event is a great opportunity to connect with your neighbors, make a positive impact on our community, and enjoy the outdoors. Lets work together to keep our barangay clean and beautiful.(Closing Tags)',
-                    context,
-                  ),
-                  customListTile(
-                    'assets/images/Announcement1.jpg',
-                    'General Announcement',
-                    'Community Cleanup Day',
-                    'Join us for a Community Cleanup Day on Saturday, September 24, 2023, from 8:00 AM to 12:00 PM at the Barangay Park. We invite all residents, young and old, to come together for a day of community service and environmental stewardship.  (Announcement Description) ',
-                    'Date: Saturday, September 24, 2023 ',
-                    'Time: 8:00 AM - 12:00 PM',
-                    'Location: Barangay Park',
-                    'EVERYONE CAN PARTICIPATE',
-                    'This event is a great opportunity to connect with your neighbors, make a positive impact on our community, and enjoy the outdoors. Lets work together to keep our barangay clean and beautiful.(Closing Tags)',
-                    context,
-                  ),
-                  customListTile(
-                    'assets/images/Announcement1.jpg',
-                    'General Announcement',
-                    'Community Cleanup Day',
-                    'Join us for a Community Cleanup Day on Saturday, September 24, 2023, from 8:00 AM to 12:00 PM at the Barangay Park. We invite all residents, young and old, to come together for a day of community service and environmental stewardship.  (Announcement Description) ',
-                    'Date: Saturday, September 24, 2023 ',
-                    'Time: 8:00 AM - 12:00 PM',
-                    'Location: Barangay Park',
-                    'EVERYONE CAN PARTICIPATE',
-                    'This event is a great opportunity to connect with your neighbors, make a positive impact on our community, and enjoy the outdoors. Lets work together to keep our barangay clean and beautiful.(Closing Tags)',
-                    context,
-                  ),
-                  customListTile(
-                    'assets/images/Announcement1.jpg',
-                    'General Announcement',
-                    'Community Cleanup Day',
-                    'Join us for a Community Cleanup Day on Saturday, September 24, 2023, from 8:00 AM to 12:00 PM at the Barangay Park. We invite all residents, young and old, to come together for a day of community service and environmental stewardship.  (Announcement Description) ',
-                    'Date: Saturday, September 24, 2023 ',
-                    'Time: 8:00 AM - 12:00 PM',
-                    'Location: Barangay Park',
-                    'EVERYONE CAN PARTICIPATE',
-                    'This event is a great opportunity to connect with your neighbors, make a positive impact on our community, and enjoy the outdoors. Lets work together to keep our barangay clean and beautiful.(Closing Tags)',
-                    context,
-                  ),
-                  customListTile(
-                    'assets/images/Announcement1.jpg',
-                    'General Announcement',
-                    'Community Cleanup Day',
-                    'Join us for a Community Cleanup Day on Saturday, September 24, 2023, from 8:00 AM to 12:00 PM at the Barangay Park. We invite all residents, young and old, to come together for a day of community service and environmental stewardship.  (Announcement Description) ',
-                    'Date: Saturday, September 24, 2023 ',
-                    'Time: 8:00 AM - 12:00 PM',
-                    'Location: Barangay Park',
-                    'EVERYONE CAN PARTICIPATE',
-                    'This event is a great opportunity to connect with your neighbors, make a positive impact on our community, and enjoy the outdoors. Lets work together to keep our barangay clean and beautiful.(Closing Tags)',
-                    context,
-                  ),
-                  customListTile(
-                    'assets/images/Announcement1.jpg',
-                    'Business News',
-                    'Community Cleanup Day',
-                    'Join us for a Community Cleanup Day on Saturday, September 24, 2023, from 8:00 AM to 12:00 PM at the Barangay Park. We invite all residents, young and old, to come together for a day of community service and environmental stewardship.  (Announcement Description) ',
-                    'Date: Saturday, September 24, 2023 ',
-                    'Time: 8:00 AM - 12:00 PM',
-                    'Location: Barangay Park',
-                    'EVERYONE CAN PARTICIPATE',
-                    'This event is a great opportunity to connect with your neighbors, make a positive impact on our community, and enjoy the outdoors. Lets work together to keep our barangay clean and beautiful.(Closing Tags)',
-                    context,
-                  )
-                ],
-              ),
+              ListView.builder(
+                itemCount: announcementData.length,
+                itemBuilder: (context, index) {
+                  final announcement = announcementData[index];
+                  if (announcement != null) {
+                    // final imageUrl =
+                    //     'http://192.168.0.28:8000/get/announcement/${announcement['filename']}';
 
+                    return customListTile(
+                      announcement['filename'] ?? '',
+                      announcement['what'] ?? '',
+                      announcement['when'] ?? '',
+                      announcement['where'] ?? '',
+                      announcement['who'] ?? '',
+                      announcement['when'] ?? '',
+                      context,
+                    );
+                  } else {
+                    return const SizedBox(); // Handle the case when data is null
+                  }
+                },
+              ),
 // -------------------------------- LIVEHOOD LIST --------------------------------
-              ListView(
-                children: [
-                  customLivelihoodListTile(
-                    'assets/images/Livelihood1.png',
-                    'PROGRAM 1',
-                    'Title of the Announcement',
-                    context,
-                  ),
-                  customLivelihoodListTile(
-                    'assets/images/Livelihood2.png',
-                    'PROGRAM 1',
-                    'Title of the Announcement',
-                    context,
-                  ),
-                  customLivelihoodListTile(
-                    'assets/images/Livelihood1.png',
-                    'PROGRAM 1',
-                    'Title of the Announcement',
-                    context,
-                  ),
-                  customLivelihoodListTile(
-                    'assets/images/Livelihood2.png',
-                    'PROGRAM 8',
-                    'Title of the Announcement',
-                    context,
-                  ),
-                  customLivelihoodListTile(
-                    'assets/images/Livelihood1.png',
-                    'PROGRAM 4',
-                    'Title of the Announcement',
-                    context,
-                  ),
-                  customLivelihoodListTile(
-                    'assets/images/Livelihood2.png',
-                    'Source Name',
-                    'Title of the Announcement',
-                    context,
-                  ),
-                  customLivelihoodListTile(
-                    'assets/images/Livelihood1.png',
-                    'PROGRAM 49',
-                    'Title of the Announcement',
-                    context,
-                  ),
-                  customLivelihoodListTile(
-                    'assets/images/Livelihood2.png',
-                    'PROGRAM 93',
-                    'Title of the Announcement',
-                    context,
-                  ),
-                  customLivelihoodListTile(
-                    'assets/images/Livelihood1.png',
-                    'PROGRAM 76',
-                    'Title of the Announcement',
-                    context,
-                  ),
-                  customLivelihoodListTile(
-                    'assets/images/Livelihood2.png',
-                    'PROGRAM 84',
-                    'Title of the Announcement',
-                    context,
-                  )
-                ],
+              ListView.builder(
+                itemCount: livelihoodData.length,
+                itemBuilder: (context, index) {
+                  final livelihood = livelihoodData[index];
+                  if (livelihood != null) {
+                    return customLivelihoodListTile(
+                      livelihood['imageUrl'] ?? '', // URL for the image
+                      livelihood['what'] ?? '',
+
+                      livelihood['where'] ?? '',
+                      livelihood['when'] ?? '',
+                      livelihood['who'] ?? '',
+                      context,
+                    );
+                  } else {
+                    return const SizedBox(); // Handle the case when data is null
+                  }
+                },
               ),
 //  ------------------------------------------------- BUSINESS ADDITIONAL PAGE CONTENT  ----------------------------------------------------------
-              ListView(
-                children: [
-                  customBusinessListTile(
-                    'assets/images/BAKE2.jpg',
-                    'JERICHOS BAKERY',
-                    'Bakery',
-                    context,
-                    'KEMEMKEEN  ENDJDEICJDKIJCIDJCIJDICJIDJCIJDICJD JDICJDICJIDJCIDJIDCJIJDICJDIJCIDJCD',
-                    'Pag Asa st. Mandaluyong',
-                    'MONDAY - SUNDAY / 7am-10pm',
-                    '09874839938333',
-                    [
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                    ],
-                    [
-                      'Review 1',
-                      'Review 2',
-                      'Review 3',
-                    ],
-                  ),
-                  customBusinessListTile(
-                    'assets/images/Business2.jpg',
-                    'Your Source Name',
-                    'Your Title',
-                    context,
-                    'KEMEMKEEN  ENDJDEICJDKIJCIDJCIJDICJIDJCIJDICJD JDICJDICJIDJCIDJIDCJIJDICJDIJCIDJCD',
-                    'Pag Asa st. Mandaluyong',
-                    'MONDAY - SUNDAY / 7am-10pm',
-                    '09874839938333',
-                    [
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                    ],
-                    [
-                      'Review 1',
-                      'Review 2',
-                      'Review 3',
-                    ],
-                  ),
-                  customBusinessListTile(
-                    'assets/images/Business2.jpg',
-                    'Your Source Name',
-                    'Your Title',
-                    context,
-                    'KEMEMKEEN  ENDJDEICJDKIJCIDJCIJDICJIDJCIJDICJD JDICJDICJIDJCIDJIDCJIJDICJDIJCIDJCD',
-                    'Pag Asa st. Mandaluyong',
-                    'MONDAY - SUNDAY / 7am-10pm',
-                    '09874839938333',
-                    [
-                      'assets/images/Announcement1.jpg',
-                      'assets/images/Announcement1.jpg',
-                      'assets/images/Announcement1.jpg',
-                    ],
-                    [
-                      'Review 1',
-                      'Review 2',
-                      'Review 3',
-                    ],
-                  ),
-                  customBusinessListTile(
-                    'assets/images/Business2.jpg',
-                    'Your Source Name',
-                    'Your Title',
-                    context,
-                    'KEMEMKEEN  ENDJDEICJDKIJCIDJCIJDICJIDJCIJDICJD JDICJDICJIDJCIDJIDCJIJDICJDIJCIDJCD',
-                    'Pag Asa st. Mandaluyong',
-                    'MONDAY - SUNDAY / 7am-10pm',
-                    '09874839938333',
-                    [
-                      'assets/images/BarangayPlayground.png'
-                          'assets/images/BarangayPlayground.png'
-                          'assets/images/BarangayPlayground.png'
-                    ],
-                    [
-                      'Review 1',
-                      'Review 2',
-                      'Review 3',
-                    ],
-                  ),
-                  customBusinessListTile(
-                    'assets/images/Business2.jpg',
-                    'Your Source Name',
-                    'Your Title',
-                    context,
-                    'KEMEMKEEN  ENDJDEICJDKIJCIDJCIJDICJIDJCIJDICJD JDICJDICJIDJCIDJIDCJIJDICJDIJCIDJCD',
-                    'Pag Asa st. Mandaluyong',
-                    'MONDAY - SUNDAY / 7am-10pm',
-                    '09874839938333',
-                    [
-                      'assets/images/BarangayPlayground.png'
-                          'assets/images/BarangayPlayground.png'
-                          'assets/images/BarangayPlayground.png'
-                    ],
-                    [
-                      'Review 1',
-                      'Review 2',
-                      'Review 3',
-                    ],
-                  ),
-                  customBusinessListTile(
-                    'assets/images/Business2.jpg',
-                    'Your Source Name',
-                    'Your Title',
-                    context,
-                    'KEMEMKEEN  ENDJDEICJDKIJCIDJCIJDICJIDJCIJDICJD JDICJDICJIDJCIDJIDCJIJDICJDIJCIDJCD',
-                    'Pag Asa st. Mandaluyong',
-                    'MONDAY - SUNDAY / 7am-10pm',
-                    '09874839938333',
-                    [
-                      'assets/images/Livelihood1.png',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                    ],
-                    [
-                      'Review 1',
-                      'Review 2',
-                      'Review 3',
-                    ],
-                  ),
-                ],
+              ListView.builder(
+                itemCount: businessPromotionData
+                    .length, // Replace with your list of businesses
+                itemBuilder: (context, index) {
+                  final business = businessPromotionData[index];
+                  if (business != null) {
+                    return customBusinessListTile(
+                      business['imageUrl'] ?? '', // URL for the image
+                      business['businessName'] ?? '',
+                      business['category'] ?? '',
+                      context,
+                      business['contact'] ?? '',
+                      business['address'] ?? '',
+                      business['hours'] ?? '',
+                      business['contact'] ?? '',
+                      business['contact'] ?? '',
+                    );
+                  } else {
+                    return const SizedBox(); // Handle the case when data is null
+                  }
+                },
               ),
             ]),
           ),
@@ -376,16 +282,15 @@ class _AnnouncementState extends State<Announcement>
 
 // -------------------------------- DESIGN IN BUSINESS CATEGORY --------------------------------
 Widget customBusinessListTile(
-  String imagePath,
-  String sourceName,
-  String title,
+  String imagePath, //filename
+  String sourceName, //BUSINESS NAME
+  String title, //CATEGORY
   BuildContext context,
-  String description,
-  String operatingHours,
-  String location,
-  String phone,
-  List<String> imageList,
-  List<String> socmeds,
+  String description, //residentName
+  String operatingHours, //hours:
+  String location, //address:
+  String phone, //contact
+  String owner, //residentName
 ) {
   return InkWell(
     onTap: () {
@@ -401,8 +306,7 @@ Widget customBusinessListTile(
             operatingHours: operatingHours,
             location: location,
             phone: phone,
-            imageList: imageList,
-            socmeds: socmeds,
+            owner: owner,
           ),
         ),
       );
@@ -473,8 +377,10 @@ Widget customBusinessListTile(
 // -------------------------------- FUNCTION AND DESIGN IN LIVELIHOOD CATEGORY --------------------------------
 Widget customLivelihoodListTile(
   String imagePath,
-  String sourceName,
-  String title,
+  String what,
+  String when,
+  String where,
+  String who,
   BuildContext context,
 ) {
   return Container(
@@ -514,29 +420,83 @@ Widget customLivelihoodListTile(
                   borderRadius: BorderRadius.circular(30.0),
                 ),
                 child: Text(
-                  sourceName,
+                  what,
                   style: const TextStyle(
                     color: Colors.white,
                   ),
                 ),
               ),
               const SizedBox(height: 8.0),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12.0,
-                  color: Colors.blue,
-                ),
+
+              // WHEN
+              Row(
+                children: [
+                  const Text(
+                    'WHEN:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14.0,
+                      color: Colors.blue,
+                    ),
+                  ),
+                  const SizedBox(width: 4.0),
+                  Text(
+                    when,
+                    style: const TextStyle(
+                      fontSize: 14.0,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8.0),
+
+              // WHERE
+              Row(
+                children: [
+                  const Text(
+                    'WHERE:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14.0,
+                      color: Color.fromARGB(255, 1, 30, 53),
+                    ),
+                  ),
+                  const SizedBox(width: 4.0),
+                  Text(
+                    where,
+                    style: const TextStyle(
+                      fontSize: 14.0,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 4.0),
-              const Text(
-                'Additional details',
-                style: TextStyle(
-                  fontSize: 12.0,
-                  color: Colors.grey,
-                ),
+
+              // WHO
+              Row(
+                children: [
+                  const Text(
+                    'WHO:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14.0,
+                      color: Colors.blue,
+                    ),
+                  ),
+                  const SizedBox(width: 4.0),
+                  Text(
+                    who,
+                    style: const TextStyle(
+                      fontSize: 14.0,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
               ),
+              const SizedBox(height: 8.0),
+              const SizedBox(height: 4.0),
             ],
           ),
         ),
@@ -547,17 +507,17 @@ Widget customLivelihoodListTile(
 
 // -------------------------------- DESIGN IN ANNOUNCEMENT CATEGORY --------------------------------
 Widget customListTile(
-  String imagePath,
+  String filename,
   String announcementCategory,
   String announcementTitle,
-  String announcementDesc,
   String announcementDate,
   String announcementLocation,
-  String announcementTime,
   String announcementParticipants,
-  String announcementClosing,
   BuildContext context,
 ) {
+  final imageUrl =
+      'http://192.168.0.28:8000/uploads/$filename'; // Construct the URL to fetch the image
+
   return Container(
     margin: const EdgeInsets.symmetric(horizontal: 22.0, vertical: 8.0),
     padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
@@ -582,61 +542,41 @@ Widget customListTile(
             width: double.infinity,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12.0),
-              image: DecorationImage(
-                image: AssetImage(imagePath),
-                fit: BoxFit.cover,
-              ),
+            ),
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: 150.0,
+              errorBuilder: (context, error, stackTrace) {
+                // Handle errors while loading the image
+                return const Center(
+                  child: Icon(Icons.error_outline, size: 48, color: Colors.red),
+                );
+              },
             ),
           ),
         ),
         const SizedBox(height: 8.0), // Clip image to prevent overflow
 //  -------------- ANNOUNCEMENT TITLE  ------------
         Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                announcementTitle.toUpperCase(),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18.0,
-                ),
+          child: Container(
+            padding: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(255, 35, 19, 139),
+              borderRadius: BorderRadius.circular(30.0),
+            ),
+            child: Text(
+              announcementCategory,
+              style: const TextStyle(
+                color: Colors.white,
               ),
-              const SizedBox(height: 8.0),
-
-              //  -------------- ANNOUNCEMENT CATEGORY  ------------
-              Container(
-                padding: const EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 35, 19, 139),
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
-                child: Text(
-                  announcementCategory,
-                  style: const TextStyle(
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-
-        // Divider below the title
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 10),
-          child: Divider(
-            height: 6,
-          ),
-        ),
-
-//  -------------- ANNOUNCEMENT DESCRIPTION  ------------
-
-        Text(
-          announcementDesc,
-          style: const TextStyle(fontSize: 12.0),
         ),
         const SizedBox(height: 8.0),
+
+        // Rest of your widget content
 
 //  -------------- ANNOUNCEMENT COLUMNS  ------------
         Row(
@@ -647,7 +587,7 @@ Widget customListTile(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Date:',
+                    'Location:',
                     style: TextStyle(
                       fontSize: 12.0,
                       fontWeight: FontWeight.bold,
@@ -658,8 +598,10 @@ Widget customListTile(
                     style: const TextStyle(fontSize: 12.0),
                   ),
                   const SizedBox(height: 8.0),
+                  //LOCATION
+
                   const Text(
-                    'Location:',
+                    'Participants:',
                     style: TextStyle(
                       fontSize: 12.0,
                       fontWeight: FontWeight.bold,
@@ -676,6 +618,8 @@ Widget customListTile(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  //------------- Time ------------------
+
                   const Text(
                     'Time:',
                     style: TextStyle(
@@ -684,12 +628,13 @@ Widget customListTile(
                     ),
                   ),
                   Text(
-                    announcementTime,
+                    announcementParticipants,
                     style: const TextStyle(fontSize: 12.0),
                   ),
                   const SizedBox(height: 8.0),
+                  //------------- Participants ------------------
                   const Text(
-                    'Participants:',
+                    'Date:',
                     style: TextStyle(
                       fontSize: 12.0,
                       fontWeight: FontWeight.bold,
@@ -704,19 +649,13 @@ Widget customListTile(
             ),
           ],
         ),
-//  -------------- ANNOUNCEMENT CLOSING  ------------
-        const SizedBox(height: 16.0),
-        Text(
-          announcementClosing,
-          style: const TextStyle(fontSize: 12.0),
-        ),
       ],
     ),
   );
 }
 
 class AnnouncementDetailsPage extends StatelessWidget {
-  final String imagePath;
+  final String imageUrl;
   final String announcementTitle;
   final String announcementCategory;
   final String announcementDesc;
@@ -728,7 +667,7 @@ class AnnouncementDetailsPage extends StatelessWidget {
 
   const AnnouncementDetailsPage({
     super.key,
-    required this.imagePath,
+    required this.imageUrl,
     required this.announcementTitle,
     required this.announcementCategory,
     required this.announcementDesc,
@@ -749,7 +688,7 @@ class AnnouncementDetailsPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(imagePath),
+            Image.asset(imageUrl),
             const SizedBox(height: 16.0),
             Text(
               announcementCategory,
@@ -791,7 +730,8 @@ class AnnouncementDetailsPage extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: const BottomNav(),
+      bottomNavigationBar:
+          const BottomNav(), // No need to provide the token parameter
     );
   }
 }

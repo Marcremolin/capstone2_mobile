@@ -7,6 +7,11 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:client/config.dart';
 
+//FOR EMAIL VALIDATION
+import 'package:check_disposable_email/check_disposable_email.dart';
+import 'package:public_suffix/public_suffix.dart';
+import 'dart:io'; // Import dart:io to use SocketException
+
 class SignUpForm extends StatefulWidget {
   const SignUpForm({
     Key? key,
@@ -88,12 +93,11 @@ class _SignUpFormState extends State<SignUpForm> {
   final middleInitialController = TextEditingController();
   final suffixController = TextEditingController();
   final houseNumberController = TextEditingController();
-  final barangayController = TextEditingController();
-  final cityController = TextEditingController();
+  final cityController = TextEditingController(text: 'Mandaluyong');
   final districtController = TextEditingController();
   final streetController = TextEditingController();
   final regionController = TextEditingController();
-  final nationalityController = TextEditingController();
+  final nationalityController = TextEditingController(text: 'Filipino');
   final birthplaceController = TextEditingController();
   final ageController = TextEditingController();
   final companyNameController = TextEditingController();
@@ -101,7 +105,51 @@ class _SignUpFormState extends State<SignUpForm> {
   final phoneNumberController = TextEditingController();
   final emailAddressController = TextEditingController();
   final votersRegistrationController = TextEditingController();
+  final barangayController = TextEditingController(text: 'Harapin ang Bukas');
 
+  //FOR Voters Registration Number VALIDATION ---------------
+
+  bool isValidCityCode(String cityCode) {
+    final validCityCodes = {
+      '1550': 'Mandaluyong Central Post Office',
+      '1551': 'Vergara',
+      '1552': 'Shaw Boulevard',
+      '1553': 'National Center for Mental Health',
+      '1554': 'East EDSA',
+      '1555': 'Wack Wack',
+      '1556': 'Greenhills South',
+    };
+
+    // Check if the provided cityCode is a key in the validCityCodes map
+    return validCityCodes.containsKey(cityCode);
+  }
+
+  //FOR EMAIL VALIDATION ---------------
+  bool isEmailValid(String email) {
+    final emailRegExp =
+        RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$");
+    return emailRegExp.hasMatch(email);
+  }
+
+  Future<bool> doesDomainExist(String domain) async {
+    try {
+      final result = await InternetAddress.lookup(domain);
+      return result.isNotEmpty;
+    } on SocketException catch (e) {
+      return false;
+    }
+  }
+
+  bool isValidTLD(String tld) {
+    return validTLDs.contains(tld);
+  }
+
+  List<String> validTLDs = [
+    'com',
+    'net',
+    'org',
+    'io', /* add more */
+  ];
 // FOR DROPDOWNS ---------------------------------------------
   late String selectedCivilStatus;
   List<String> civilStatusOptions = [
@@ -219,19 +267,23 @@ class _SignUpFormState extends State<SignUpForm> {
 
     try {
       var response = await http.post(
+<<<<<<< Updated upstream
         Uri.parse(registration),
+=======
+        url,
+>>>>>>> Stashed changes
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(regBody),
       );
 
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(response.body);
-        print(jsonResponse['status']);
+        (jsonResponse['status']);
       } else {
-        print('HTTP Error: ${response.statusCode}');
+        ('HTTP Error: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error: $e');
+      ('Error: $e');
     }
   }
 
@@ -487,7 +539,8 @@ class _SignUpFormState extends State<SignUpForm> {
                     TextFormField(
                       controller: houseNumberController,
                       textInputAction: TextInputAction.next,
-                      keyboardType: TextInputType.text,
+                      keyboardType: TextInputType
+                          .number, // Use TextInputType.number for numeric input
                       cursorColor: kPrimaryColor,
                       decoration: const InputDecoration(
                         hintText: "House #",
@@ -500,9 +553,16 @@ class _SignUpFormState extends State<SignUpForm> {
                         if (value == null || value.isEmpty) {
                           return 'House # is required';
                         }
+
+                        // Check if the input is a valid number
+                        if (int.tryParse(value) == null) {
+                          return 'House # should be a number';
+                        }
+
                         return null;
                       },
                     ),
+
                     const SizedBox(height: 8),
 // CITY---------------------
                     TextFormField(
@@ -511,14 +571,15 @@ class _SignUpFormState extends State<SignUpForm> {
                       keyboardType: TextInputType.text,
                       cursorColor: kPrimaryColor,
                       decoration: const InputDecoration(
-                        hintText: "City",
                         prefixIcon: Padding(
                           padding: EdgeInsets.all(defaultPadding),
                           child: Icon(Icons.home),
                         ),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        if (value == null ||
+                            value.isEmpty ||
+                            value == 'MANDALUYONG') {
                           return 'City is required';
                         }
                         return null;
@@ -562,18 +623,11 @@ class _SignUpFormState extends State<SignUpForm> {
                       keyboardType: TextInputType.text,
                       cursorColor: kPrimaryColor,
                       decoration: const InputDecoration(
-                        hintText: "Barangay",
                         prefixIcon: Padding(
                           padding: EdgeInsets.all(defaultPadding),
                           child: Icon(Icons.home),
                         ),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Barangay';
-                        }
-                        return null;
-                      },
                     ),
                     const SizedBox(height: 8),
 // DISTRICT---------------------
@@ -718,18 +772,11 @@ class _SignUpFormState extends State<SignUpForm> {
               keyboardType: TextInputType.text,
               cursorColor: kPrimaryColor,
               decoration: const InputDecoration(
-                hintText: "Nationality",
                 prefixIcon: Padding(
                   padding: EdgeInsets.all(defaultPadding),
                   child: Icon(Icons.person),
                 ),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Nationality is required';
-                }
-                return null;
-              },
             ),
           ),
 // DATE OF BIRTH ---------------------
@@ -808,7 +855,8 @@ class _SignUpFormState extends State<SignUpForm> {
             child: TextFormField(
               controller: ageController,
               textInputAction: TextInputAction.next,
-              keyboardType: TextInputType.text,
+              keyboardType: TextInputType
+                  .number, // Use TextInputType.number for numeric input
               cursorColor: kPrimaryColor,
               decoration: const InputDecoration(
                 hintText: "Age",
@@ -821,10 +869,17 @@ class _SignUpFormState extends State<SignUpForm> {
                 if (value == null || value.isEmpty) {
                   return 'Age is required';
                 }
+
+                // Check if the input is a valid number
+                if (int.tryParse(value) == null) {
+                  return 'Age should be a number';
+                }
+
                 return null;
               },
             ),
           ),
+
 // Highest Educational Attaintment
           Container(
             padding: const EdgeInsets.all(defaultPadding),
@@ -996,19 +1051,27 @@ class _SignUpFormState extends State<SignUpForm> {
             child: TextFormField(
               controller: phoneNumberController,
               textInputAction: TextInputAction.next,
-              keyboardType: TextInputType.text,
+              keyboardType: TextInputType
+                  .phone, // Use TextInputType.phone for phone numbers
               cursorColor: kPrimaryColor,
               decoration: const InputDecoration(
                 hintText: "Phone Number",
                 prefixIcon: Padding(
                   padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.person),
+                  child: Icon(Icons.phone),
                 ),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Phone Number is required';
                 }
+
+                // Define a regular expression for Philippine phone numbers (adjust as needed)
+                final phoneRegExp = RegExp(r'^(09|\+639)\d{9}$');
+                if (!phoneRegExp.hasMatch(value)) {
+                  return 'Invalid Phone number';
+                }
+
                 return null;
               },
             ),
@@ -1043,7 +1106,7 @@ class _SignUpFormState extends State<SignUpForm> {
             child: TextFormField(
               controller: emailAddressController,
               textInputAction: TextInputAction.next,
-              keyboardType: TextInputType.text,
+              keyboardType: TextInputType.emailAddress,
               cursorColor: kPrimaryColor,
               decoration: const InputDecoration(
                 hintText: "Email Address",
@@ -1056,6 +1119,29 @@ class _SignUpFormState extends State<SignUpForm> {
                 if (value == null || value.isEmpty) {
                   return 'Email Address is required';
                 }
+
+                if (!isEmailValid(value)) {
+                  return 'Invalid email address';
+                }
+
+                final domain = value.split('@').last;
+                final domainParts = domain.split('.');
+
+                if (domainParts.length < 2) {
+                  return 'Invalid email domain';
+                }
+
+                doesDomainExist(domain).then((domainExists) {
+                  if (!domainExists) {
+                    return 'Invalid email domain';
+                  }
+                });
+
+                final tld = domainParts.last;
+                if (!isValidTLD(tld)) {
+                  return 'Invalid TLD';
+                }
+
                 return null;
               },
             ),
@@ -1154,12 +1240,15 @@ class _SignUpFormState extends State<SignUpForm> {
                   child: Icon(Icons.person),
                 ),
               ),
+<<<<<<< Updated upstream
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Voters Registration is required';
                 }
                 return null;
               },
+=======
+>>>>>>> Stashed changes
             ),
           ),
 // --------------------------------- PASSWORD -------------------------------
@@ -1199,6 +1288,21 @@ class _SignUpFormState extends State<SignUpForm> {
                 if (value == null || value.isEmpty) {
                   return 'Please enter your password';
                 }
+
+                // Add password validation criteria
+                if (value.length < 8) {
+                  return 'Password must be at least 8 characters long';
+                }
+                if (!value.contains(RegExp(r'[A-Z]'))) {
+                  return 'Password must contain at least one uppercase letter';
+                }
+                if (!value.contains(RegExp(r'[a-z]'))) {
+                  return 'Password must contain at least one lowercase letter';
+                }
+                if (!value.contains(RegExp(r'[0-9]'))) {
+                  return 'Password must contain at least one number';
+                }
+
                 return null;
               },
             ),

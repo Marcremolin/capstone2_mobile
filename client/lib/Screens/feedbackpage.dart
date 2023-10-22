@@ -1,37 +1,48 @@
 import 'package:flutter/material.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color.fromARGB(255, 40, 106, 160),
-      child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          scaffoldBackgroundColor: Colors.transparent,
-        ),
-        home: const FeedbackPage(),
-      ),
-    );
-  }
-}
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class FeedbackPage extends StatefulWidget {
-  const FeedbackPage({Key? key}) : super(key: key);
-
+// FOR TOKEN -----------------------------
+  final token;
+  const FeedbackPage({Key? key, this.token}) : super(key: key);
+  // -----------------------------------------
   @override
   _FeedbackPageState createState() => _FeedbackPageState();
 }
 
 class _FeedbackPageState extends State<FeedbackPage> {
+  late String userId; //FOR TOKEN
+
   List<bool> starSelection = [false, false, false, false, false];
   bool isSubmitted = false;
+  final feedbackController = TextEditingController();
+  final dateController = TextEditingController();
+
+  //FOR TOKEN ----------------------
+  @override
+  void initState() {
+    super.initState();
+    if (widget.token != null) {
+      print('Token is not null: ${widget.token}');
+      try {
+        Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);
+        if (jwtDecodedToken.containsKey('_id')) {
+          userId = jwtDecodedToken['_id'];
+          print('User ID: $userId');
+        } else {
+          print('JWT token does not contain user ID.');
+        }
+      } catch (e) {
+        print('Error decoding JWT token: $e');
+      }
+    } else {
+      print('Token is null.');
+    }
+  }
+
+  // ------------------------------------------------------------------
 
   void selectStar(int index) {
     setState(() {
@@ -41,7 +52,38 @@ class _FeedbackPageState extends State<FeedbackPage> {
     });
   }
 
-// ---------------------------- POPUP THANKYOU MESSAGE ------------------------------
+  void feedbackReq() async {
+    if (userId != null) {
+      var now = DateTime.now();
+      var formattedDate =
+          "${now.year}-${now.month}-${now.day} ${now.hour}:${now.minute}:${now.second}";
+      var regBody = {
+        "userId": userId,
+        "date": formattedDate,
+        "feedback": feedbackController.text,
+      };
+
+      var url =
+          Uri.parse('http://192.168.0.28:8000/feedback'); // HOME IP ADDRESS
+
+      var response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(regBody),
+      );
+
+      if (response.statusCode == 200) {
+        var jsonResponse = jsonDecode(response.body);
+        print(jsonResponse['status']);
+        submitFeedback(); // Call the success dialog function
+      } else {
+        print('HTTP Error: ${response.statusCode}');
+      }
+    } else {
+      print('userId is not initialized.');
+    }
+  }
+
   void submitFeedback() {
     showDialog(
       context: context,
@@ -84,7 +126,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                   height: 40,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pop(context);
+                      Navigator.of(context).pop(); // Close the dialog
                     },
                     style: ButtonStyle(
                       backgroundColor:
@@ -149,6 +191,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                             borderRadius: BorderRadius.circular(10.0),
                           ),
                           child: TextFormField(
+                            controller: feedbackController,
                             decoration: const InputDecoration(
                               hintText: 'Enter your feedback...',
                               border: InputBorder.none,
@@ -171,7 +214,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                         SizedBox(
                           width: 200,
                           child: ElevatedButton(
-                            onPressed: submitFeedback,
+                            onPressed: feedbackReq,
                             child: const Text('Submit Feedback'),
                           ),
                         ),

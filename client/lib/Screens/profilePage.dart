@@ -1,13 +1,28 @@
 import 'package:client/Screens/feedbackpage.dart';
 import 'package:flutter/material.dart';
 import 'aboutBarangay.dart';
-// import 'feedbackpage.dart';
 import '../Screens/Profile/editProfile.dart';
 import 'requestSummary.dart';
 import '../../Screens/Login/login_screen.dart';
 
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+class ProfilePage extends StatefulWidget {
+  final String? token;
+  const ProfilePage({Key? key, this.token}) : super(key: key);
+  @override
+  _ProfilePageState createState() => _ProfilePageState();
+}
+//------------------------------------------------------------------------------------------------------------
+
+class _ProfilePageState extends State<ProfilePage> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.token != null) {
+      print('Token in ProfilePage: ${widget.token}');
+    } else {
+      print('Token in ProfilePage is null');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,10 +59,14 @@ class ProfilePage extends StatelessWidget {
               width: 150,
               height: 30,
               child: ElevatedButton(
+// ------------------------ TOKEN FOR EditIconPage ------------------------------------------------
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const EditIconPage()),
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          EditIconPage(token: widget.token), //TOKEN TO PASS
+                    ),
                   );
                 },
                 child: const Text(
@@ -83,6 +102,7 @@ class ProfilePage extends StatelessWidget {
                         );
                       },
                     ),
+                    // REQUEST SUMMARY ------------------------------------------------------------------------------------
                     ListTile(
                       leading: const Icon(Icons.view_list, color: Colors.black),
                       title: const Text('View Request',
@@ -93,10 +113,13 @@ class ProfilePage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const RequestSummary()),
+                            builder: (context) => RequestSummary(
+                                token: widget.token), //TOKEN TO PASS
+                          ),
                         );
                       },
                     ),
+                    // FEEDBACK ------------------------------------------------------------------------------------
                     ListTile(
                       leading: const Icon(Icons.feedback, color: Colors.black),
                       title: const Text('Send Feedback',
@@ -107,7 +130,9 @@ class ProfilePage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const FeedbackPage()),
+                            builder: (context) => FeedbackPage(
+                                token: widget.token), //TOKEN TO PASS
+                          ),
                         );
                       },
                     ),
@@ -121,7 +146,9 @@ class ProfilePage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const LoginScreen()),
+                              builder: (context) => const LoginScreen(
+                                    token: null,
+                                  )),
                         );
                       },
                     ),

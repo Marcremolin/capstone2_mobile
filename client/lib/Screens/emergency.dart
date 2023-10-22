@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
 import 'profilePage.dart';
 import '../../../Screens/mapPage.dart';
+//ADD FOR DATABASE
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class Emergency extends StatefulWidget {
-  const Emergency({Key? key}) : super(key: key);
+  //FOR TOKEN -------------------------------------------------
+  final token;
+  const Emergency({Key? key, this.token}) : super(key: key);
+  //--------------------------------------------------
 
   @override
   _EmergencyState createState() => _EmergencyState();
@@ -11,15 +21,34 @@ class Emergency extends StatefulWidget {
 
 class _EmergencyState extends State<Emergency>
     with SingleTickerProviderStateMixin {
+  late String userId; //FOR TOKEN
+  late String contactNum; //FOR TOKEN
+
   late TabController _tabController;
   late String _selectedCategory;
 
+//ADD FOR DATABASE
+  String? selectedDate;
+  final dateController = TextEditingController();
+//--------------
   @override
   void initState() {
     super.initState();
+
     _tabController = TabController(length: 2, vsync: this);
     _selectedCategory = 'General Report';
     _tabController.addListener(_handleTabSelection);
+
+    //TOKEN
+// TOKEN
+    if (widget.token != null) {
+      Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);
+      userId = jwtDecodedToken['_id'] ?? '';
+      contactNum = jwtDecodedToken['contactNum'] ?? '';
+    } else {
+      userId = '';
+      contactNum = '';
+    }
   }
 
   void _handleTabSelection() {
@@ -38,10 +67,10 @@ class _EmergencyState extends State<Emergency>
     super.dispose();
   }
 
+// FRONTEND ------
   @override
   Widget build(BuildContext context) {
     List<String> tabs = ['Evacuation Center', 'Emergency Report '];
-
     return Scaffold(
         backgroundColor: const Color.fromARGB(255, 2, 95, 170),
         appBar: AppBar(
@@ -52,7 +81,9 @@ class _EmergencyState extends State<Emergency>
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ProfilePage()),
+                  MaterialPageRoute(
+                    builder: (context) => ProfilePage(token: widget.token),
+                  ),
                 );
               },
             ),
@@ -152,18 +183,21 @@ class _EmergencyState extends State<Emergency>
                     color: Colors.blue,
                     text: 'POLICE',
                     icon: Icons.local_police_outlined,
+                    emergencyType: 'POLICE Assistance',
                   ),
                   const SizedBox(height: 10),
                   const CustomButton(
                     color: Colors.red,
                     text: 'AMBULANCE',
                     icon: Icons.local_hospital_outlined,
+                    emergencyType: 'AMBULANCE Assistance',
                   ),
                   const SizedBox(height: 10),
                   const CustomButton(
                     color: Colors.orange,
                     text: 'FIRE TRUCK',
                     icon: Icons.fire_truck_outlined,
+                    emergencyType: 'FIRE TRUCK Assistance',
                   ),
                 ],
               )
@@ -171,6 +205,262 @@ class _EmergencyState extends State<Emergency>
           ))
         ]));
   }
+
+// ---------------------------------------------- ADD FOR DATABASE ----------------------------------------------
+  void sendDistressSignal(String emergencyType) async {
+    //1st
+    var defaultStatus = "NEW";
+    var now = DateTime.now();
+    var formattedDate =
+        "${now.year}-${now.month}-${now.day} ${now.hour}:${now.minute}:${now.second}";
+
+    // Request location permission
+    PermissionStatus status = await Permission.location.request();
+
+    if (status.isGranted) {
+      // Permission granted, proceed to get the location
+      try {
+        Position userLocation = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.best, // Adjust accuracy as needed
+        );
+
+        if (userLocation != null) {
+          // Get latitude and longitude as strings
+          var latitude = userLocation.latitude.toString();
+          var longitude = userLocation.longitude.toString();
+          ('User location obtained: Latitude $latitude, Longitude $longitude');
+
+          // Use reverse geocoding to get the street address
+          List<Placemark> placemarks = await placemarkFromCoordinates(
+            userLocation.latitude,
+            userLocation.longitude,
+          );
+
+          if (placemarks.isNotEmpty) {
+            var firstPlacemark = placemarks[0];
+            var streetAddress = firstPlacemark.street;
+
+            // Include the street address in your request body
+            var regBody = {
+              "userId": userId,
+              "currentLocation": streetAddress,
+              "contact": contactNum,
+              "emergencyType": emergencyType,
+              "date": formattedDate,
+              "status": defaultStatus,
+            };
+
+            var url = Uri.parse('http://192.168.0.28:8000/emergencySignal');
+
+            try {
+              // Send an HTTP POST request to the URL with the updated request body
+              var response = await http.post(
+                url,
+                headers: {"Content-Type": "application/json"},
+                body: jsonEncode(regBody),
+              );
+
+              if (response.statusCode == 200) {
+                print('Request successful: ${response.body}');
+
+                // If the request was successful, parse the response JSON
+                var jsonResponse = jsonDecode(response.body);
+                var status = jsonResponse['status'];
+
+                showSuccessDialog(status);
+              } else {
+                print('HTTP Error: ${response.statusCode}');
+              }
+            } catch (e) {
+              print('Error sending distress signal: $e');
+            }
+          } else {
+            // Handle the case where location couldn't be obtained
+          }
+        } else {
+          // Handle the case where location couldn't be obtained
+        }
+      } catch (e, stackTrace) {
+        print('Error getting location: $e');
+        print(stackTrace);
+      }
+    } else {
+      // Permission is denied, handle accordingly
+    }
+  }
+
+  Future<Position> getLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.best, // Adjust accuracy as needed
+      );
+      return position;
+    } catch (e) {
+      print("Error getting location: $e");
+      throw e;
+    }
+  }
+}
+//-------------------------------------------------------------------
+
+void sendDistressSignal(BuildContext context, String emergencyType) async {
+  var defaultStatus = "NEW";
+  var userId = "userId";
+  var contactNum = "contactNum";
+
+  final status = await Permission.location.request();
+
+  if (status.isGranted) {
+    try {
+      // Get user location
+      final userLocation = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.best,
+      );
+
+      if (userLocation != null) {
+        // Get latitude and longitude as strings
+        final latitude = userLocation.latitude.toString();
+        final longitude = userLocation.longitude.toString();
+        print(
+            'User location obtained: Latitude $latitude, Longitude $longitude');
+
+        // Use reverse geocoding to get the street address
+        final latitudeDouble = userLocation.latitude;
+        final longitudeDouble = userLocation.longitude;
+
+        final placemarks = await placemarkFromCoordinates(
+          latitudeDouble,
+          longitudeDouble,
+        );
+
+        if (placemarks.isNotEmpty) {
+          final firstPlacemark = placemarks[0];
+          final streetAddress = firstPlacemark.street;
+
+          final now = DateTime.now();
+          final formattedDate =
+              "${now.year}-${now.month}-${now.day} ${now.hour}:${now.minute}:${now.second}";
+          final regBody = {
+            "userId": userId,
+            "currentLocation": streetAddress,
+            "contactNum": contactNum,
+            "emergencyType": emergencyType,
+            "date": formattedDate,
+            "status": defaultStatus,
+          };
+
+          final url = Uri.parse('http://192.168.0.28:8000/emergencySignal');
+
+          try {
+            final response = await http.post(
+              url,
+              headers: {"Content-Type": "application/json"},
+              body: jsonEncode(regBody),
+            );
+
+            if (response.statusCode == 200) {
+              ('Request successful: ${response.body}');
+              final jsonResponse = jsonDecode(response.body);
+              final status = jsonResponse['status'];
+              showSuccessDialog(context, status);
+            } else {
+              ('HTTP Error: ${response.statusCode}');
+            }
+          } catch (e) {
+            ('Error sending distress signal: $e');
+          }
+        } else {
+          ('No placemarks found');
+        }
+      } else {
+        ('User location is null');
+      }
+    } catch (e) {
+      ('Error getting location: $e');
+    }
+  } else {
+    print('Location permission is not granted');
+  }
+}
+
+Future<Position> getLocation() async {
+  try {
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.best, // Adjust accuracy as needed
+    );
+    return position;
+  } catch (e) {
+    print("Error getting location: $e");
+    throw e;
+  }
+}
+
+//----------------------------------------------------------------------------------
+void showSuccessDialog(BuildContext context, [status]) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return Center(
+        child: Container(
+          margin: const EdgeInsets.all(16.0),
+          child: AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30.0),
+            ),
+            title: const Center(
+              child: Text(
+                'SUCCESS',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            content: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Distress signal sent successfully.',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 10.0),
+                Text(
+                  'Rescuers are on their way to you. Stay alert and keep safe; assistance is coming',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.0,
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 16.0, bottom: 16.0),
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18.0,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }
 
 // ------------------------- EMERGENCY BUTTONS Design & Function ----------------------------
@@ -178,15 +468,26 @@ class CustomButton extends StatelessWidget {
   final Color color;
   final String text;
   final IconData icon;
+  final String emergencyType;
 
-  const CustomButton(
-      {super.key, required this.color, required this.text, required this.icon});
+  const CustomButton({
+    Key? key,
+    required this.color,
+    required this.text,
+    required this.icon,
+    required this.emergencyType,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        showConfirmationDialog(context);
+        print('Emergency button tapped.');
+
+        showConfirmationDialog(
+          context,
+          emergencyType,
+        );
       },
       child: Container(
         width: 350,
@@ -244,7 +545,7 @@ class CustomButton extends StatelessWidget {
 }
 
 // ----------------------------------- POPUP RED CONFIRNMATION DIALOG -----------------------------------
-void showConfirmationDialog(BuildContext context) {
+void showConfirmationDialog(BuildContext context, String emergencyType) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -296,8 +597,9 @@ void showConfirmationDialog(BuildContext context) {
                 children: [
                   TextButton(
                     onPressed: () {
-                      Navigator.pop(context);
-                      showSuccessDialog(context);
+                      // Correctly pass the emergencyType to sendDistressSignal
+                      sendDistressSignal(context,
+                          emergencyType); // Pass the context and emergencyType
                     },
                     child: const Text(
                       'PROCEED',
@@ -322,73 +624,6 @@ void showConfirmationDialog(BuildContext context) {
                     ),
                   ),
                 ],
-              ),
-            ],
-          ),
-        ),
-      );
-    },
-  );
-}
-
-void showSuccessDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return Center(
-        child: Container(
-          margin: const EdgeInsets.all(16.0), // Equal margin on all sides
-          child: AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30.0),
-            ),
-            title: const Center(
-              child: Text(
-                'SUCCESS',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            content: const Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Distress signal sent successfully.',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 10.0),
-                Text(
-                  'Rescuers are on their way to you. Stay alert and keep safe; assistance is coming',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18.0,
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 16.0, bottom: 16.0),
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text(
-                    'OK',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18.0,
-                    ),
-                  ),
-                ),
               ),
             ],
           ),

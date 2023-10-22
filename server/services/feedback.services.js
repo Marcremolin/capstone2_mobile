@@ -4,16 +4,15 @@ const FeedbackModel = require('../model/feedback.model');
 
 class feedbackReq {
   static async createFeedback ( 
-  userID,
-  date,
-  feedback)
+      userId,
+      date,
+      feedback)
     
     { 
       const createFeedback = new FeedbackModel({ 
-        userID,
+        userId,
         date,
         feedback}); 
-
         return await createFeedback.save(); 
     }
 }

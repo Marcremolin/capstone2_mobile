@@ -8,16 +8,16 @@ exports.createFeedback = async (req, res, next) => {
     console.log('Request Body:', req.body); 
 
     const{
-    userID,
+    userId,
     date,
     feedback
   } = req.body; //Accept parameteres from FRONTEND in a JSON Format
 
 
     let feedbackReq = await Feedback.createFeedback(
-        userID,
-        date,
-        feedback,) //TO SEND TO SERVICES
+      userId,
+      date,
+      feedback) //TO SEND TO SERVICES
       
       //After storing the data to the database it should response back to the Frontend and we will use the res
 

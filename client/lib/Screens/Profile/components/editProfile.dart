@@ -1,37 +1,157 @@
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import '../../../constants.dart';
-import '../../../Screens/Homepage/Homepage.dart';
+// ignore_for_file: unused_local_variable
 
-class SignUpForm extends StatefulWidget {
-  const SignUpForm({
-    Key? key,
-  }) : super(key: key);
+import 'package:flutter/material.dart';
+import '../../../constants.dart';
+import '../../../Screens/Homepage/bottom_nav.dart';
+// iMPORTANT IMPORTS
+import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+class EditProfile extends StatefulWidget {
+  final token;
+  const EditProfile({Key? key, this.token}) : super(key: key);
 
   @override
-  _SignUpFormState createState() => _SignUpFormState();
+  _EditProfileState createState() => _EditProfileState();
 }
 
-class _SignUpFormState extends State<SignUpForm> {
-  final _formKey = GlobalKey<FormState>();
-  final dateController = TextEditingController();
-  String? selectedDate;
-  bool _checkBoxValue1 = false;
-  bool _checkBoxValue2 = false;
-  bool _checkBoxValue3 = false;
-  bool isPasswordVisible = false;
-  bool isConfirmPasswordVisible = false;
+class _EditProfileState extends State<EditProfile> {
+  Map<String, dynamic>? userData;
+  String? firstName;
+  String? lastName;
+  String? middleName;
+  String? houseNumber;
+  String? barangay;
+  String? district;
+  String? city;
+  String? region;
+  String? nationality;
+  String? birthplace;
+  String? dateOfBirth;
+  String? age;
+  String? civilStatus;
+  String? highestEducation;
+  String? employmentStatus;
+  String? gender;
+  String? homeOwnership;
+  String? residentClass;
+  String? emailAddress;
+  String? votersRegistration;
+  String? suffix;
+  String? companyName;
+  String? position;
+  String? secondNumber;
 
   @override
-  void dispose() {
-    dateController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    final token = widget.token;
+    if (token != null && token.isNotEmpty) {
+      // Decode the token and fetch user data
+      try {
+        userData = JwtDecoder.decode(token);
+        if (userData != null) {
+          // Now you can access user data from the decoded token
+          print("Received token: $userData");
+
+          // Fetch user profile data after decoding the token
+          fetchUserProfileData(token);
+        } else {
+          print("Token is not a valid JWT.");
+        }
+      } catch (e) {
+        print("Error decoding token: $e");
+      }
+    } else {
+      print("Token is null or empty.");
+    }
+  }
+
+// Function to fetch user profile data
+  Future<void> fetchUserProfileData(String token) async {
+    const apiUrl =
+        'http://192.168.0.28:8000/profile'; // Replace with your API URL
+    print('Token: ${widget.token}');
+
+    try {
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = json.decode(response.body);
+        // Process the fetched user profile data
+        final lastName = jsonResponse['lastName'];
+        final firstName = jsonResponse['firstName'];
+        final middleName = jsonResponse['middleName'];
+        final houseNumber = jsonResponse['houseNumber'];
+        final barangay = jsonResponse['barangay'];
+        final district = jsonResponse['district'];
+        final city = jsonResponse['city'];
+        final region = jsonResponse['region'];
+        final nationality = jsonResponse['nationality'];
+        final birthplace = jsonResponse['birthplace'];
+        final dateOfBirth = jsonResponse['dateOfBirth'];
+        final age = jsonResponse['age'];
+        final civilStatus = jsonResponse['civilStatus'];
+        final highestEducation = jsonResponse['highestEducation'];
+        final employmentStatus = jsonResponse['employmentStatus'];
+        final gender = jsonResponse['gender'];
+        final homeOwnership = jsonResponse['homeOwnership'];
+        final residentClass = jsonResponse['residentClass'];
+        final emailAddress = jsonResponse['emailAddress'];
+        final votersRegistration = jsonResponse['votersRegistration'];
+        final suffix = jsonResponse['suffix'];
+        final companyName = jsonResponse['companyName'];
+        final position = jsonResponse['position'];
+        final secondNumber = jsonResponse['secondNumber'];
+
+        // Extract other user profile data fields as needed
+
+        // You can setState to update the UI with the fetched data
+        setState(() {
+          this.firstName = jsonResponse['firstName'];
+          this.lastName = jsonResponse['lastName'];
+          this.middleName = jsonResponse['middleName'];
+          this.houseNumber = jsonResponse['houseNumber'];
+          this.barangay = jsonResponse['barangay'];
+          this.district = jsonResponse['district'];
+          this.city = jsonResponse['city'];
+          this.region = jsonResponse['region'];
+          this.nationality = jsonResponse['nationality'];
+          this.birthplace = jsonResponse['birthplace'];
+          this.dateOfBirth = jsonResponse['dateOfBirth'];
+          this.age = jsonResponse['age'];
+          this.civilStatus = jsonResponse['civilStatus'];
+          this.highestEducation = jsonResponse['highestEducation'];
+          this.employmentStatus = jsonResponse['employmentStatus'];
+          this.gender = jsonResponse['gender'];
+          this.homeOwnership = jsonResponse['homeOwnership'];
+          this.residentClass = jsonResponse['residentClass'];
+          this.emailAddress = jsonResponse['emailAddress'];
+          this.votersRegistration = jsonResponse['votersRegistration'];
+          this.suffix = jsonResponse['suffix'];
+          this.companyName = jsonResponse['companyName'];
+          this.position = jsonResponse['position'];
+          this.secondNumber = jsonResponse['secondNumber'];
+
+          // Update other relevant state variables
+        });
+      } else {
+        print('Failed to fetch user profile data: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching user profile data: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Form(
-      key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -60,23 +180,21 @@ class _SignUpFormState extends State<SignUpForm> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
+
+            //display the user's First Name and Last Name in a read-only form. This code assumes that you have fetched the user's profile data and populated the firstName and lastName variables with the user's actual data.
             child: TextFormField(
-              textInputAction: TextInputAction.next,
+              readOnly: true,
               keyboardType: TextInputType.text,
               cursorColor: kPrimaryColor,
-              decoration: const InputDecoration(
-                hintText: "Last Name",
-                prefixIcon: Padding(
+              initialValue: userData?['firstName'] ??
+                  '', // Populate with user's first name
+              decoration: InputDecoration(
+                hintText: "$firstName",
+                prefixIcon: const Padding(
                   padding: EdgeInsets.all(defaultPadding),
                   child: Icon(Icons.person),
                 ),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Last Name is required';
-                }
-                return null;
-              },
             ),
           ),
 
@@ -86,22 +204,17 @@ class _SignUpFormState extends State<SignUpForm> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextFormField(
-              textInputAction: TextInputAction.next,
+              readOnly: true,
               keyboardType: TextInputType.text,
               cursorColor: kPrimaryColor,
+              initialValue:
+                  userData?['lastName'] ?? '', // Populate with user's last name
               decoration: const InputDecoration(
-                hintText: "First Name",
                 prefixIcon: Padding(
                   padding: EdgeInsets.all(defaultPadding),
                   child: Icon(Icons.person),
                 ),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'First Name is required';
-                }
-                return null;
-              },
             ),
           ),
 
@@ -111,22 +224,13 @@ class _SignUpFormState extends State<SignUpForm> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextFormField(
-              textInputAction: TextInputAction.next,
+              readOnly: true,
               keyboardType: TextInputType.text,
               cursorColor: kPrimaryColor,
+              initialValue: userData?['middleName'] ?? '',
               decoration: const InputDecoration(
-                hintText: "Middle Initial",
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.person),
-                ),
+                prefixIcon: Icon(Icons.person),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Middle Initial is required';
-                }
-                return null;
-              },
             ),
           ),
 
@@ -136,165 +240,90 @@ class _SignUpFormState extends State<SignUpForm> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextFormField(
-              textInputAction: TextInputAction.next,
+              readOnly: true,
               keyboardType: TextInputType.text,
               cursorColor: kPrimaryColor,
+              initialValue: userData?['suffix'] ?? '',
               decoration: const InputDecoration(
-                hintText: "Suffix",
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.person),
-                ),
+                prefixIcon: Icon(Icons.person),
               ),
             ),
           ),
-          const Divider(
-            color: Color.fromARGB(255, 152, 191, 223),
-            thickness: 2,
-            height: 1,
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(
-              'COMPLETE ADDRESS',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const Divider(
-            color: Color.fromARGB(255, 152, 191, 223),
-            thickness: 2,
-            height: 1,
-          ),
+
+// Address Fields (2 Columns)
           Row(
             children: [
               Expanded(
                 child: Column(
                   children: [
-                    const SizedBox(height: 8), // Adjust the spacing here
+                    const SizedBox(height: 8),
                     TextFormField(
-                      textInputAction: TextInputAction.next,
+                      readOnly: true,
                       keyboardType: TextInputType.text,
                       cursorColor: kPrimaryColor,
+                      initialValue: userData?['houseNumber'] ?? '',
                       decoration: const InputDecoration(
-                        hintText: "House #",
-                        prefixIcon: Padding(
-                          padding: EdgeInsets.all(defaultPadding),
-                          child: Icon(Icons.home),
-                        ),
+                        prefixIcon: Icon(Icons.home),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'House # is required';
-                        }
-                        return null;
-                      },
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
-                      textInputAction: TextInputAction.next,
+                      readOnly: true,
                       keyboardType: TextInputType.text,
                       cursorColor: kPrimaryColor,
+                      initialValue: userData?['city'] ?? '',
                       decoration: const InputDecoration(
-                        hintText: "City",
-                        prefixIcon: Padding(
-                          padding: EdgeInsets.all(defaultPadding),
-                          child: Icon(Icons.home),
-                        ),
+                        prefixIcon: Icon(Icons.home),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'City is required';
-                        }
-                        return null;
-                      },
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
-                      textInputAction: TextInputAction.next,
+                      readOnly: true,
                       keyboardType: TextInputType.text,
                       cursorColor: kPrimaryColor,
+                      initialValue: userData?['street'] ?? '',
                       decoration: const InputDecoration(
-                        hintText: "Street",
-                        prefixIcon: Padding(
-                          padding: EdgeInsets.all(defaultPadding),
-                          child: Icon(Icons.home),
-                        ),
+                        prefixIcon: Icon(Icons.home),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Street is required';
-                        }
-                        return null;
-                      },
                     ),
                     const SizedBox(height: 18),
                   ],
                 ),
               ),
 
-              // 2ND COLUMN
+              // 2nd Column
               Expanded(
                 child: Column(
                   children: [
                     const SizedBox(height: 8),
                     TextFormField(
-                      textInputAction: TextInputAction.next,
+                      readOnly: true,
                       keyboardType: TextInputType.text,
                       cursorColor: kPrimaryColor,
+                      initialValue: userData?['barangay'] ?? '',
                       decoration: const InputDecoration(
-                        hintText: "Barangay",
-                        prefixIcon: Padding(
-                          padding: EdgeInsets.all(defaultPadding),
-                          child: Icon(Icons.home),
-                        ),
+                        prefixIcon: Icon(Icons.home),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Barangay';
-                        }
-                        return null;
-                      },
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
-                      textInputAction: TextInputAction.next,
+                      readOnly: true,
                       keyboardType: TextInputType.text,
                       cursorColor: kPrimaryColor,
+                      initialValue: userData?['district'] ?? '',
                       decoration: const InputDecoration(
-                        hintText: "District",
-                        prefixIcon: Padding(
-                          padding: EdgeInsets.all(defaultPadding),
-                          child: Icon(Icons.home),
-                        ),
+                        prefixIcon: Icon(Icons.home),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'District is required';
-                        }
-                        return null;
-                      },
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
-                      textInputAction: TextInputAction.next,
+                      readOnly: true,
                       keyboardType: TextInputType.text,
                       cursorColor: kPrimaryColor,
+                      initialValue: userData?['region'] ?? '',
                       decoration: const InputDecoration(
-                        hintText: "Region",
-                        prefixIcon: Padding(
-                          padding: EdgeInsets.all(defaultPadding),
-                          child: Icon(Icons.home),
-                        ),
+                        prefixIcon: Icon(Icons.home),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Region is required';
-                        }
-                        return null;
-                      },
                     ),
                     const SizedBox(height: 18),
                   ],
@@ -309,6 +338,7 @@ class _SignUpFormState extends State<SignUpForm> {
             height: 1,
           ),
 
+// PERSONAL INFORMATION -----------------------------------------------------------
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8.0),
             child: Text(
@@ -324,78 +354,39 @@ class _SignUpFormState extends State<SignUpForm> {
             thickness: 2,
             height: 1,
           ),
-          //GENDER
-          const SizedBox(height: defaultPadding),
-          const Text(
-            'GENDER',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Row(
-            children: [
-              Checkbox(
-                value: _checkBoxValue1,
-                onChanged: (value) {
-                  setState(() {
-                    _checkBoxValue1 = value ?? false;
-                  });
-                },
-              ),
-              const Text('Male'),
-              Checkbox(
-                value: _checkBoxValue2,
-                onChanged: (value) {
-                  setState(() {
-                    _checkBoxValue2 = value ?? false;
-                  });
-                },
-              ),
-              const Text('Female'),
-            ],
-          ),
 
-          //  CIVIL STATUS
+// GENDER
           Container(
             padding: const EdgeInsets.all(defaultPadding),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
-            child: DropdownButtonFormField<String>(
+            child: TextFormField(
+              readOnly: true,
+              keyboardType: TextInputType.text,
+              cursorColor: kPrimaryColor,
               decoration: const InputDecoration(
-                hintText: 'Civil Status',
-                hintStyle: TextStyle(fontSize: 12),
+                prefixIcon: Icon(Icons.person),
               ),
-              value: null,
-              icon: const Icon(Icons.arrow_drop_down),
-              items: const [
-                DropdownMenuItem<String>(
-                  value: 'Single',
-                  child: Text('Single'),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Married',
-                  child: Text('Married'),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Widowed',
-                  child: Text('Widowed'),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Separated',
-                  child: Text('Separated'),
-                ),
-              ],
-              onChanged: (value) {},
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Civil Status is Required';
-                }
-                return null;
-              },
             ),
           ),
+
+// CIVIL STATUS
+          Container(
+            padding: const EdgeInsets.all(defaultPadding),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: TextFormField(
+              readOnly: true,
+              keyboardType: TextInputType.text,
+              cursorColor: kPrimaryColor,
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.person),
+              ),
+            ),
+          ),
+
 // NATIONALITY
           Container(
             padding: const EdgeInsets.all(defaultPadding),
@@ -403,66 +394,16 @@ class _SignUpFormState extends State<SignUpForm> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextFormField(
-              textInputAction: TextInputAction.next,
+              readOnly: true,
               keyboardType: TextInputType.text,
               cursorColor: kPrimaryColor,
+              initialValue: userData?['nationality'] ?? '',
               decoration: const InputDecoration(
-                hintText: "Nationality",
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.person),
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Nationality is required';
-                }
-                return null;
-              },
-            ),
-          ),
-
-          // DATE OF BIRTH
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(40),
-                color: const Color.fromARGB(255, 152, 191, 223),
-              ),
-              child: InkWell(
-                onTap: () async {
-                  final currentDate = DateTime.now();
-                  final pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(1900),
-                    lastDate: currentDate,
-                  );
-
-                  if (pickedDate != null) {
-                    setState(() {
-                      selectedDate =
-                          DateFormat('yyyy-MM-dd').format(pickedDate);
-                    });
-                  }
-                },
-                child: ListTile(
-                  title: const Text(
-                    'Date of Birth',
-                    style: TextStyle(fontSize: 16.0),
-                  ),
-                  trailing: Text(
-                    selectedDate ?? 'Select date',
-                    style: const TextStyle(fontSize: 16.0),
-                  ),
-                ),
+                prefixIcon: Icon(Icons.person),
               ),
             ),
           ),
+
 // BIRTHPLACE
           Container(
             padding: const EdgeInsets.all(defaultPadding),
@@ -470,156 +411,63 @@ class _SignUpFormState extends State<SignUpForm> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextFormField(
-              textInputAction: TextInputAction.next,
+              readOnly: true,
               keyboardType: TextInputType.text,
               cursorColor: kPrimaryColor,
+              initialValue: userData?['birthplace'] ?? '',
               decoration: const InputDecoration(
-                hintText: "Birthplace",
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.person),
-                ),
+                prefixIcon: Icon(Icons.person),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Birthplace is required';
-                }
-                return null;
-              },
             ),
           ),
 
-          // AGE
+// AGE
           Container(
             padding: const EdgeInsets.all(defaultPadding),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextFormField(
-              textInputAction: TextInputAction.next,
+              readOnly: true,
               keyboardType: TextInputType.text,
               cursorColor: kPrimaryColor,
+              initialValue: userData?['age'] ?? '',
               decoration: const InputDecoration(
-                hintText: "Age",
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.person),
-                ),
+                prefixIcon: Icon(Icons.person),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Age is required';
-                }
-                return null;
-              },
             ),
           ),
 
-          //  Highest Educational Attaintment
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                hintText: 'Highest Educational Attaintment',
-                hintStyle: TextStyle(fontSize: 12),
-              ),
-              value: null,
-              icon: const Icon(Icons.arrow_drop_down),
-              items: const [
-                DropdownMenuItem<String>(
-                  value: 'NFE',
-                  child: Text('No Formal Education'),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Elementary Level',
-                  child: Text('Elementary Level'),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'High School Level',
-                  child: Text('High School Level'),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Vocational or Technical Course',
-                  child: Text('Technical Course'),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Bachelors Degree',
-                  child: Text('Bachelors Degree'),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Masters Degree',
-                  child: Text('Masters Degree'),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Doctorate or PhD',
-                  child: Text('Doctorate or PhD'),
-                ),
-              ],
-              onChanged: (value) {},
-            ),
-          ),
-
-          //  Employment Status
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                hintText: 'Employment Status',
-                hintStyle: TextStyle(fontSize: 16),
-              ),
-              value: null,
-              icon: const Icon(Icons.arrow_drop_down),
-              items: const [
-                DropdownMenuItem<String>(
-                  value: 'Regular Employee',
-                  child: Text('Permanent Employee'),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Volunteer',
-                  child: Text('Volunteer'),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Self-Employed',
-                  child: Text('Self-Employed'),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Freelancer',
-                  child: Text('Freelancer'),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Part-Time Employee',
-                  child: Text('Part-Time Employee'),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Contractual/Project-Based Employee',
-                  child: Text('Project-Based Employee'),
-                ),
-              ],
-              onChanged: (value) {},
-            ),
-          ),
-
+// Highest Educational Attainment
           Container(
             padding: const EdgeInsets.all(defaultPadding),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextFormField(
-              textInputAction: TextInputAction.next,
+              readOnly: true,
               keyboardType: TextInputType.text,
               cursorColor: kPrimaryColor,
+              initialValue: userData?['highestEducation'] ?? '',
               decoration: const InputDecoration(
-                hintText: "Company Name",
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.person),
-                ),
+                prefixIcon: Icon(Icons.school),
+              ),
+            ),
+          ),
+
+// Employment Status
+          Container(
+            padding: const EdgeInsets.all(defaultPadding),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: TextFormField(
+              readOnly: true,
+              keyboardType: TextInputType.text,
+              cursorColor: kPrimaryColor,
+              initialValue: userData?['employmentStatus'] ?? '',
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.work),
               ),
             ),
           ),
@@ -630,20 +478,33 @@ class _SignUpFormState extends State<SignUpForm> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextFormField(
-              textInputAction: TextInputAction.next,
+              readOnly: true,
               keyboardType: TextInputType.text,
               cursorColor: kPrimaryColor,
+              initialValue: userData?['companyName'] ?? '',
               decoration: const InputDecoration(
-                hintText: "Position",
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.person),
-                ),
+                prefixIcon: Icon(Icons.business),
               ),
             ),
           ),
 
-          //HOME OWNERSHIP
+          Container(
+            padding: const EdgeInsets.all(defaultPadding),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: TextFormField(
+              readOnly: true,
+              keyboardType: TextInputType.text,
+              cursorColor: kPrimaryColor,
+              initialValue: userData?['position'] ?? '',
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.person),
+              ),
+            ),
+          ),
+
+// HOME OWNERSHIP
           const SizedBox(height: defaultPadding),
           const Text(
             'HOME OWNERSHIP',
@@ -652,30 +513,26 @@ class _SignUpFormState extends State<SignUpForm> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          Row(
-            children: [
-              Checkbox(
-                value: _checkBoxValue1,
-                onChanged: (value) {
-                  setState(() {
-                    _checkBoxValue1 = value ?? false;
-                  });
-                },
+          Container(
+            padding: const EdgeInsets.all(defaultPadding),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: TextFormField(
+              readOnly: true,
+              keyboardType: TextInputType.text,
+              cursorColor: kPrimaryColor,
+              initialValue: userData?['isOwner'] == true ? "Owner" : "Renting",
+              decoration: const InputDecoration(
+                prefixIcon: Padding(
+                  padding: EdgeInsets.all(defaultPadding),
+                  child: Icon(Icons.home),
+                ),
               ),
-              const Text('Owner'),
-              Checkbox(
-                value: _checkBoxValue2,
-                onChanged: (value) {
-                  setState(() {
-                    _checkBoxValue2 = value ?? false;
-                  });
-                },
-              ),
-              const Text('Renting'),
-            ],
+            ),
           ),
 
-// CONTACT INFORMATION  ----------------------------------------------------------
+// CONTACT INFORMATION
           const Divider(
             color: Color.fromARGB(255, 152, 191, 223),
             thickness: 2,
@@ -695,79 +552,60 @@ class _SignUpFormState extends State<SignUpForm> {
             color: Color.fromARGB(255, 152, 191, 223),
             thickness: 2,
             height: 1,
-          ), // PHONE NUMBER
+          ),
+
+// PHONE NUMBER
           Container(
             padding: const EdgeInsets.all(defaultPadding),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextFormField(
-              textInputAction: TextInputAction.next,
+              readOnly: true,
               keyboardType: TextInputType.text,
               cursorColor: kPrimaryColor,
+              initialValue: userData?['phoneNumber'] ?? '',
               decoration: const InputDecoration(
-                hintText: "Phone Number",
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.person),
-                ),
+                prefixIcon: Icon(Icons.person),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Phone Number is required';
-                }
-                return null;
-              },
             ),
           ),
 
-// 2ND NUMBER OPTIONAL
+// 2nd Number (Optional)
           Container(
             padding: const EdgeInsets.all(defaultPadding),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextFormField(
-              textInputAction: TextInputAction.next,
+              readOnly: true,
               keyboardType: TextInputType.text,
               cursorColor: kPrimaryColor,
+              initialValue: userData?['secondNumber'] ?? '',
               decoration: const InputDecoration(
-                hintText: "2nd Number (Optional)",
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.person),
-                ),
+                prefixIcon: Icon(Icons.person),
               ),
             ),
           ),
 
-// EMAIL ADDRESS
+// Email Address
           Container(
             padding: const EdgeInsets.all(defaultPadding),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextFormField(
-              textInputAction: TextInputAction.next,
+              readOnly: true,
               keyboardType: TextInputType.text,
               cursorColor: kPrimaryColor,
+              initialValue: userData?['emailAddress'] ?? '',
               decoration: const InputDecoration(
-                hintText: "Email Address",
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.person),
-                ),
+                prefixIcon: Icon(Icons.person),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Email Address is required';
-                }
-                return null;
-              },
             ),
           ),
 
-// OTHER INFORMATION ----------------------------------------------------------
+// OTHER INFORMATION
           const Divider(
             color: Color.fromARGB(255, 152, 191, 223),
             thickness: 2,
@@ -789,56 +627,10 @@ class _SignUpFormState extends State<SignUpForm> {
             thickness: 2,
             height: 1,
           ),
-          // PENSIONER
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                hintText: 'Pensioner',
-                hintStyle: TextStyle(fontSize: 16),
-              ),
-              value: null,
-              icon: const Icon(Icons.arrow_drop_down),
-              items: const [
-                DropdownMenuItem<String>(
-                  value: 'Opt1',
-                  child: Text('SSS'),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Opt2',
-                  child: Text('GSIS'),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Opt3',
-                  child: Text('AFP'),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Opt4',
-                  child: Text('PNP'),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Opt5',
-                  child: Text('DOLE'),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Opt6',
-                  child: Text('Others'),
-                ),
-              ],
-              onChanged: (value) {},
-              // validator: (value) {
-              //   if (value == null || value.isEmpty) {
-              //     return 'Gender is Required';
-              //   }
-              //   return null;
-              // },
-            ),
-          ),
+
           const SizedBox(height: defaultPadding),
-          //RESIDENT CLASS
+
+// RESIDENT CLASS
           const Text(
             'RESIDENT CLASS',
             style: TextStyle(
@@ -846,136 +638,36 @@ class _SignUpFormState extends State<SignUpForm> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          Column(
-            children: [
-              const SizedBox(height: defaultPadding),
-              Wrap(
-                children: [
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _checkBoxValue1,
-                        onChanged: (value) {
-                          setState(() {
-                            _checkBoxValue1 = value ?? false;
-                          });
-                        },
-                      ),
-                      const Text('PWD'),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _checkBoxValue2,
-                        onChanged: (value) {
-                          setState(() {
-                            _checkBoxValue2 = value ?? false;
-                          });
-                        },
-                      ),
-                      const Text('Solo Parent'),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _checkBoxValue3,
-                        onChanged: (value) {
-                          setState(() {
-                            _checkBoxValue3 = value ?? false;
-                          });
-                        },
-                      ),
-                      const Text('Out of School Youth'),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-
-// --------------------------------- PASSWORD -------------------------------
           Container(
             padding: const EdgeInsets.all(defaultPadding),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextFormField(
-              textInputAction: TextInputAction.next,
-              obscureText: !isPasswordVisible,
+              readOnly: true,
+              keyboardType: TextInputType.text,
               cursorColor: kPrimaryColor,
-              decoration: InputDecoration(
-                hintText: "Your password",
-                prefixIcon: const Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.lock),
-                ),
-                suffixIcon: Padding(
-                  padding: const EdgeInsets.only(right: defaultPadding / 2),
-                  child: IconButton(
-                    icon: Icon(
-                      isPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                      color: Colors.grey,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        isPasswordVisible = !isPasswordVisible;
-                      });
-                    },
-                  ),
-                ),
+              initialValue: userData?['residentClass'] ?? '',
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.person),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your password';
-                }
-                return null;
-              },
             ),
           ),
 
-// CONFIRM PASSWORD
+// Voters Registration Number
           Container(
             padding: const EdgeInsets.all(defaultPadding),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextFormField(
-              textInputAction: TextInputAction.next,
-              obscureText: !isConfirmPasswordVisible,
+              readOnly: true,
+              keyboardType: TextInputType.text,
               cursorColor: kPrimaryColor,
-              decoration: InputDecoration(
-                hintText: "Confirm password",
-                prefixIcon: const Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.lock),
-                ),
-                suffixIcon: Padding(
-                  padding: const EdgeInsets.only(right: defaultPadding / 2),
-                  child: IconButton(
-                    icon: Icon(
-                      isConfirmPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                      color: Colors.grey,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        isConfirmPasswordVisible = !isConfirmPasswordVisible;
-                      });
-                    },
-                  ),
-                ),
+              initialValue: userData?['votersRegistration'] ?? '',
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.person),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your password';
-                }
-                return null;
-              },
             ),
           ),
 
@@ -985,7 +677,7 @@ class _SignUpFormState extends State<SignUpForm> {
                 context,
                 MaterialPageRoute(
                   builder: (context) {
-                    return Announcement();
+                    return const BottomNav();
                   },
                 ),
               );

@@ -6,10 +6,8 @@ const { Schema } = mongoose;
 
 const feedbackSchema = new Schema({
 
-  userId: {
-    type: Schema.Types.ObjectId, 
-    ref:UserModel.modelName
-  }, 
+  userId: {type: Schema.Types.ObjectId, ref:UserModel.modelName}, //by making use of UserID we can show the data or the list of request in the flutter app
+
   date:{
     type: Date,
     required: true,

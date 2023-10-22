@@ -8,8 +8,7 @@ class AdditionalContentPage extends StatelessWidget {
   final String operatingHours;
   final String location;
   final String phone;
-  final List<String> imageList;
-  final List<String> socmeds;
+  final String owner;
 
   const AdditionalContentPage({
     Key? key,
@@ -20,13 +19,11 @@ class AdditionalContentPage extends StatelessWidget {
     required this.operatingHours,
     required this.location,
     required this.phone,
-    required this.imageList,
-    required this.socmeds,
+    required this.owner,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // ignore: prefer_const_declarations
     final Color secondaryTextColor = Colors.grey;
 
     return Scaffold(
@@ -168,93 +165,67 @@ class AdditionalContentPage extends StatelessWidget {
                   height: 4,
                 ),
               ),
-
-              // IMAGES SECTION
-              const Text(
-                "Images",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              ListView(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
+              // Operating Hours and Store Location section
+              Row(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: imageList.take(2).map((imagePath) {
-                      return Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Image.asset(
-                          imagePath,
-                          width: 150,
-                          height: 120,
-                          fit: BoxFit.cover,
+                  Expanded(
+                    flex: 1,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "Contact Number",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      );
-                    }).toList(),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Text(
+                          operatingHours,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: secondaryTextColor,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: imageList.take(2).map((imagePath) {
-                      return Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Image.asset(
-                          imagePath,
-                          width: 150,
-                          height: 120,
-                          fit: BoxFit.cover,
+                  Expanded(
+                    flex: 1,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "Owner",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      );
-                    }).toList(),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: imageList.take(2).map((imagePath) {
-                      return Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Image.asset(
-                          imagePath,
-                          width: 150,
-                          height: 120,
-                          fit: BoxFit.cover,
+                        const SizedBox(
+                          height: 10,
                         ),
-                      );
-                    }).toList(),
+                        Text(
+                          location,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: secondaryTextColor,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
 
-              // Reviews section
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 15),
                 child: Divider(
                   height: 4,
                 ),
-              ),
-              const Text(
-                "Social Media",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              ListView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: socmeds.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(socmeds[index]),
-                  );
-                },
               ),
             ],
           ),

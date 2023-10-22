@@ -1,8 +1,28 @@
 import 'package:flutter/material.dart';
 import 'ProfilePage.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
-class RequestSummary extends StatelessWidget {
-  const RequestSummary({super.key});
+class RequestSummary extends StatefulWidget {
+  // FOR TOKEN
+  final token;
+  const RequestSummary({Key? key, this.token}) : super(key: key);
+
+  @override
+  _RequestSummaryState createState() => _RequestSummaryState();
+}
+
+class _RequestSummaryState extends State<RequestSummary> {
+  late String userId; // FOR TOKEN
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.token != null) {
+      // Decode the JWT token and extract the user ID
+      Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);
+      userId = jwtDecodedToken['_id'];
+    } else {}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +69,8 @@ class RequestWidget extends StatelessWidget {
   final String date;
   final String file;
 
-  const RequestWidget({super.key, 
+  const RequestWidget({
+    super.key,
     required this.request,
     required this.date,
     required this.file,
@@ -144,18 +165,16 @@ class RequestWidget extends StatelessWidget {
       width: double.infinity,
       height: 150,
       padding: const EdgeInsets.all(10),
-      margin: const EdgeInsets.symmetric(
-          horizontal: 30, vertical: 10), // Adjust margin
+      margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
       decoration: BoxDecoration(
         color: const Color.fromARGB(255, 255, 255, 255),
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: const Color.fromARGB(199, 56, 56, 56)
-                .withOpacity(0.5), // Shadow color
-            spreadRadius: 4, // Spread radius
-            blurRadius: 4, // Blur radius
-            offset: const Offset(0, 3), // Offset in the x, y direction
+            color: const Color.fromARGB(199, 56, 56, 56).withOpacity(0.5),
+            spreadRadius: 4,
+            blurRadius: 4,
+            offset: const Offset(0, 3),
           ),
         ],
       ),

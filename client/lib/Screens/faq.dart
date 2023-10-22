@@ -56,7 +56,7 @@ class _ChatScreenState extends State<ChatScreen> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => Announcement()),
+              MaterialPageRoute(builder: (context) => AnnouncementPage()),
             );
           },
         ),
