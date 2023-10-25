@@ -61,14 +61,21 @@ class _ProfilePageState extends State<ProfilePage> {
               child: ElevatedButton(
 // ------------------------ TOKEN FOR EditIconPage ------------------------------------------------
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          EditIconPage(token: widget.token), //TOKEN TO PASS
-                    ),
-                  );
+                  if (widget.token?.isNotEmpty == true) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            EditIconPage(token: widget.token!), // TOKEN TO PASS
+                      ),
+                    );
+                  } else {
+                    // Handle the case when the token is null or empty
+                    // For example, display an error message or perform some action.
+                    print('Token is null or empty. Cannot proceed.');
+                  }
                 },
+
                 child: const Text(
                   'Edit Profile',
                   style: TextStyle(color: Colors.white),

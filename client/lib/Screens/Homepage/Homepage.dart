@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../Screens/Homepage/bottom_nav.dart';
 import '../AdditionalContentPage.dart';
 import '../../Screens/ProfilePage.dart';
+import '../../Screens/Login/login_screen.dart';
+
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -19,7 +21,7 @@ class _AnnouncementPageState extends State<AnnouncementPage>
   late TabController _tabController;
   late String _selectedCategory;
 
-  // late String emailAddress; //for TOKEN
+  // late String email; //for TOKEN
   // ------- Part of GET Method-----------
   List<dynamic> announcementData = []; // Store the fetched data here
   List<dynamic> livelihoodData = [];
@@ -41,7 +43,7 @@ class _AnnouncementPageState extends State<AnnouncementPage>
     fetchLivelihoodData();
     fetchbusinessPromotionData();
 
-    // emailAddress = jwtDecodedToken['email'];
+    // email = jwtDecodedToken['email'];
   }
 
   void _handleTabSelection() {
@@ -60,6 +62,38 @@ class _AnnouncementPageState extends State<AnnouncementPage>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> showLogoutDialog(BuildContext context) async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Logout'),
+              onPressed: () {
+                // Navigate to the LoginScreen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LoginScreen(),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
 //--------------------------- FUNCTION TO HIT THE API ANNOUNCEMENT  --------------------------------
@@ -174,109 +208,113 @@ class _AnnouncementPageState extends State<AnnouncementPage>
   Widget build(BuildContext context) {
     List<String> tabs = ['Announcement', 'Livelihood ', 'Business'];
 
-    return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 2, 95, 170),
-      appBar: AppBar(
-        title: Text(_selectedCategory),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.account_circle), // Profile Icon
-            // ---------------------------------------- PROFILE ICON TO PASS THE TOKEN ----------------------------------------
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      ProfilePage(token: widget.token), // Pass the token
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          TabBar(
-            controller: _tabController,
-            labelColor: const Color.fromARGB(255, 252, 252, 252),
-            tabs: tabs.map((String tab) {
-              return Tab(
-                text: tab,
-              );
-            }).toList(),
-          ),
-          Expanded(
-            child: TabBarView(controller: _tabController, children: [
-              ListView.builder(
-                itemCount: announcementData.length,
-                itemBuilder: (context, index) {
-                  final announcement = announcementData[index];
-                  if (announcement != null) {
-                    // final imageUrl =
-                    //     'http://192.168.0.28:8000/get/announcement/${announcement['filename']}';
-
-                    return customListTile(
-                      announcement['filename'] ?? '',
-                      announcement['what'] ?? '',
-                      announcement['when'] ?? '',
-                      announcement['where'] ?? '',
-                      announcement['who'] ?? '',
-                      announcement['when'] ?? '',
-                      context,
-                    );
-                  } else {
-                    return const SizedBox(); // Handle the case when data is null
-                  }
+    return WillPopScope(
+        onWillPop: () async {
+          showLogoutDialog(context);
+          return false; // Prevents the default back button behavior
+        },
+        child: Scaffold(
+          backgroundColor: const Color.fromARGB(255, 2, 95, 170),
+          appBar: AppBar(
+            title: Text(_selectedCategory),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.account_circle), // Profile Icon
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          ProfilePage(token: widget.token), // Pass the token
+                    ),
+                  );
                 },
               ),
+            ],
+          ),
+          body: Column(
+            children: [
+              TabBar(
+                controller: _tabController,
+                labelColor: const Color.fromARGB(255, 252, 252, 252),
+                tabs: tabs.map((String tab) {
+                  return Tab(
+                    text: tab,
+                  );
+                }).toList(),
+              ),
+              Expanded(
+                child: TabBarView(controller: _tabController, children: [
+                  ListView.builder(
+                    itemCount: announcementData.length,
+                    itemBuilder: (context, index) {
+                      final announcement = announcementData[index];
+                      if (announcement != null) {
+                        // final imageUrl =
+                        //     'http://192.168.0.28:8000/get/announcement/${announcement['filename']}';
+
+                        return customListTile(
+                          announcement['filename'] ?? '',
+                          announcement['what'] ?? '',
+                          announcement['when'] ?? '',
+                          announcement['where'] ?? '',
+                          announcement['who'] ?? '',
+                          announcement['when'] ?? '',
+                          context,
+                        );
+                      } else {
+                        return const SizedBox(); // Handle the case when data is null
+                      }
+                    },
+                  ),
 // -------------------------------- LIVEHOOD LIST --------------------------------
-              ListView.builder(
-                itemCount: livelihoodData.length,
-                itemBuilder: (context, index) {
-                  final livelihood = livelihoodData[index];
-                  if (livelihood != null) {
-                    return customLivelihoodListTile(
-                      livelihood['imageUrl'] ?? '', // URL for the image
-                      livelihood['what'] ?? '',
+                  ListView.builder(
+                    itemCount: livelihoodData.length,
+                    itemBuilder: (context, index) {
+                      final livelihood = livelihoodData[index];
+                      if (livelihood != null) {
+                        return customLivelihoodListTile(
+                          livelihood['imageUrl'] ?? '', // URL for the image
+                          livelihood['what'] ?? '',
 
-                      livelihood['where'] ?? '',
-                      livelihood['when'] ?? '',
-                      livelihood['who'] ?? '',
-                      context,
-                    );
-                  } else {
-                    return const SizedBox(); // Handle the case when data is null
-                  }
-                },
-              ),
+                          livelihood['where'] ?? '',
+                          livelihood['when'] ?? '',
+                          livelihood['who'] ?? '',
+                          context,
+                        );
+                      } else {
+                        return const SizedBox(); // Handle the case when data is null
+                      }
+                    },
+                  ),
 //  ------------------------------------------------- BUSINESS ADDITIONAL PAGE CONTENT  ----------------------------------------------------------
-              ListView.builder(
-                itemCount: businessPromotionData
-                    .length, // Replace with your list of businesses
-                itemBuilder: (context, index) {
-                  final business = businessPromotionData[index];
-                  if (business != null) {
-                    return customBusinessListTile(
-                      business['imageUrl'] ?? '', // URL for the image
-                      business['businessName'] ?? '',
-                      business['category'] ?? '',
-                      context,
-                      business['contact'] ?? '',
-                      business['address'] ?? '',
-                      business['hours'] ?? '',
-                      business['contact'] ?? '',
-                      business['contact'] ?? '',
-                    );
-                  } else {
-                    return const SizedBox(); // Handle the case when data is null
-                  }
-                },
+                  ListView.builder(
+                    itemCount: businessPromotionData
+                        .length, // Replace with your list of businesses
+                    itemBuilder: (context, index) {
+                      final business = businessPromotionData[index];
+                      if (business != null) {
+                        return customBusinessListTile(
+                          business['imageUrl'] ?? '', // URL for the image
+                          business['businessName'] ?? '',
+                          business['category'] ?? '',
+                          context,
+                          business['contact'] ?? '',
+                          business['address'] ?? '',
+                          business['hours'] ?? '',
+                          business['contact'] ?? '',
+                          business['contact'] ?? '',
+                        );
+                      } else {
+                        return const SizedBox(); // Handle the case when data is null
+                      }
+                    },
+                  ),
+                ]),
               ),
-            ]),
+            ],
           ),
-        ],
-      ),
-    );
+        ));
   }
 }
 

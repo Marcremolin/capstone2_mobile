@@ -1,7 +1,9 @@
+//FETCH THE DATA that is request and respond from the user (frontend)
+
 const Emergency = require("../services/emergency.services");
 
 exports.createEmergencySignal = async (req, res, next) => {
-  try {
+  try { //pass the data from the services 
     console.log('Request Body:', req.body); 
 
     const {

@@ -5,7 +5,6 @@ import '../../../constants.dart';
 import '../../Login/login_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:client/config.dart';
 
 //FOR EMAIL VALIDATION
 import 'package:check_disposable_email/check_disposable_email.dart';
@@ -90,22 +89,23 @@ class _SignUpFormState extends State<SignUpForm> {
 
   final lastNameController = TextEditingController();
   final firstNameController = TextEditingController();
-  final middleInitialController = TextEditingController();
+  final middleNameController = TextEditingController();
   final suffixController = TextEditingController();
   final houseNumberController = TextEditingController();
-  final cityController = TextEditingController(text: 'Mandaluyong');
+  final cityMunicipalityController = TextEditingController(text: 'Mandaluyong');
   final districtController = TextEditingController();
-  final streetController = TextEditingController();
+  final provinceController = TextEditingController();
   final regionController = TextEditingController();
   final nationalityController = TextEditingController(text: 'Filipino');
-  final birthplaceController = TextEditingController();
+  final birthPlaceController = TextEditingController();
   final ageController = TextEditingController();
   final companyNameController = TextEditingController();
   final positionController = TextEditingController();
   final phoneNumberController = TextEditingController();
-  final emailAddressController = TextEditingController();
+  final emailController = TextEditingController();
   final votersRegistrationController = TextEditingController();
   final barangayController = TextEditingController(text: 'Harapin ang Bukas');
+  final passwordController = TextEditingController();
 
   //FOR Voters Registration Number VALIDATION ---------------
 
@@ -228,50 +228,49 @@ class _SignUpFormState extends State<SignUpForm> {
 
   void _registerUser() async {
     var defaultStatus = "Active";
+    var type = "Resident";
 
     var regBody = {
       //Objects to send in the Backend
       'lastName': lastNameController.text,
       'firstName': firstNameController.text,
-      'middleInitial': middleInitialController.text,
+      'middleName': middleNameController.text,
       "suffix": suffixController.text,
       "houseNumber": houseNumberController.text,
       "barangay": barangayController.text,
-      "city": cityController.text,
+      "cityMunicipality": cityMunicipalityController.text,
       "district": districtController.text,
-      "street": streetController.text,
+      "province": provinceController.text,
       "region": regionController.text,
       "nationality": nationalityController.text,
-      "birthplace": birthplaceController.text,
+      "birthPlace": birthPlaceController.text,
       "age": ageController.text,
       "companyName": companyNameController.text,
       "position": positionController.text,
       "phoneNumber": phoneNumberController.text,
-      "emailAddress": emailAddressController.text,
+      "email": emailController.text,
       "civilStatus": selectedCivilStatus,
       "HighestEducation": selectedHighestEducation,
       "EmploymentStatus": selectedEmploymentStatus,
-      "password": isPasswordVisible,
-      "birthday": dateController.text,
-      "gender": _checkBoxValue1 ? "Male" : "Female",
+      "password": passwordController.text,
+      "dateOfBirth": selectedDate,
+      "sex": _checkBoxValue1 ? "Male" : "Female",
       "homeOwnership": _homeOwnershipValue1 ? "Own" : "Rent",
       "residentClass": _residentClassValue1
           ? "PWD"
           : (_residentClassValue2 ? "Solo Parent" : "OUT OF SCHOOL YOUTH"),
-      "votersRegistrationController": votersRegistrationController.text,
+      "votersRegistration": votersRegistrationController.text,
       "status": defaultStatus,
+      "type": type,
     };
 
     var url =
         Uri.parse('http://192.168.0.28:8000/registration'); //HOME IP ADDRESS
+    print('Data to Send to Backend: $regBody');
 
     try {
       var response = await http.post(
-<<<<<<< Updated upstream
-        Uri.parse(registration),
-=======
         url,
->>>>>>> Stashed changes
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(regBody),
       );
@@ -470,12 +469,12 @@ class _SignUpFormState extends State<SignUpForm> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextFormField(
-              controller: middleInitialController,
+              controller: middleNameController,
               textInputAction: TextInputAction.next,
               keyboardType: TextInputType.text,
               cursorColor: kPrimaryColor,
               decoration: const InputDecoration(
-                hintText: "Middle Initial",
+                hintText: "Middle Name",
                 prefixIcon: Padding(
                   padding: EdgeInsets.all(defaultPadding),
                   child: Icon(Icons.person),
@@ -540,10 +539,10 @@ class _SignUpFormState extends State<SignUpForm> {
                       controller: houseNumberController,
                       textInputAction: TextInputAction.next,
                       keyboardType: TextInputType
-                          .number, // Use TextInputType.number for numeric input
+                          .text, // Use TextInputType.number for numeric input
                       cursorColor: kPrimaryColor,
                       decoration: const InputDecoration(
-                        hintText: "House #",
+                        hintText: "House # / Street",
                         prefixIcon: Padding(
                           padding: EdgeInsets.all(defaultPadding),
                           child: Icon(Icons.home),
@@ -551,12 +550,7 @@ class _SignUpFormState extends State<SignUpForm> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'House # is required';
-                        }
-
-                        // Check if the input is a valid number
-                        if (int.tryParse(value) == null) {
-                          return 'House # should be a number';
+                          return 'House # / Street is required';
                         }
 
                         return null;
@@ -566,7 +560,7 @@ class _SignUpFormState extends State<SignUpForm> {
                     const SizedBox(height: 8),
 // CITY---------------------
                     TextFormField(
-                      controller: cityController,
+                      controller: cityMunicipalityController,
                       textInputAction: TextInputAction.next,
                       keyboardType: TextInputType.text,
                       cursorColor: kPrimaryColor,
@@ -586,14 +580,14 @@ class _SignUpFormState extends State<SignUpForm> {
                       },
                     ),
                     const SizedBox(height: 8),
-// STREET ---------------------
+// PROVINCE  ---------------------
                     TextFormField(
-                      controller: streetController,
+                      controller: provinceController,
                       textInputAction: TextInputAction.next,
                       keyboardType: TextInputType.text,
                       cursorColor: kPrimaryColor,
                       decoration: const InputDecoration(
-                        hintText: "Street",
+                        hintText: "Province",
                         prefixIcon: Padding(
                           padding: EdgeInsets.all(defaultPadding),
                           child: Icon(Icons.home),
@@ -601,7 +595,7 @@ class _SignUpFormState extends State<SignUpForm> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Street is required';
+                          return 'Province is required';
                         }
                         return null;
                       },
@@ -827,7 +821,7 @@ class _SignUpFormState extends State<SignUpForm> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextFormField(
-              controller: birthplaceController,
+              controller: birthPlaceController,
               textInputAction: TextInputAction.next,
               keyboardType: TextInputType.text,
               cursorColor: kPrimaryColor,
@@ -1077,26 +1071,6 @@ class _SignUpFormState extends State<SignUpForm> {
             ),
           ),
 
-// 2ND NUMBER OPTIONAL
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              textInputAction: TextInputAction.next,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              decoration: const InputDecoration(
-                hintText: "2nd Number (Optional)",
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.person),
-                ),
-              ),
-            ),
-          ),
-
 // EMAIL ADDRESS ---------------------
           Container(
             padding: const EdgeInsets.all(defaultPadding),
@@ -1104,9 +1078,9 @@ class _SignUpFormState extends State<SignUpForm> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextFormField(
-              controller: emailAddressController,
+              controller: emailController,
               textInputAction: TextInputAction.next,
-              keyboardType: TextInputType.emailAddress,
+              keyboardType: TextInputType.text,
               cursorColor: kPrimaryColor,
               decoration: const InputDecoration(
                 hintText: "Email Address",
@@ -1240,15 +1214,6 @@ class _SignUpFormState extends State<SignUpForm> {
                   child: Icon(Icons.person),
                 ),
               ),
-<<<<<<< Updated upstream
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Voters Registration is required';
-                }
-                return null;
-              },
-=======
->>>>>>> Stashed changes
             ),
           ),
 // --------------------------------- PASSWORD -------------------------------
@@ -1258,6 +1223,7 @@ class _SignUpFormState extends State<SignUpForm> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextFormField(
+              controller: passwordController,
               textInputAction: TextInputAction.next,
               obscureText: !isPasswordVisible,
               cursorColor: kPrimaryColor,

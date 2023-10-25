@@ -5,7 +5,7 @@ import 'package:client/Screens/Homepage/Homepage.dart';
 import '../request_document.dart';
 
 class BottomNav extends StatefulWidget {
-  final String? token; // Make the token parameter optional
+  final String? token;
   const BottomNav({Key? key, this.token}) : super(key: key);
 
   @override
@@ -21,7 +21,7 @@ class _BottomNavState extends State<BottomNav> {
   void initState() {
     super.initState();
     print('Token in BottomNav: ${widget.token}');
-
+//reference to the token property that you passed to the BottomNav widget when you created an instance of it. The widget property is a reference to the current instance of the widget, and you can access its properties and methods using the widget keyword.
     screens = [
       AnnouncementPage(token: widget.token),
       Documentation(token: widget.token),

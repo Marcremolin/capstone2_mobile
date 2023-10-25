@@ -36,7 +36,7 @@ class _EditProfileState extends State<EditProfile> {
   String? gender;
   String? homeOwnership;
   String? residentClass;
-  String? emailAddress;
+  String? email;
   String? votersRegistration;
   String? suffix;
   String? companyName;
@@ -103,7 +103,7 @@ class _EditProfileState extends State<EditProfile> {
         final gender = jsonResponse['gender'];
         final homeOwnership = jsonResponse['homeOwnership'];
         final residentClass = jsonResponse['residentClass'];
-        final emailAddress = jsonResponse['emailAddress'];
+        final email = jsonResponse['email'];
         final votersRegistration = jsonResponse['votersRegistration'];
         final suffix = jsonResponse['suffix'];
         final companyName = jsonResponse['companyName'];
@@ -132,7 +132,7 @@ class _EditProfileState extends State<EditProfile> {
           this.gender = jsonResponse['gender'];
           this.homeOwnership = jsonResponse['homeOwnership'];
           this.residentClass = jsonResponse['residentClass'];
-          this.emailAddress = jsonResponse['emailAddress'];
+          this.email = jsonResponse['email'];
           this.votersRegistration = jsonResponse['votersRegistration'];
           this.suffix = jsonResponse['suffix'];
           this.companyName = jsonResponse['companyName'];
@@ -598,7 +598,7 @@ class _EditProfileState extends State<EditProfile> {
               readOnly: true,
               keyboardType: TextInputType.text,
               cursorColor: kPrimaryColor,
-              initialValue: userData?['emailAddress'] ?? '',
+              initialValue: userData?['email'] ?? '',
               decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.person),
               ),
