@@ -1,11 +1,15 @@
 const mongoose = require('mongoose');
-const bcrypt = require("bcrypt");
 const db = require('../config/db')
+const bcrypt = require('bcrypt');
+
 
 const { Schema } = mongoose;
 
 const userSchema = new Schema({
-
+  _id:{
+    type:String,
+    required:true
+},
   lastName: {
     type: String,
     required: true,
@@ -17,7 +21,10 @@ const userSchema = new Schema({
   middleName: {
     type: String,
   },
-  houseNumber: {
+
+  suffix: String,
+
+  houseNumber: { //NEED SA FRONTEND 
     type: String,
     required: true,
   },
@@ -25,37 +32,44 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
+
+  cityMunicipality: {
+    type: String,
+    required: true,
+  },
+  
   district: {
     type: String,
     required: true,
   },
-  city: {
+
+  province: { //NEED SA FRONTEND 
     type: String,
     required: true,
-  },
+  }, 
+
   region: {
     type: String,
     required: true,
   },
-  nationality: {
-    type: String,
-    required: true,
-  },
-  birthplace: {
-    type: String,
-    required: true,
-  },
-  dateOfBirth: {
-    type: Date,
-  },
-  age: {
-    type: Number,
-    required: true,
-  },
+
   phoneNumber: {
     type: String,
     required: true,
   },
+
+  email: {
+    type: String,
+    lowercase: true,
+    required: true,
+    unique: true,
+  },
+
+  nationality: {
+    type: String,
+    required: true,
+  },
+
   civilStatus: {
     type: String,
     required: true,
@@ -66,10 +80,7 @@ const userSchema = new Schema({
   employmentStatus: {
     type: String,
   },
-  gender: {
-    type: String,
-    required: true,
-  },
+
   homeOwnership: {
     type: String,
     required: true,
@@ -78,30 +89,52 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
-  emailAddress: {
-    type: String,
-    lowercase: true,
-    required: true,
-    unique: true,
+
+  dateOfBirth: {
+    type: Date,
+    // required: true,
   },
+    birthPlace: {
+      type: String,
+      required: true,
+    },
+    age: {
+      type: Number,
+      required: true,
+    },
+    
+  sex: {
+    type: String,
+    required: true,
+  },
+
+  companyName: String,
+  position: String,
 
   votersRegistration: {
     type: String,
   },
 
-
-  suffix: String,
-  companyName: String,
-  position: String,
-  secondNumber: String,
   password: {
     type: String,
     required: true,
   },
 
-  status: { type: String }
+  type:{
+    type:String,
+    default:'Resident'
+},
+  status:{
+    type:String,
+    default:'Active'
+},
+//ADDED FOR USER VERIFICATION --- 
+verificationCode: String, 
+verificationCodeUsed: Boolean, 
 
 });
+
+ 
 
 //Function to automatically encrypt the password
 userSchema.pre('save', async function () {
@@ -116,17 +149,19 @@ userSchema.pre('save', async function () {
     throw error;
   }
 });
-
 userSchema.methods.comparePassword = async function (userPassword) {
   try {
+    console.log('Entered Password:', userPassword);
+    console.log('Hashed Password in Database:', this.password);
+
     const isMatch = await bcrypt.compare(userPassword, this.password);
     return isMatch;
   } catch (error) {
     throw error;
   }
+};
 
 
-}
 const UserModel = db.model('user', userSchema);
 
 module.exports = UserModel;

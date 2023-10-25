@@ -49,6 +49,9 @@ class _DocumentationState extends State<Documentation>
   // Function to handle dropdowns selection
   void initState() {
     super.initState();
+    selectedTypeOfDocuments =
+        TypeOfDocumentsOptions[0]; // Initialize with a default value
+
     if (widget.token != null) {
       // Decode the JWT token and extract the user ID
       Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);

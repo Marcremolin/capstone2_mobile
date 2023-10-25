@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'package:client/Screens/Homepage/bottom_nav.dart';
 
@@ -19,7 +21,7 @@ class LoginForm extends StatefulWidget {
 }
 
 class _LoginFormState extends State<LoginForm> {
-  TextEditingController emailAddressController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   bool isPasswordVisible = false;
   late SharedPreferences prefs;
@@ -36,36 +38,16 @@ class _LoginFormState extends State<LoginForm> {
 
 // ---- DATABASE FUNCTION ----------------
   void loginUser() async {
-<<<<<<< Updated upstream
-    var reqBody = {
-      //Objects to send in the Backend
-      "emailAddress": emailAddressController.text,
-      "password": passwordController.text
-    };
-
-    var url = Uri.parse('http://192.168.55.107:8000/login');
-    try {
-      var response = await http.post(
-         url = Uri.parse(login),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(reqBody), //REQUEST BODY
-      );
-      var jsonResponse = jsonDecode(response.body);
-      
-      if (jsonResponse['status']) {
-        var myToken = jsonResponse['token'];
-        
-        prefs.setString('token', myToken);
-=======
-    String email = emailAddressController.text;
+    String email = emailController.text;
     String password = passwordController.text;
+    password = password.trim();
 
     if (email.isEmpty || password.isEmpty) {
       print('Please enter both email and password.');
       return; // Do not proceed with the request.
     }
 
-    var reqBody = {"emailAddress": email, "password": password};
+    var reqBody = {"email": email, "password": password};
 
     var url = Uri.parse('http://192.168.0.28:8000/login');
     try {
@@ -79,30 +61,31 @@ class _LoginFormState extends State<LoginForm> {
       print('Response: ${response.body}');
 
       var jsonResponse = jsonDecode(response.body);
-      if (jsonResponse['status']) {
+
+      if (jsonResponse.containsKey('error')) {
+        // Handle error response
+        String errorMessage =
+            jsonResponse['error'] ?? 'An unknown error occurred.';
+        print('Login Failed: $errorMessage');
+      } else if (jsonResponse.containsKey('token')) {
         // Handle successful login
->>>>>>> Stashed changes
+        String token = jsonResponse['token'];
+        prefs = await SharedPreferences.getInstance();
+        prefs.setString(
+            'token', token); // Store the token in shared preferences
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) {
-              return const BottomNav();
+              return BottomNav(token: jsonResponse['token']);
             },
           ),
         );
-      } else {
-<<<<<<< Updated upstream
-        print('HTTP Error: ${response.statusCode}');
-=======
-        // Handle login failure
-        print('Login Failed: ${jsonResponse['message']}');
->>>>>>> Stashed changes
       }
     } catch (e) {
       print('Error: $e');
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -110,11 +93,10 @@ class _LoginFormState extends State<LoginForm> {
       child: Column(
         children: [
           TextFormField(
-            keyboardType: TextInputType.emailAddress,
-            controller: emailAddressController,
+            controller: emailController,
             textInputAction: TextInputAction.next,
             cursorColor: kPrimaryColor,
-            onSaved: (emailAddress) {},
+            onSaved: (email) {},
             decoration: InputDecoration(
               hintText: "Your email",
               prefixIcon: const Padding(
@@ -153,15 +135,25 @@ class _LoginFormState extends State<LoginForm> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: defaultPadding),
             child: TextFormField(
-              textInputAction: TextInputAction.done,
               controller: passwordController,
-              obscureText: true,
+              textInputAction: TextInputAction.next,
               cursorColor: kPrimaryColor,
               decoration: InputDecoration(
                 hintText: "Your password",
                 prefixIcon: const Padding(
                   padding: EdgeInsets.all(defaultPadding),
                   child: Icon(Icons.lock),
+                ),
+                suffixIcon: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      isPasswordVisible = !isPasswordVisible;
+                    });
+                  },
+                  icon: Icon(
+                    isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                    color: Colors.grey,
+                  ),
                 ),
                 filled: true,
                 fillColor: const Color.fromARGB(135, 227, 227, 227),
@@ -175,16 +167,17 @@ class _LoginFormState extends State<LoginForm> {
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20.0),
+                  borderRadius: BorderRadius.circular(30.0),
                   borderSide: const BorderSide(
                     color: Colors.blue,
-                    width: 2.0,
+                    width: 3.0,
                   ),
                 ),
               ),
               style: const TextStyle(
-                color: Colors.black,
+                color: Color.fromARGB(255, 27, 25, 25),
               ),
+              obscureText: !isPasswordVisible, // Toggles password visibility
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'PASSWORD IS REQUIRED';

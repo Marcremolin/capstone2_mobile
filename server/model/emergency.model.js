@@ -6,7 +6,7 @@ const { Schema } = mongoose;
 
 const emergencySchema = new Schema({
 
-  userId: {type: Schema.Types.ObjectId, ref:UserModel.modelName}, //by making use of UserID we can show the data or the list of request in the flutter app
+  userId: { type: String, required: true },
 
   
   currentLocation:{

@@ -8,29 +8,25 @@ const announcementRouter = require('./routers/announcement.routes');
 const livelihoodRouter = require('./routers/livelihood.routes');
 const promoteBusinessRouter = require('./routers/promoteBusiness.routes');
 const profileRouter = require('./routers/profile.routes');
-const forgetPasswordRouter = require('./routers/forgetPassword.routes');
-
-const multer = require('multer');
 const app = express();
+const path = require('path');
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, '../views'));
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+const multer = require('multer');
 
 app.use(bodyParser.json());
 
 // Routes for various features
-app.use('/', userRouter);  // User-related routes
-app.use('/', requestDocumentRouter); // Request document-related routes
-app.use('/', feedbackRouter); // Feedback-related routes
-app.use('/', emergencyRouter); // Emergency-related routes
-
-// Use '/get' prefix for these routes
-app.use('/get', announcementRouter); // Announcement-related routes
-app.use('/get', livelihoodRouter); // Livelihood-related routes
-app.use('/get', promoteBusinessRouter); // Promote business-related routes
-
-// Use '/profile' prefix for profile-related routes
+app.use('/', userRouter);  
+app.use('/', requestDocumentRouter); 
+app.use('/', feedbackRouter); 
+app.use('/', emergencyRouter);
+app.use('/get', announcementRouter); 
+app.use('/get', livelihoodRouter); 
+app.use('/get', promoteBusinessRouter); 
 app.use('/profile', profileRouter); // Profile-related routes
-app.use('/forgetPassword', forgetPasswordRouter); 
-
-// Serve static files from the 'uploads' directory
 app.use('/uploads', express.static('uploads'));
 
 module.exports = app;

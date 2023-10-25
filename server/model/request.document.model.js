@@ -6,7 +6,8 @@ const { Schema } = mongoose;
 
 // BARANGAY INDIGENCY --------------------
 const barangayIndigencySchema = new Schema({
-  userId: {type: Schema.Types.ObjectId, ref:UserModel.modelName}, //by making use of UserID we can show the data or the list of request in the flutter app
+  userId: { type: String, required: true },
+  // userId: {type: Schema.Types.ObjectId, ref:UserModel.modelName}, //by making use of UserID we can show the data or the list of request in the flutter app
   userAddress:{type: String, required: true},
   typeOfDocument:{type: String,required: true,index: true}, // used to optimize the retrieval of data and improve the performance of queries kasi NAGBUBUFFER SHIT
   dateOfPickUp:{type: Date, required: true, index: true},
@@ -20,7 +21,7 @@ const userIndigency = db.model('BarangayIndigency', barangayIndigencySchema);
 
 // BARANGAY CERTIFICATE --------------------
 const barangayCertifcateSchema = new Schema({
-  userId: {type: Schema.Types.ObjectId,ref:UserModel.modelName}, 
+  userId: { type: String, required: true },
   userAddress:{type: String,required: true},
   typeOfDocument:{type: String,required: true,index: true},
   dateOfPickUp:{type: Date,required: true, index: true},
@@ -34,7 +35,7 @@ const userCertificate = db.model('barangaycertificate', barangayCertifcateSchema
 
 // BUSINESS CLEARANCE --------------------
 const businessClearanceSchema = new Schema({
-  userId: {type: Schema.Types.ObjectId, ref:UserModel.modelName}, 
+  userId: { type: String, required: true },
   businessName:{type: String, required: true},
   businessAddress:{type: String, required: true},
   typeOfDocument:{type: String, required: true, index: true},
@@ -51,7 +52,7 @@ const userBusinessClearance = db.model('BusinessClearance', businessClearanceSch
 
 // BARANGAY ID --------------------
 const BarangayIDSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId,  ref:UserModel.modelName}, 
+  userId: { type: String, required: true },
   typeOfDocument:{type: String, required: true, index: true},
   dateOfPickUp:{type: Date, required: true, index: true,},
   reasonForRequesting:{type: String, required: true, index: true,},
@@ -65,7 +66,7 @@ const userBarangayID = db.model('barangayid', BarangayIDSchema);
 
 // INSTALLATION PERMIT--------------------
 const installationSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId,  ref:UserModel.modelName}, 
+  userId: { type: String, required: true },
   typeOfDocument:{type: String, required: true, index: true},
   dateOfPickUp:{type: Date, required: true, index: true,},
   reasonForRequesting:{type: String, required: true, index: true,},
@@ -79,7 +80,7 @@ const userInstallation = db.model('Installation', installationSchema);
 
 // CONSTRUCTION PERMIT--------------------
 const constructionSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId,  ref:UserModel.modelName}, 
+  userId: { type: String, required: true },
   typeOfDocument:{type: String, required: true, index: true},
   dateOfPickUp:{type: Date, required: true, index: true,},
   reasonForRequesting:{type: String, required: true, index: true,},
