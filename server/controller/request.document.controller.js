@@ -63,3 +63,16 @@ exports.createDocumentRequest = async (req, res, next) => {
     next(error);
   }
 };
+
+//----------------- GET SUMMARY OF REQUEST ------------------------
+exports.getSummaryOfRequests = async (req, res, next) => {
+  try {
+    const userId = req.user._id;  
+    console.log('User ID from JWT token:', userId); 
+    const requests = await DocumentRequestServices.getRequestsForUser(userId);
+    
+    res.json({ status: true, requests });
+  } catch (error) {
+    next(error);
+  }
+};

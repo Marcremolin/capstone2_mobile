@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -63,9 +65,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
         "feedback": feedbackController.text,
       };
 
-      var url =
-          Uri.parse('http://192.168.0.28:8000/feedback'); // HOME IP ADDRESS
-
+      var url = Uri.parse('http://192.168.0.28:8000/feedback');
       var response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
@@ -75,7 +75,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(response.body);
         print(jsonResponse['status']);
-        submitFeedback(); // Call the success dialog function
+        submitFeedback();
       } else {
         print('HTTP Error: ${response.statusCode}');
       }
@@ -216,6 +216,12 @@ class _FeedbackPageState extends State<FeedbackPage> {
                           child: ElevatedButton(
                             onPressed: feedbackReq,
                             child: const Text('Submit Feedback'),
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                    30.0), // Adjust the radius as needed
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16.0),

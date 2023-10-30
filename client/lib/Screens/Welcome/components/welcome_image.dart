@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../constants.dart';
 
 class WelcomeImage extends StatelessWidget {
-  const WelcomeImage({
-    Key? key,
-  }) : super(key: key);
+  const WelcomeImage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -12,10 +10,18 @@ class WelcomeImage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Center(
-            child: Text(
-              "Welcome to D'Barangay Mobile App!",
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 30),
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(10), // Added contentPadding
+                child: Text(
+                  "Welcome to D'Barangay Mobile",
+                  style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign
+                      .center, // Center the text within the Text widget.
+                ),
+              ),
             ),
           ),
           const SizedBox(height: defaultPadding * 0.5),
@@ -30,7 +36,7 @@ class WelcomeImage extends StatelessWidget {
               const Spacer(),
             ],
           ),
-          const SizedBox(height: defaultPadding * .5),
+          const SizedBox(height: defaultPadding * 2),
         ],
       ),
     );

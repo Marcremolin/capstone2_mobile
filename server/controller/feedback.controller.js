@@ -18,9 +18,7 @@ exports.createFeedback = async (req, res, next) => {
       userId,
       date,
       feedback) //TO SEND TO SERVICES
-      
-      //After storing the data to the database it should response back to the Frontend and we will use the res
-
+    
       res.json({status:true,success:feedbackReq}) 
 
   }

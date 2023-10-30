@@ -1,13 +1,11 @@
 const db = require("../config/db");
 const mongoose = require('mongoose');
-const UserModel = require('../model/user.model') //Needed this to refer to users data
 const { Schema } = mongoose;
 //----------------------------------- important imports ---------------------------------------
 
 // BARANGAY INDIGENCY --------------------
 const barangayIndigencySchema = new Schema({
   userId: { type: String, required: true },
-  // userId: {type: Schema.Types.ObjectId, ref:UserModel.modelName}, //by making use of UserID we can show the data or the list of request in the flutter app
   userAddress:{type: String, required: true},
   typeOfDocument:{type: String,required: true,index: true}, // used to optimize the retrieval of data and improve the performance of queries kasi NAGBUBUFFER SHIT
   dateOfPickUp:{type: Date, required: true, index: true},

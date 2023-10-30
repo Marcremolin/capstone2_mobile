@@ -1,6 +1,11 @@
+// ignore_for_file: prefer_typing_uninitialized_variables, avoid_print
+
 import 'package:flutter/material.dart';
 import 'ProfilePage.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:intl/intl.dart';
 
 class RequestSummary extends StatefulWidget {
   // FOR TOKEN
@@ -11,17 +16,86 @@ class RequestSummary extends StatefulWidget {
   _RequestSummaryState createState() => _RequestSummaryState();
 }
 
+class RequestData {
+  final String userId;
+  final String typeOfDocument;
+  final String dateOfPickUp;
+  final String reasonForRequesting;
+  final String paymentMethod;
+  final String paymentReferenceNumber;
+  final String status;
+
+  RequestData({
+    required this.userId,
+    required this.typeOfDocument,
+    required this.dateOfPickUp,
+    required this.reasonForRequesting,
+    required this.paymentMethod,
+    required this.paymentReferenceNumber,
+    required this.status,
+  });
+}
+
 class _RequestSummaryState extends State<RequestSummary> {
   late String userId; // FOR TOKEN
+  List<RequestData> requests = []; // List to store request summaries
 
   @override
   void initState() {
     super.initState();
     if (widget.token != null) {
-      // Decode the JWT token and extract the user ID
       Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);
       userId = jwtDecodedToken['_id'];
-    } else {}
+      fetchRequestSummary();
+    }
+  }
+
+  // Function to fetch request summary
+  Future<void> fetchRequestSummary() async {
+    var token = widget.token;
+    if (token.startsWith('Bearer ')) {
+      token = token.substring(7);
+    }
+
+    final url = Uri.parse('http://192.168.0.28:8000/summary');
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        final List<dynamic> requestsData = responseData["requests"];
+
+        setState(() {
+          requests.clear();
+        });
+
+        for (var data in requestsData) {
+          final request = RequestData(
+            userId: data['userId'],
+            typeOfDocument: data['typeOfDocument'],
+            dateOfPickUp: data['dateOfPickUp'],
+            reasonForRequesting: data['reasonForRequesting'],
+            paymentMethod: data['paymentMethod'],
+            paymentReferenceNumber: data['paymentReferenceNumber'],
+            status: data['status'],
+          );
+
+          setState(() {
+            requests.add(request);
+          });
+        }
+      } else {
+        print('Request failed with status: ${response.statusCode}');
+      }
+    } catch (exception) {
+      print('Exception occurred: $exception');
+    }
   }
 
   @override
@@ -32,7 +106,7 @@ class _RequestSummaryState extends State<RequestSummary> {
         title: const Text('Request Summary'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.account_circle), // Profile Icon
+            icon: const Icon(Icons.account_circle),
             onPressed: () {
               Navigator.push(
                 context,
@@ -42,22 +116,24 @@ class _RequestSummaryState extends State<RequestSummary> {
           ),
         ],
       ),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            SizedBox(height: 20),
-            RequestWidget(
-              request: 'Business Permit',
-              date: 'May 5, 2023',
-              file: 'valid-id.jpg',
-            ),
-            RequestWidget(
-              request: 'Barangay Certificate',
-              date: 'June 10, 2023',
-              file: 'valid-id.jpg',
-            ),
-          ],
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              for (var request in requests)
+                RequestWidget(
+                  userId: request.userId,
+                  reasonForRequesting: request.reasonForRequesting,
+                  paymentMethod: request.paymentMethod,
+                  paymentReferenceNumber: request.paymentReferenceNumber,
+                  typeOfDocument: request.typeOfDocument,
+                  dateOfPickUp: request.dateOfPickUp,
+                  status: request.status,
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -65,19 +141,30 @@ class _RequestSummaryState extends State<RequestSummary> {
 }
 
 class RequestWidget extends StatelessWidget {
-  final String request;
-  final String date;
-  final String file;
+  final String typeOfDocument;
+  final String userId;
+  final String dateOfPickUp;
+  final String status;
 
+  final String reasonForRequesting;
+  final String paymentMethod;
+  final String paymentReferenceNumber;
   const RequestWidget({
     super.key,
-    required this.request,
-    required this.date,
-    required this.file,
+    required this.typeOfDocument,
+    required this.userId,
+    required this.dateOfPickUp,
+    required this.status,
+    required this.reasonForRequesting,
+    required this.paymentMethod,
+    required this.paymentReferenceNumber,
   });
 
 // POPUP "VIEW REQUEST" DESIGN AND FUNCTION
   void _showRequestDetails(BuildContext context) {
+    DateTime parsedDate = DateTime.parse(dateOfPickUp);
+    String formattedDate = DateFormat('y/MM/d').format(parsedDate);
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -88,73 +175,91 @@ class RequestWidget extends StatelessWidget {
           ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(
-              maxWidth: 400, // maximum width
+              maxWidth: 400,
             ),
             child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: const Color.fromARGB(255, 0, 140, 255), // outline
-                  width: 4.0,
-                ),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Request Details',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          'Date: $date',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Text('Request: $request'),
-                    Text('File Submitted: $file'),
-                    const SizedBox(height: 20),
-                    const Divider(thickness: 2),
-                    const SizedBox(height: 20),
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Total Amount: ', style: TextStyle(fontSize: 16)),
-                        Text('\$0.00', style: TextStyle(fontSize: 16)),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text('Close'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildHeader('Request Details'),
+                  const SizedBox(height: 10),
+                  _buildDivider(),
+                  _buildFormEntry('User ID', userId),
+                  _buildFormEntry('Request', typeOfDocument),
+                  _buildFormEntry('Date of Pickup', formattedDate),
+                  _buildFormEntry('Reason for Requesting', reasonForRequesting),
+                  _buildFormEntry('Payment Method', paymentMethod),
+                  _buildFormEntry(
+                      'Payment Reference Number', paymentReferenceNumber),
+                  const SizedBox(height: 10),
+                  _buildDivider(),
+                  _buildCloseButton(context),
+                ],
               ),
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildHeader(String text) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: Colors.grey,
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFormEntry(String label, String value) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 150,
+          child: Text('$label:'),
+        ),
+        Flexible(
+          child: Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDivider() {
+    return const Divider(thickness: 2);
+  }
+
+  Widget _buildCloseButton(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text('Close'),
+        ),
+      ],
     );
   }
 
@@ -184,7 +289,7 @@ class RequestWidget extends StatelessWidget {
             title: Column(
               children: [
                 Text(
-                  request,
+                  typeOfDocument,
                   style: const TextStyle(
                       fontSize: 20, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
@@ -192,7 +297,7 @@ class RequestWidget extends StatelessWidget {
               ],
             ),
             subtitle: Text(
-              date,
+              dateOfPickUp,
               textAlign: TextAlign.center,
             ),
             contentPadding: const EdgeInsets.only(bottom: 8),
@@ -239,9 +344,9 @@ class RequestWidget extends StatelessWidget {
                         ),
                       ),
                     ),
-                    child: const Text(
-                      'Pending',
-                      style: TextStyle(color: Colors.black, fontSize: 12),
+                    child: Text(
+                      status,
+                      style: const TextStyle(color: Colors.black, fontSize: 12),
                     ),
                   ),
                 ),

@@ -7,7 +7,7 @@ class EmergencyService{
     static async createEmergencySignal(
         userId,
         currentLocation,
-        contactNum,
+        phoneNumber,
         emergencyType,
         date,
         status
@@ -17,44 +17,23 @@ class EmergencyService{
             const createEmergencySignal = new EmergencyModel({  
                 userId,
                 currentLocation,
-                contactNum,
+                phoneNumber,
                 emergencyType,
                 date,
                 status
               });
 
-                return await createEmergencySignal.save();
+              const savedEmergencySignal = await createEmergencySignal.save();
 
+      // Log the saved document
+      console.log('Saved Emergency Signal:', savedEmergencySignal);
 
-        }catch(err){
-
-        }
-    }
-
-    //Make call to MongoDB database by making use of MODEL 
-// ------- Check if the user email exist in the database ---------- 
-static async checkuser(userId,contactNum) {
-    try {
-      const user = await UserModel.findOne({userId,contactNum });
-      if (!user) {
-        console.log(`User not found for userId: ${userId,contactNum}`);
-      }
-      return user;
-    } catch (error) {
-      console.error('Error in checkuser:', error);
-      throw error;
+      return savedEmergencySignal; // Return the saved document
+    } catch (err) {
+      console.error('Error in createEmergencySignal:', err);
+      throw err; // Re-throw the error
     }
   }
-  
-
-// ------- data from user controller to generate a JWT token -------
-static async generateToken(tokenData,secretKey,jwt_expire){
-    return jwt.sign(tokenData,secretKey,{expiresIn:jwt_expire});
-
-
 }
-
-}
-
 module.exports = EmergencyService;
 

@@ -15,10 +15,10 @@ class AboutBarangayPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              const SizedBox(height: 50),
+              const SizedBox(height: 20),
               SizedBox(
-                width: 120,
-                height: 120,
+                width: 220,
+                height: 220,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(100),
                   child: const Image(
@@ -30,43 +30,71 @@ class AboutBarangayPage extends StatelessWidget {
               const Text(
                 'BRGY. HARAPIN ANG BUKAS',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Color.fromARGB(255, 255, 255, 255),
                 ),
               ),
               const SizedBox(height: 10),
-              Container(
-                width: 300,
-                padding: const EdgeInsets.all(10),
-                margin: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.grey.shade400,
-                    width: 1,
-                  ),
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Column(
-                  children: [
-                    ListTile(
-                      subtitle: Text(
-                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                        textAlign: TextAlign.center,
+              const Column(
+                children: [
+                  ListTile(
+                    subtitle: Text(
+                      "One of the barangay in the city of Mandaluyong. Its population as determined by the 2020 Census was 4,244. This represented 1.00% of the total population of Mandaluyong.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        fontWeight: FontWeight.bold,
+                        color: Color.fromARGB(255, 219, 217, 217),
                       ),
                     ),
-                  ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: 220,
+                height: 220,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(100),
+                  child: const Image(
+                    image: AssetImage('assets/images/MAP2.png'),
+                  ),
                 ),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Barangay Map',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color.fromARGB(255, 255, 145, 0),
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Column(
+                children: [
+                  ListTile(
+                    subtitle: Text(
+                      "Harapin Ang Bukas is situated at approximately 14.5920, 121.0262, in the island of Luzon. Elevation at these coordinates is estimated at 7.0 meters or 23.0 feet above mean sea level.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        fontWeight: FontWeight.bold,
+                        color: Color.fromARGB(255, 219, 217, 217),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               Container(
                 width: 300,
                 padding: const EdgeInsets.all(10),
-                margin: const EdgeInsets.all(20),
+                margin: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: Colors.grey.shade400,
-                    width: 1,
+                    color: const Color.fromARGB(255, 255, 145, 0),
+                    width: 5,
                   ),
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(8),
@@ -81,7 +109,7 @@ class AboutBarangayPage extends StatelessWidget {
                         textAlign: TextAlign.center,
                       ),
                       subtitle: Text(
-                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                        "We are committed to delivering efficient and transparent public service, promoting community engagement, and fostering sustainable development for the benefit of all our residents. Through collaboration, innovation, and inclusivity, we strive to create a barangay that is safe, resilient, and offers opportunities for growth and well-being",
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -91,11 +119,11 @@ class AboutBarangayPage extends StatelessWidget {
               Container(
                 width: 300,
                 padding: const EdgeInsets.all(10),
-                margin: const EdgeInsets.all(20),
+                margin: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: Colors.grey.shade400,
-                    width: 1,
+                    color: const Color.fromARGB(255, 255, 145, 0),
+                    width: 5,
                   ),
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(8),
@@ -110,7 +138,7 @@ class AboutBarangayPage extends StatelessWidget {
                         textAlign: TextAlign.center,
                       ),
                       subtitle: Text(
-                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                        "To be a safe, thriving, and inclusive community that empowers our residents to lead happy and fulfilled lives.",
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -118,6 +146,7 @@ class AboutBarangayPage extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(height: 10),
             ],
           ),
         ),

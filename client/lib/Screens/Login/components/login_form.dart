@@ -1,17 +1,15 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'dart:convert';
 import 'package:client/Screens/Homepage/bottom_nav.dart';
-
 import 'package:flutter/material.dart';
 import '../../Login/components/already_have_an_account_acheck.dart';
 import '../../ForgetPassword/components/forgetPassword.dart';
-import '../../ForgetPassword/forgetPassword_main.dart';
-
 import '../../../constants.dart';
 import '../../Signup/signup_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({Key? key}) : super(key: key);
@@ -44,7 +42,7 @@ class _LoginFormState extends State<LoginForm> {
 
     if (email.isEmpty || password.isEmpty) {
       print('Please enter both email and password.');
-      return; // Do not proceed with the request.
+      return;
     }
 
     var reqBody = {"email": email, "password": password};
@@ -54,30 +52,34 @@ class _LoginFormState extends State<LoginForm> {
       print('Request Payload: ${jsonEncode(reqBody)}');
       var response = await http.post(
         url,
-        headers: {"Content-Type": "application/json"},
+        headers: {
+          "Authorization": "Bearer",
+          "Content-Type": "application/json",
+        },
         body: jsonEncode(reqBody),
       );
 
       print('Response: ${response.body}');
 
       var jsonResponse = jsonDecode(response.body);
-
       if (jsonResponse.containsKey('error')) {
-        // Handle error response
         String errorMessage =
             jsonResponse['error'] ?? 'An unknown error occurred.';
         print('Login Failed: $errorMessage');
       } else if (jsonResponse.containsKey('token')) {
-        // Handle successful login
         String token = jsonResponse['token'];
         prefs = await SharedPreferences.getInstance();
-        prefs.setString(
-            'token', token); // Store the token in shared preferences
+        prefs.setString('token', token);
+
+        Map<String, dynamic> payload = JwtDecoder.decode(token);
+
+        String userId = payload['_id'];
+
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) {
-              return BottomNav(token: jsonResponse['token']);
+              return BottomNav(token: "Bearer $token");
             },
           ),
         );
@@ -223,7 +225,7 @@ class _LoginFormState extends State<LoginForm> {
                 ),
               );
             },
-            child: Text("Forgot Password?"),
+            child: const Text("Forgot Password?"),
           ),
         ],
       ),

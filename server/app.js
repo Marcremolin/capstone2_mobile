@@ -26,7 +26,7 @@ app.use('/', emergencyRouter);
 app.use('/get', announcementRouter); 
 app.use('/get', livelihoodRouter); 
 app.use('/get', promoteBusinessRouter); 
-app.use('/profile', profileRouter); // Profile-related routes
+app.use('/profile', profileRouter); 
 app.use('/uploads', express.static('uploads'));
 
 module.exports = app;

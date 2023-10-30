@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:client/constants.dart';
 import 'package:client/responsive.dart';
@@ -29,7 +31,10 @@ class _EditIconPageState extends State<EditIconPage> {
     return Background(
       child: SingleChildScrollView(
         child: Responsive(
-          mobile: MobileSignupScreen(),
+          mobile: MobileSignupScreen(
+              token: widget.token ??
+                  ''), // Provide a default value if token is null
+
           desktop: Row(
             children: [
               const Expanded(
@@ -45,7 +50,7 @@ class _EditIconPageState extends State<EditIconPage> {
                         token: widget.token,
                       ),
                     ),
-                    SizedBox(height: defaultPadding / 2),
+                    const SizedBox(height: defaultPadding / 2),
                     // SocalSignUp()
                   ],
                 ),
@@ -59,26 +64,26 @@ class _EditIconPageState extends State<EditIconPage> {
 }
 
 class MobileSignupScreen extends StatelessWidget {
+  final String token; // Add a token parameter to the constructor
   const MobileSignupScreen({
     Key? key,
+    required this.token,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        SignUpScreenTopImage(),
+        const SignUpScreenTopImage(),
         Row(
           children: [
-            Spacer(),
+            const Spacer(),
             Expanded(
               flex: 8,
-              child: EditProfile(
-                token: 'token',
-              ),
+              child: EditProfile(token: token), // Use the token parameter
             ),
-            Spacer(),
+            const Spacer(),
           ],
         ),
       ],

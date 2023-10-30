@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:client/Screens/feedbackpage.dart';
 import 'package:flutter/material.dart';
 import 'aboutBarangay.dart';
@@ -66,12 +68,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            EditIconPage(token: widget.token!), // TOKEN TO PASS
+                            EditIconPage(token: widget.token), // TOKEN TO PASS
                       ),
                     );
                   } else {
-                    // Handle the case when the token is null or empty
-                    // For example, display an error message or perform some action.
                     print('Token is null or empty. Cannot proceed.');
                   }
                 },

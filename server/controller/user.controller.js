@@ -2,10 +2,10 @@
 const UserService = require("../services/user.services");
 //handle the request & respond from FrontEnd
 const nodemailer = require('nodemailer'); // Used for sending email
-const jwt = require('jsonwebtoken'); // Used for creating JSON Web Tokens
 const Mailgen = require('mailgen'); // Used for generating HTML email content
-const crypto = require('crypto');
 const UserModel = require("../model/user.model");
+const config = require('../config/config');
+const jwt = require('jsonwebtoken');
 
 exports.register = async (req, res, next) => {
     try { //pass the data from the services 
@@ -21,7 +21,7 @@ exports.register = async (req, res, next) => {
             district,
             province,
             region,
-            phoneNumber,
+            phoneNum,
             email,
             nationality,
             civilStatus,
@@ -53,7 +53,7 @@ exports.register = async (req, res, next) => {
             district,
             province,
             region,
-            phoneNumber,
+            phoneNum,
             email,
             nationality,
             civilStatus,
@@ -83,26 +83,53 @@ exports.register = async (req, res, next) => {
 exports.login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
-        console.log('Password entered during login:', password); // Log the entered password
-
         const user = await UserService.checkuser(email);
         if (!user) {
             return res.status(401).json({ error: 'User does not exist' });
         }
         console.log('User found:', user);
-        console.log('Retrieved Hashed Password:', user.password);
 
         const isMatch = await user.comparePassword(password);
         
         console.log('Password match:', isMatch);
+        console.log('Testing Secret Key:', config.secretKey)
+
         if (!isMatch) {
             return res.status(401).json({ error: 'Invalid password' });
         }
 
         // Creating Token
-        let tokenData = { _id: user._id, email: user.email };
-        const token = await UserService.generateToken(tokenData, "secret", "1h");
-
+        let tokenData = {
+           _id: user._id, 
+           email: user.email, 
+          lastName: user.lastName,
+          firstName: user.firstName,
+          middleName: user.middleName,
+          suffix: user.suffix,
+          houseNumber: user.houseNumber,
+          barangay: user.barangay,
+          cityMunicipality: user.cityMunicipality,
+          district: user.district,
+          province: user.province,
+          region: user.region,
+          phoneNumber: user.phoneNumber,
+          nationality: user.nationality,
+          civilStatus: user.civilStatus,
+          highestEducation: user.highestEducation,
+          employmentStatus: user.employmentStatus,
+          homeOwnership: user.homeOwnership,
+          residentClass: user.residentClass,
+          birthPlace: user.birthPlace,
+          age: user.age,
+          dateOfBirth: user.dateOfBirth,
+          sex: user.sex,
+          companyName: user.companyName,
+          position: user.position,
+          votersRegistration: user.votersRegistration,
+          status: user.status};
+        const token = await UserService.generateToken(tokenData, config.secretKey, "1h");
+        const decoded = jwt.verify(token, config.secretKey);
+        console.log('Verified Token:', decoded);
         res.status(200).json({ status: true, success: "sendData", token: token });
     } catch (error) {
         console.error('Error in login:', error);

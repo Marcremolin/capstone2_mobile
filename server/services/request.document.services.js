@@ -42,7 +42,34 @@ async function createInstallationPermit(data) {
 async function createConstructionPermit(data) {
   return await Model.userConstruction.create(data);
 }
+//----------------- GET SUMMARY OF REQUEST ------------------------
+async function getRequestsForUser(userId) {
+  try {
+    // To store the results for each document type
+    const requests = [];
 
+    // Query of each document type and push the results into the 'requests' array
+    const certificateOfIndigencyRequests = await Model.userIndigency.find({ userId });
+    const certificateRequests = await Model.userCertificate.find({ userId });
+    const businessClearanceRequests = await Model.userBusinessClearance.find({ userId });
+    const barangayIDRequests = await Model.userBarangayID.find({ userId });
+    const installationRequests = await Model.userInstallation.find({ userId });
+    const constructionRequests = await Model.userConstruction.find({ userId });
+
+    // Push the results of each query into the 'requests' array
+    requests.push(...certificateOfIndigencyRequests);
+    requests.push(...certificateRequests);
+    requests.push(...businessClearanceRequests);
+    requests.push(...barangayIDRequests);
+    requests.push(...installationRequests);
+    requests.push(...constructionRequests);
+
+    return requests;
+  } catch (error) {
+    console.error('Error retrieving user requests:', error);
+    throw error;
+  }
+}
 module.exports = {
   createCertificateOfIndigency,
   createBarangayCertificate,
@@ -50,4 +77,9 @@ module.exports = {
   createBarangayID,
   createInstallationPermit,
   createConstructionPermit,
+  getRequestsForUser, 
+
 };
+
+
+
