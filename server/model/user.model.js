@@ -24,7 +24,7 @@ const userSchema = new Schema({
 
   suffix: String,
 
-  houseNumber: { //NEED SA FRONTEND 
+  houseNumber: { 
     type: String,
     required: true,
   },
@@ -43,7 +43,7 @@ const userSchema = new Schema({
     required: true,
   },
 
-  province: { //NEED SA FRONTEND 
+  province: {
     type: String,
     required: true,
   }, 
@@ -128,7 +128,7 @@ const userSchema = new Schema({
     type:String,
     default:'Active'
 },
-//ADDED FOR USER VERIFICATION --- 
+//ADDED FOR USER VERIFICATION IN FORGET PASSWORD --- 
 verificationCode: String, 
 verificationCodeUsed: Boolean, 
 
@@ -141,7 +141,7 @@ userSchema.pre('save', async function () {
   try {
     var user = this;  //referring to the user SCHEMA
     const salt = await (bcrypt.genSalt(10));
-    const hashpass = await bcrypt.hash(user.password, salt); //decrypt the encrypt password from the user 
+    const hashpass = await bcrypt.hash(user.password, salt); //decrypt the encrypted password from the user 
 
     user.password = hashpass;
 

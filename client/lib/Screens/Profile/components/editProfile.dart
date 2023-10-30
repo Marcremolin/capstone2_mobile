@@ -1,4 +1,4 @@
-// ignore_for_file: unused_local_variable
+// ignore_for_file: unused_local_variable, avoid_print, library_private_types_in_public_api, prefer_typing_uninitialized_variables
 
 import 'package:flutter/material.dart';
 import '../../../constants.dart';
@@ -7,150 +7,105 @@ import '../../../Screens/Homepage/bottom_nav.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:intl/intl.dart';
 
 class EditProfile extends StatefulWidget {
   final token;
-  const EditProfile({Key? key, this.token}) : super(key: key);
+  const EditProfile({super.key, required this.token});
 
   @override
   _EditProfileState createState() => _EditProfileState();
 }
 
 class _EditProfileState extends State<EditProfile> {
-  Map<String, dynamic>? userData;
-  String? firstName;
-  String? lastName;
-  String? middleName;
-  String? houseNumber;
-  String? barangay;
-  String? district;
-  String? city;
-  String? region;
-  String? nationality;
-  String? birthplace;
-  String? dateOfBirth;
-  String? age;
-  String? civilStatus;
-  String? highestEducation;
-  String? employmentStatus;
-  String? gender;
-  String? homeOwnership;
-  String? residentClass;
-  String? email;
-  String? votersRegistration;
-  String? suffix;
-  String? companyName;
-  String? position;
-  String? secondNumber;
+  Map<String, dynamic> userProfile = {};
 
-  @override
-  void initState() {
-    super.initState();
-    final token = widget.token;
-    if (token != null && token.isNotEmpty) {
-      // Decode the token and fetch user data
-      try {
-        userData = JwtDecoder.decode(token);
-        if (userData != null) {
-          // Now you can access user data from the decoded token
-          print("Received token: $userData");
-
-          // Fetch user profile data after decoding the token
-          fetchUserProfileData(token);
-        } else {
-          print("Token is not a valid JWT.");
-        }
-      } catch (e) {
-        print("Error decoding token: $e");
-      }
-    } else {
-      print("Token is null or empty.");
+  Future<void> fetchUserProfile() async {
+    var token = widget.token;
+    if (token.startsWith('Bearer ')) {
+      token = token.substring(7);
     }
-  }
-
-// Function to fetch user profile data
-  Future<void> fetchUserProfileData(String token) async {
-    const apiUrl =
-        'http://192.168.0.28:8000/profile'; // Replace with your API URL
-    print('Token: ${widget.token}');
 
     try {
+      Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(token);
       final response = await http.get(
-        Uri.parse(apiUrl),
+        Uri.parse('http://192.168.0.28:8000/profile/user'),
         headers: {
           'Authorization': 'Bearer $token',
         },
       );
 
       if (response.statusCode == 200) {
-        final jsonResponse = json.decode(response.body);
-        // Process the fetched user profile data
-        final lastName = jsonResponse['lastName'];
-        final firstName = jsonResponse['firstName'];
-        final middleName = jsonResponse['middleName'];
-        final houseNumber = jsonResponse['houseNumber'];
-        final barangay = jsonResponse['barangay'];
-        final district = jsonResponse['district'];
-        final city = jsonResponse['city'];
-        final region = jsonResponse['region'];
-        final nationality = jsonResponse['nationality'];
-        final birthplace = jsonResponse['birthplace'];
-        final dateOfBirth = jsonResponse['dateOfBirth'];
-        final age = jsonResponse['age'];
-        final civilStatus = jsonResponse['civilStatus'];
-        final highestEducation = jsonResponse['highestEducation'];
-        final employmentStatus = jsonResponse['employmentStatus'];
-        final gender = jsonResponse['gender'];
-        final homeOwnership = jsonResponse['homeOwnership'];
-        final residentClass = jsonResponse['residentClass'];
-        final email = jsonResponse['email'];
-        final votersRegistration = jsonResponse['votersRegistration'];
-        final suffix = jsonResponse['suffix'];
-        final companyName = jsonResponse['companyName'];
-        final position = jsonResponse['position'];
-        final secondNumber = jsonResponse['secondNumber'];
+        final Map<String, dynamic> data = json.decode(response.body);
 
-        // Extract other user profile data fields as needed
-
-        // You can setState to update the UI with the fetched data
-        setState(() {
-          this.firstName = jsonResponse['firstName'];
-          this.lastName = jsonResponse['lastName'];
-          this.middleName = jsonResponse['middleName'];
-          this.houseNumber = jsonResponse['houseNumber'];
-          this.barangay = jsonResponse['barangay'];
-          this.district = jsonResponse['district'];
-          this.city = jsonResponse['city'];
-          this.region = jsonResponse['region'];
-          this.nationality = jsonResponse['nationality'];
-          this.birthplace = jsonResponse['birthplace'];
-          this.dateOfBirth = jsonResponse['dateOfBirth'];
-          this.age = jsonResponse['age'];
-          this.civilStatus = jsonResponse['civilStatus'];
-          this.highestEducation = jsonResponse['highestEducation'];
-          this.employmentStatus = jsonResponse['employmentStatus'];
-          this.gender = jsonResponse['gender'];
-          this.homeOwnership = jsonResponse['homeOwnership'];
-          this.residentClass = jsonResponse['residentClass'];
-          this.email = jsonResponse['email'];
-          this.votersRegistration = jsonResponse['votersRegistration'];
-          this.suffix = jsonResponse['suffix'];
-          this.companyName = jsonResponse['companyName'];
-          this.position = jsonResponse['position'];
-          this.secondNumber = jsonResponse['secondNumber'];
-
-          // Update other relevant state variables
-        });
+        if (jwtDecodedToken['_id'] == data['_id']) {
+          if (data.containsKey('lastName') &&
+              data.containsKey('firstName') &&
+              data.containsKey('email') &&
+              data.containsKey('phoneNumber')) {
+            setState(() {
+              userProfile = data;
+            });
+          } else {
+            print('Incomplete or unexpected user profile data: $data');
+          }
+        } else {
+          print('User ID from token does not match the user profile data.');
+        }
       } else {
-        print('Failed to fetch user profile data: ${response.statusCode}');
+        print(
+            'Failed to load user profile. Status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
       }
     } catch (e) {
-      print('Error fetching user profile data: $e');
+      print('Error: $e');
     }
   }
 
   @override
+  void initState() {
+    super.initState();
+    fetchUserProfile();
+  }
+
+  Widget buildTextFormField(String fieldName, String initialValue) {
+    return Row(
+      children: [
+        Container(
+          width: 120,
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 10),
+          child: Text(
+            '$fieldName:',
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: TextFormField(
+              readOnly: true,
+              keyboardType: TextInputType.text,
+              cursorColor: kPrimaryColor,
+              initialValue: initialValue,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    String dateOfBirthString = userProfile['dateOfBirth']; // FOR DATE OF BIRTH
+    DateTime dateOfBirth = DateTime.parse(dateOfBirthString);
+    String formattedDate = DateFormat('yyyy-MM-dd').format(dateOfBirth);
+
     return Form(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,11 +115,11 @@ class _EditProfileState extends State<EditProfile> {
             thickness: 2,
             height: 1,
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: Text(
-              'RESIDENCE PROFILE',
-              style: TextStyle(
+              'Resident USER ID:  ${userProfile['_id']}',
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -175,362 +130,106 @@ class _EditProfileState extends State<EditProfile> {
             thickness: 2,
             height: 1,
           ),
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-
-            //display the user's First Name and Last Name in a read-only form. This code assumes that you have fetched the user's profile data and populated the firstName and lastName variables with the user's actual data.
-            child: TextFormField(
-              readOnly: true,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              initialValue: userData?['firstName'] ??
-                  '', // Populate with user's first name
-              decoration: InputDecoration(
-                hintText: "$firstName",
-                prefixIcon: const Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.person),
+          const SizedBox(height: 8),
+          const Divider(
+            color: Color.fromARGB(255, 152, 191, 223),
+            thickness: 2,
+            height: 1,
+          ),
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                'RESIDENCE PROFILE',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
+          const Divider(
+            color: Color.fromARGB(255, 152, 191, 223),
+            thickness: 2,
+            height: 1,
+          ),
+          const SizedBox(height: 8),
 
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              readOnly: true,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              initialValue:
-                  userData?['lastName'] ?? '', // Populate with user's last name
-              decoration: const InputDecoration(
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.person),
+          buildTextFormField('Last Name', userProfile['lastName']),
+          buildTextFormField('First Name', userProfile['firstName']),
+          buildTextFormField('Middle Name', userProfile['middleName']),
+          buildTextFormField('Suffix', userProfile['suffix']),
+          const SizedBox(height: 12),
+          const Divider(
+            color: Color.fromARGB(255, 152, 191, 223),
+            thickness: 2,
+            height: 1,
+          ),
+          // ---------------- ADDRESS ----------------
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                'COMPLETE ADDRESS',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
-
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              readOnly: true,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              initialValue: userData?['middleName'] ?? '',
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.person),
-              ),
-            ),
+          const Divider(
+            color: Color.fromARGB(255, 152, 191, 223),
+            thickness: 2,
+            height: 1,
           ),
+          const SizedBox(height: 8),
 
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              readOnly: true,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              initialValue: userData?['suffix'] ?? '',
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.person),
-              ),
-            ),
-          ),
-
-// Address Fields (2 Columns)
-          Row(
+          Column(
             children: [
-              Expanded(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      readOnly: true,
-                      keyboardType: TextInputType.text,
-                      cursorColor: kPrimaryColor,
-                      initialValue: userData?['houseNumber'] ?? '',
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.home),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      readOnly: true,
-                      keyboardType: TextInputType.text,
-                      cursorColor: kPrimaryColor,
-                      initialValue: userData?['city'] ?? '',
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.home),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      readOnly: true,
-                      keyboardType: TextInputType.text,
-                      cursorColor: kPrimaryColor,
-                      initialValue: userData?['street'] ?? '',
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.home),
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                  ],
-                ),
-              ),
-
-              // 2nd Column
-              Expanded(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      readOnly: true,
-                      keyboardType: TextInputType.text,
-                      cursorColor: kPrimaryColor,
-                      initialValue: userData?['barangay'] ?? '',
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.home),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      readOnly: true,
-                      keyboardType: TextInputType.text,
-                      cursorColor: kPrimaryColor,
-                      initialValue: userData?['district'] ?? '',
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.home),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      readOnly: true,
-                      keyboardType: TextInputType.text,
-                      cursorColor: kPrimaryColor,
-                      initialValue: userData?['region'] ?? '',
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.home),
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                  ],
-                ),
-              ),
+              buildTextFormField('House Number', userProfile['houseNumber']),
+              buildTextFormField('Barangay', userProfile['barangay']),
+              buildTextFormField('City', userProfile['cityMunicipality']),
+              buildTextFormField('District', userProfile['district']),
+              buildTextFormField('Province', userProfile['province']),
+              buildTextFormField('Region', userProfile['region']),
+              const SizedBox(height: 18),
             ],
           ),
-
           const Divider(
             color: Color.fromARGB(255, 152, 191, 223),
             thickness: 2,
             height: 1,
           ),
-
 // PERSONAL INFORMATION -----------------------------------------------------------
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(
-              'PERSONAL INFORMATION',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const Divider(
-            color: Color.fromARGB(255, 152, 191, 223),
-            thickness: 2,
-            height: 1,
-          ),
-
-// GENDER
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              readOnly: true,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.person),
-              ),
-            ),
-          ),
-
-// CIVIL STATUS
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              readOnly: true,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.person),
-              ),
-            ),
-          ),
-
-// NATIONALITY
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              readOnly: true,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              initialValue: userData?['nationality'] ?? '',
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.person),
-              ),
-            ),
-          ),
-
-// BIRTHPLACE
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              readOnly: true,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              initialValue: userData?['birthplace'] ?? '',
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.person),
-              ),
-            ),
-          ),
-
-// AGE
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              readOnly: true,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              initialValue: userData?['age'] ?? '',
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.person),
-              ),
-            ),
-          ),
-
-// Highest Educational Attainment
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              readOnly: true,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              initialValue: userData?['highestEducation'] ?? '',
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.school),
-              ),
-            ),
-          ),
-
-// Employment Status
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              readOnly: true,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              initialValue: userData?['employmentStatus'] ?? '',
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.work),
-              ),
-            ),
-          ),
-
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              readOnly: true,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              initialValue: userData?['companyName'] ?? '',
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.business),
-              ),
-            ),
-          ),
-
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              readOnly: true,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              initialValue: userData?['position'] ?? '',
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.person),
-              ),
-            ),
-          ),
-
-// HOME OWNERSHIP
-          const SizedBox(height: defaultPadding),
-          const Text(
-            'HOME OWNERSHIP',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              readOnly: true,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              initialValue: userData?['isOwner'] == true ? "Owner" : "Renting",
-              decoration: const InputDecoration(
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.home),
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                'PERSONAL INFORMATION',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
+          const Divider(
+            color: Color.fromARGB(255, 152, 191, 223),
+            thickness: 2,
+            height: 1,
+          ),
+          const SizedBox(height: 8),
+          buildTextFormField('Gender', userProfile['sex']),
+          buildTextFormField('Civil Status', userProfile['civilStatus']),
+          buildTextFormField('Nationality', userProfile['nationality']),
+          buildTextFormField('Date of Birth', formattedDate),
+          buildTextFormField('BirthPlace', userProfile['birthPlace']),
+          buildTextFormField('Age', userProfile['age'].toString()),
+          buildTextFormField('Company Name', userProfile['companyName']),
+          buildTextFormField('Position', userProfile['position']),
+          buildTextFormField('Home Ownership', userProfile['homeOwnership']),
+          const SizedBox(height: 8),
 
 // CONTACT INFORMATION
           const Divider(
@@ -538,13 +237,15 @@ class _EditProfileState extends State<EditProfile> {
             thickness: 2,
             height: 1,
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(
-              'CONTACT DETAILS',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                'CONTACT INFORMATION',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -553,57 +254,10 @@ class _EditProfileState extends State<EditProfile> {
             thickness: 2,
             height: 1,
           ),
-
-// PHONE NUMBER
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              readOnly: true,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              initialValue: userData?['phoneNumber'] ?? '',
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.person),
-              ),
-            ),
-          ),
-
-// 2nd Number (Optional)
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              readOnly: true,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              initialValue: userData?['secondNumber'] ?? '',
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.person),
-              ),
-            ),
-          ),
-
-// Email Address
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              readOnly: true,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              initialValue: userData?['email'] ?? '',
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.person),
-              ),
-            ),
-          ),
+          const SizedBox(height: 8),
+          buildTextFormField('Phone Number', userProfile['phoneNumber']),
+          buildTextFormField('Email', userProfile['email']),
+          const SizedBox(height: 8),
 
 // OTHER INFORMATION
           const Divider(
@@ -611,65 +265,29 @@ class _EditProfileState extends State<EditProfile> {
             thickness: 2,
             height: 1,
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(
-              'OTHER INFORMATION',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                'OTHER INFORMATION',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
-
           const Divider(
             color: Color.fromARGB(255, 152, 191, 223),
             thickness: 2,
             height: 1,
           ),
+          const SizedBox(height: 8),
 
-          const SizedBox(height: defaultPadding),
-
-// RESIDENT CLASS
-          const Text(
-            'RESIDENT CLASS',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              readOnly: true,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              initialValue: userData?['residentClass'] ?? '',
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.person),
-              ),
-            ),
-          ),
-
-// Voters Registration Number
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              readOnly: true,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              initialValue: userData?['votersRegistration'] ?? '',
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.person),
-              ),
-            ),
-          ),
+          buildTextFormField('Resident Class', userProfile['residentClass']),
+          buildTextFormField(
+              'Voters Number', userProfile['votersRegistration']),
+          buildTextFormField('Status', userProfile['status']),
 
           ElevatedButton(
             onPressed: () {

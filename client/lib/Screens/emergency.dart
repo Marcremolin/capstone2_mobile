@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api, avoid_print, use_key_in_widget_constructors, unnecessary_null_comparison, use_build_context_synchronously, unused_element, prefer_typing_uninitialized_variables, unnecessary_brace_in_string_interps
+
 import 'package:flutter/material.dart';
 import 'profilePage.dart';
 import '../../../Screens/mapPage.dart';
@@ -9,23 +11,22 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
-class Emergency extends StatefulWidget {
-  //FOR TOKEN -------------------------------------------------
-  final token;
-  const Emergency({Key? key, this.token}) : super(key: key);
-  //--------------------------------------------------
+//--------------
 
+class Emergency extends StatefulWidget {
+// FOR TOKEN -----------------------------
+  final token;
+  const Emergency({super.key, this.token});
   @override
   _EmergencyState createState() => _EmergencyState();
 }
 
 class _EmergencyState extends State<Emergency>
     with SingleTickerProviderStateMixin {
-  late String userId; //FOR TOKEN
-  late String contactNum; //FOR TOKEN
-
   late TabController _tabController;
   late String _selectedCategory;
+  late String userId; //FOR TOKEN
+  String phoneNumber = ''; // Initialize with an empty string
 
 //ADD FOR DATABASE
   String? selectedDate;
@@ -34,20 +35,12 @@ class _EmergencyState extends State<Emergency>
   @override
   void initState() {
     super.initState();
-
     _tabController = TabController(length: 2, vsync: this);
     _selectedCategory = 'General Report';
     _tabController.addListener(_handleTabSelection);
-
-    //TOKEN
-// TOKEN
     if (widget.token != null) {
       Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);
-      userId = jwtDecodedToken['_id'] ?? '';
-      contactNum = jwtDecodedToken['contactNum'] ?? '';
-    } else {
-      userId = '';
-      contactNum = '';
+      userId = jwtDecodedToken['_id'];
     }
   }
 
@@ -67,29 +60,335 @@ class _EmergencyState extends State<Emergency>
     super.dispose();
   }
 
-// FRONTEND ------
+//ADD FOR DATABASE ----------------------------------------------
+  void sendDistressSignal(String emergencyType) async {
+    var defaultStatus = "NEW";
+
+    var now = DateTime.now();
+    var formattedDate =
+        "${now.year}-${now.month}-${now.day} ${now.hour}:${now.minute}:${now.second}";
+
+    // Request location permission
+    PermissionStatus status = await Permission.location.request();
+
+    if (status.isGranted) {
+      Position userLocation = await getLocation();
+
+      if (userLocation != null) {
+        var latitude = userLocation.latitude;
+        var longitude = userLocation.longitude;
+
+        List<Placemark> placemarks =
+            await placemarkFromCoordinates(latitude, longitude);
+        if (placemarks.isNotEmpty) {
+          var street = placemarks[0].street;
+          var city = placemarks[0].locality;
+          var postalCode = placemarks[0].postalCode;
+          var country = placemarks[0].country;
+
+          var reqBody = {
+            "userId": userId,
+            "currentLocation": "${street}, ${city} ${postalCode}, ${country}",
+            "contact": phoneNumber,
+            "emergencyType": emergencyType,
+            "date": formattedDate,
+            "status": defaultStatus,
+          };
+
+          var url = Uri.parse('http://192.168.0.28:8000/emergencySignal');
+          try {
+            var response = await sendDistressSignalRequest(url, reqBody);
+
+            if (response.statusCode == 200) {
+              print('Request successful: ${response.body}');
+              var jsonResponse = jsonDecode(response.body);
+              var status = jsonResponse['status'];
+              showSuccessDialog(context, status);
+            } else {
+              print('HTTP Error: ${response.statusCode}');
+              print('Response body: ${response.body}');
+            }
+          } catch (e) {
+            print('Error sending distress signal: $e');
+          }
+        } else {
+          print('Phone number is empty.');
+        }
+      }
+    } else if (status.isPermanentlyDenied) {
+      showLocationPermissionDeniedDialog(context);
+    }
+  }
+
+  bool isValidCoordinates(double latitude, double longitude) {
+    return (latitude >= -90.0 && latitude <= 90.0) &&
+        (longitude >= -180.0 && longitude <= 180.0);
+  }
+
+  Future<http.Response> sendDistressSignalRequest(
+      Uri url, Map<String, dynamic> reqBody) async {
+    try {
+      return await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(reqBody),
+      );
+    } catch (e) {
+      print('Error sending distress signal request: $e');
+      rethrow;
+    }
+  }
+
+  Future<Position> getLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.best,
+      );
+      return position;
+    } catch (e) {
+      print("Error getting location: $e");
+      rethrow;
+    }
+  }
+
+  Future<String?> getStreetAddress(Position userLocation) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        userLocation.latitude,
+        userLocation.longitude,
+      );
+      if (placemarks.isNotEmpty) {
+        final Placemark placemark = placemarks[0];
+        final String? street = placemark.street;
+        final String? city = placemark.locality;
+        final String? country = placemark.country;
+        return '$street, $city, $country';
+      }
+      return null;
+    } catch (e) {
+      print("Error getting street address: $e");
+      return null;
+    }
+  }
+
+  void showNetworkErrorDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Network Error'),
+          content: const Text(
+              'A network error occurred. Please check your internet connection and try again.'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  showLocationPermissionDeniedDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Location Permission Denied'),
+          content: const Text(
+              'Please enable location permissions in your device settings to use this feature.'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+// -------------------------------------------------- ALERT DIALOGS --------------------------------------------------
+
+// POPUP RED CONFIRNMATION DIALOG
+  void showConfirmationDialog(BuildContext context, String emergencyType) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.transparent,
+          content: Container(
+            width: double.maxFinite,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(255, 243, 76, 64),
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Confirm',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Divider(
+                  color: Color.fromARGB(168, 255, 255, 255),
+                  thickness: 2,
+                  height: 15,
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  ' ARE YOU SURE YOU WANT TO SEND DISTRESS SIGNAL? ',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                const Divider(
+                  color: Color.fromARGB(168, 255, 255, 255),
+                  thickness: 2,
+                  height: 20,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        sendDistressSignal(emergencyType);
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text(
+                        'PROCEED',
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 15, 234, 22),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 40),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text(
+                        'DISCARD',
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 255, 255, 255),
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void showSuccessDialog(BuildContext context, [status]) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Center(
+          child: Container(
+            margin: const EdgeInsets.all(16.0),
+            child: AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30.0),
+              ),
+              title: const Center(
+                child: Text(
+                  'SUCCESS',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              content: const Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Distress signal sent successfully.',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 10.0),
+                  Text(
+                    'Rescuers are on their way to you. Stay alert and keep safe; assistance is coming',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18.0,
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.green,
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16.0, bottom: 16.0),
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      'OK',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18.0,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+// FRONTEND CODE -------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     List<String> tabs = ['Evacuation Center', 'Emergency Report '];
     return Scaffold(
-        backgroundColor: const Color.fromARGB(255, 2, 95, 170),
-        appBar: AppBar(
-          title: Text(_selectedCategory),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.account_circle), // Profile Icon
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProfilePage(token: widget.token),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-        body: Column(children: [
+      backgroundColor: const Color.fromARGB(255, 2, 95, 170),
+      appBar: AppBar(
+        title: Text(_selectedCategory),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.account_circle), // Profile Icon
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfilePage()),
+              );
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
           TabBar(
             controller: _tabController,
             labelColor: const Color.fromARGB(255, 255, 255, 255),
@@ -100,9 +399,7 @@ class _EmergencyState extends State<Emergency>
             }).toList(),
           ),
           Expanded(
-              child: TabBarView(
-            controller: _tabController,
-            children: [
+            child: TabBarView(controller: _tabController, children: [
 // ------------------------- EVACUATION CENTER ----------------------------
               ListView(
                 children: [
@@ -115,12 +412,16 @@ class _EmergencyState extends State<Emergency>
                     '093749474929',
                     ' ',
                     [
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
+                      'assets/images/NearbyLocations/ViviansBakery.jpg',
+                      'assets/images/NearbyLocations/DaangBakal_BarangayHall.jpg',
+                      'assets/images/NearbyLocations/JRU_ElementaryBuilding.jpg',
+                      'assets/images/NearbyLocations/KimmyStore.jpg',
+                    ],
+                    [
+                      'Vivians Bakery',
+                      'Daang Bakal Brgy Hall',
+                      'JRU Elementary Building',
+                      'Kimmy Store',
                     ],
                   ),
                   customListTile(
@@ -132,12 +433,16 @@ class _EmergencyState extends State<Emergency>
                     '093749474929',
                     ' ',
                     [
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
+                      'assets/images/NearbyLocations/BPI_KalentongBranch.jpg',
+                      'assets/images/NearbyLocations/Marketplace_Kalentong.jpg',
+                      'assets/images/NearbyLocations/Mercury_Kalentong.jpg',
+                      'assets/images/NearbyLocations/PalawanPawnshop_Kalentong.jpg',
+                    ],
+                    [
+                      'BPI Kalentong',
+                      'Marketplace Shopping Mall',
+                      'Mercury Kalentong',
+                      'Palawan Pawnshop Kalentong',
                     ],
                   ),
                   customListTile(
@@ -149,12 +454,16 @@ class _EmergencyState extends State<Emergency>
                     '093749474929',
                     ' ',
                     [
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
-                      'assets/images/Business2.jpg',
+                      'assets/images/NearbyLocations/AlmarezStore.jpg',
+                      'assets/images/NearbyLocations/HarapinAngBukas.jpg',
+                      'assets/images/NearbyLocations/DaangBakal_Alley5.jpg',
+                      'assets/images/NearbyLocations/PalawanPawnshop_Kalentong.jpg',
+                    ],
+                    [
+                      'Almarez Store',
+                      'Brgy Hall of Harapin ang Bukas',
+                      'Daang Bakal Alley5',
+                      'Palawan Pawnshop Kalentong',
                     ],
                   ),
                 ],
@@ -179,461 +488,46 @@ class _EmergencyState extends State<Emergency>
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const CustomButton(
+                  CustomButton(
                     color: Colors.blue,
                     text: 'POLICE',
                     icon: Icons.local_police_outlined,
                     emergencyType: 'POLICE Assistance',
+                    onTapCallback: () {
+                      showConfirmationDialog(context, 'POLICE Assistance');
+                    },
                   ),
                   const SizedBox(height: 10),
-                  const CustomButton(
+                  CustomButton(
                     color: Colors.red,
                     text: 'AMBULANCE',
                     icon: Icons.local_hospital_outlined,
                     emergencyType: 'AMBULANCE Assistance',
+                    onTapCallback: () {
+                      showConfirmationDialog(context, 'AMBULANCE Assistance');
+                    },
                   ),
                   const SizedBox(height: 10),
-                  const CustomButton(
+                  CustomButton(
                     color: Colors.orange,
                     text: 'FIRE TRUCK',
                     icon: Icons.fire_truck_outlined,
                     emergencyType: 'FIRE TRUCK Assistance',
-                  ),
+                    onTapCallback: () {
+                      showConfirmationDialog(context, 'FIRE TRUCK Assistance');
+                    },
+                  )
                 ],
               )
-            ],
-          ))
-        ]));
-  }
-
-// ---------------------------------------------- ADD FOR DATABASE ----------------------------------------------
-  void sendDistressSignal(String emergencyType) async {
-    //1st
-    var defaultStatus = "NEW";
-    var now = DateTime.now();
-    var formattedDate =
-        "${now.year}-${now.month}-${now.day} ${now.hour}:${now.minute}:${now.second}";
-
-    // Request location permission
-    PermissionStatus status = await Permission.location.request();
-
-    if (status.isGranted) {
-      // Permission granted, proceed to get the location
-      try {
-        Position userLocation = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.best, // Adjust accuracy as needed
-        );
-
-        if (userLocation != null) {
-          // Get latitude and longitude as strings
-          var latitude = userLocation.latitude.toString();
-          var longitude = userLocation.longitude.toString();
-          ('User location obtained: Latitude $latitude, Longitude $longitude');
-
-          // Use reverse geocoding to get the street address
-          List<Placemark> placemarks = await placemarkFromCoordinates(
-            userLocation.latitude,
-            userLocation.longitude,
-          );
-
-          if (placemarks.isNotEmpty) {
-            var firstPlacemark = placemarks[0];
-            var streetAddress = firstPlacemark.street;
-
-            // Include the street address in your request body
-            var regBody = {
-              "userId": userId,
-              "currentLocation": streetAddress,
-              "contact": contactNum,
-              "emergencyType": emergencyType,
-              "date": formattedDate,
-              "status": defaultStatus,
-            };
-
-            var url = Uri.parse('http://192.168.0.28:8000/emergencySignal');
-
-            try {
-              // Send an HTTP POST request to the URL with the updated request body
-              var response = await http.post(
-                url,
-                headers: {"Content-Type": "application/json"},
-                body: jsonEncode(regBody),
-              );
-
-              if (response.statusCode == 200) {
-                print('Request successful: ${response.body}');
-
-                // If the request was successful, parse the response JSON
-                var jsonResponse = jsonDecode(response.body);
-                var status = jsonResponse['status'];
-
-                showSuccessDialog(status);
-              } else {
-                print('HTTP Error: ${response.statusCode}');
-              }
-            } catch (e) {
-              print('Error sending distress signal: $e');
-            }
-          } else {
-            // Handle the case where location couldn't be obtained
-          }
-        } else {
-          // Handle the case where location couldn't be obtained
-        }
-      } catch (e, stackTrace) {
-        print('Error getting location: $e');
-        print(stackTrace);
-      }
-    } else {
-      // Permission is denied, handle accordingly
-    }
-  }
-
-  Future<Position> getLocation() async {
-    try {
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.best, // Adjust accuracy as needed
-      );
-      return position;
-    } catch (e) {
-      print("Error getting location: $e");
-      throw e;
-    }
-  }
-}
-//-------------------------------------------------------------------
-
-void sendDistressSignal(BuildContext context, String emergencyType) async {
-  var defaultStatus = "NEW";
-  var userId = "userId";
-  var contactNum = "contactNum";
-
-  final status = await Permission.location.request();
-
-  if (status.isGranted) {
-    try {
-      // Get user location
-      final userLocation = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.best,
-      );
-
-      if (userLocation != null) {
-        // Get latitude and longitude as strings
-        final latitude = userLocation.latitude.toString();
-        final longitude = userLocation.longitude.toString();
-        print(
-            'User location obtained: Latitude $latitude, Longitude $longitude');
-
-        // Use reverse geocoding to get the street address
-        final latitudeDouble = userLocation.latitude;
-        final longitudeDouble = userLocation.longitude;
-
-        final placemarks = await placemarkFromCoordinates(
-          latitudeDouble,
-          longitudeDouble,
-        );
-
-        if (placemarks.isNotEmpty) {
-          final firstPlacemark = placemarks[0];
-          final streetAddress = firstPlacemark.street;
-
-          final now = DateTime.now();
-          final formattedDate =
-              "${now.year}-${now.month}-${now.day} ${now.hour}:${now.minute}:${now.second}";
-          final regBody = {
-            "userId": userId,
-            "currentLocation": streetAddress,
-            "contactNum": contactNum,
-            "emergencyType": emergencyType,
-            "date": formattedDate,
-            "status": defaultStatus,
-          };
-
-          final url = Uri.parse('http://192.168.0.28:8000/emergencySignal');
-
-          try {
-            final response = await http.post(
-              url,
-              headers: {"Content-Type": "application/json"},
-              body: jsonEncode(regBody),
-            );
-
-            if (response.statusCode == 200) {
-              ('Request successful: ${response.body}');
-              final jsonResponse = jsonDecode(response.body);
-              final status = jsonResponse['status'];
-              showSuccessDialog(context, status);
-            } else {
-              ('HTTP Error: ${response.statusCode}');
-            }
-          } catch (e) {
-            ('Error sending distress signal: $e');
-          }
-        } else {
-          ('No placemarks found');
-        }
-      } else {
-        ('User location is null');
-      }
-    } catch (e) {
-      ('Error getting location: $e');
-    }
-  } else {
-    print('Location permission is not granted');
-  }
-}
-
-Future<Position> getLocation() async {
-  try {
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.best, // Adjust accuracy as needed
-    );
-    return position;
-  } catch (e) {
-    print("Error getting location: $e");
-    throw e;
-  }
-}
-
-//----------------------------------------------------------------------------------
-void showSuccessDialog(BuildContext context, [status]) {
-  showDialog(
-    context: context,
-    builder: (context) {
-      return Center(
-        child: Container(
-          margin: const EdgeInsets.all(16.0),
-          child: AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30.0),
-            ),
-            title: const Center(
-              child: Text(
-                'SUCCESS',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            content: const Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Distress signal sent successfully.',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 10.0),
-                Text(
-                  'Rescuers are on their way to you. Stay alert and keep safe; assistance is coming',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18.0,
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 16.0, bottom: 16.0),
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text(
-                    'OK',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18.0,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ]),
           ),
-        ),
-      );
-    },
-  );
-}
-
-// ------------------------- EMERGENCY BUTTONS Design & Function ----------------------------
-class CustomButton extends StatelessWidget {
-  final Color color;
-  final String text;
-  final IconData icon;
-  final String emergencyType;
-
-  const CustomButton({
-    Key? key,
-    required this.color,
-    required this.text,
-    required this.icon,
-    required this.emergencyType,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        print('Emergency button tapped.');
-
-        showConfirmationDialog(
-          context,
-          emergencyType,
-        );
-      },
-      child: Container(
-        width: 350,
-        height: 150,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30),
-        ),
-        child: Stack(
-          children: [
-            Container(
-              width: 400,
-              height: 150,
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(
-                  color: color,
-                  width: 4.0,
-                ),
-              ),
-            ),
-
-            // Inner Container with background color
-            Container(
-              width: 396,
-              height: 146,
-              decoration: BoxDecoration(
-                color: const Color.fromRGBO(233, 238, 249, 1),
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    icon,
-                    size: 80.0,
-                    color: color,
-                  ),
-                  Text(
-                    text,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
 }
 
-// ----------------------------------- POPUP RED CONFIRNMATION DIALOG -----------------------------------
-void showConfirmationDialog(BuildContext context, String emergencyType) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        backgroundColor: Colors
-            .transparent, // Make the background transparent kasi White yung deafult
-        content: Container(
-          width: double.maxFinite,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 243, 76, 64),
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Confirm',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Divider(
-                color: Color.fromARGB(168, 255, 255, 255),
-                thickness: 2,
-                height: 15,
-              ),
-              const SizedBox(
-                  height: 20), // height space between title and content
-
-              const Text(
-                ' ARE YOU SURE YOU WANT TO SEND DISTRESS SIGNAL? ',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20), // space between content and buttons
-              const Divider(
-                color: Color.fromARGB(168, 255, 255, 255),
-                thickness: 2,
-                height: 20,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      // Correctly pass the emergencyType to sendDistressSignal
-                      sendDistressSignal(context,
-                          emergencyType); // Pass the context and emergencyType
-                    },
-                    child: const Text(
-                      'PROCEED',
-                      style: TextStyle(
-                        color: Color.fromARGB(255, 15, 234, 22),
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 40), // Add space between buttons
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text(
-                      'DISCARD',
-                      style: TextStyle(
-                        color: Color.fromARGB(255, 255, 255, 255),
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      );
-    },
-  );
-}
-
-// ------------------------- EVACUATION Design & Function ----------------------------
+// WIDGET FUNCTIONS -------------------------------------------------------------------
 Widget customListTile(
   String imagePath,
   String evacName,
@@ -643,6 +537,7 @@ Widget customListTile(
   String evacContact,
   String directionButton,
   List<String> imageList,
+  List<String> imageName,
 ) {
   return InkWell(
     onTap: () {
@@ -656,6 +551,7 @@ Widget customListTile(
             evacContact: evacContact,
             directionButton: directionButton,
             imageList: imageList,
+            imageName: imageName,
           ),
         ),
       );
@@ -721,4 +617,85 @@ Widget customListTile(
       ),
     ),
   );
+}
+
+// ------------------------- EMERGENCY BUTTONS Design & Function ----------------------------
+class CustomButton extends StatelessWidget {
+  final Color color;
+  final String text;
+  final IconData icon;
+  final String emergencyType;
+  final VoidCallback onTapCallback; // Callback function
+
+  const CustomButton({
+    Key? key,
+    required this.color,
+    required this.text,
+    required this.icon,
+    required this.emergencyType,
+    required this.onTapCallback, // Pass the callback as a parameter
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        print('Emergency button tapped');
+        print('context: $context');
+        print('emergencyType: $emergencyType');
+        onTapCallback();
+      },
+      child: Container(
+        width: 350,
+        height: 150,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Stack(
+          children: [
+            Container(
+              width: 400,
+              height: 150,
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(
+                  color: color,
+                  width: 4.0,
+                ),
+              ),
+            ),
+
+            // Inner Container with background color
+            Container(
+              width: 396,
+              height: 146,
+              decoration: BoxDecoration(
+                color: const Color.fromRGBO(233, 238, 249, 1),
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    icon,
+                    size: 80.0,
+                    color: color,
+                  ),
+                  Text(
+                    text,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

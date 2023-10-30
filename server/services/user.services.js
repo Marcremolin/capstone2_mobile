@@ -1,9 +1,8 @@
 const UserModel = require('../model/user.model')
 const jwt = require('jsonwebtoken')
-const verification = require("../model/userVerification");
-const nodemailer = require("nodemailer"); //email handler
-const {v4: uuidv4} = require("uuid");  //unique string 
-require("dotenv").config(); //env variables
+const nodemailer = require("nodemailer"); 
+require("dotenv").config(); 
+const config = require('../config/config');
 
 
 
@@ -148,11 +147,13 @@ class UserService {
       console.log('Entered Password Length:', password.length);
       console.log('Hashed Password Length:', user.password.length);
       console.log('Password match:', isMatch);
-        
       if (isMatch) {
-        // Passwords match, create and return a token
-        let tokenData = { _id: user._id, email: user.email };
-        const token = this.generateToken(tokenData, "secret", "1h");
+        let tokenData = {
+          _id: user._id, 
+          email: user.email, 
+          };
+        const token = this.generateToken(tokenData, config.secretKey, "1D");
+        
         console.log('Generated Token:', token); // Log the generated token
 
         return token;

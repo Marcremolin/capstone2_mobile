@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import '../../../Screens/Homepage/bottom_nav.dart';
 import '../AdditionalContentPage.dart';
@@ -219,13 +221,12 @@ class _AnnouncementPageState extends State<AnnouncementPage>
             title: Text(_selectedCategory),
             actions: [
               IconButton(
-                icon: const Icon(Icons.account_circle), // Profile Icon
+                icon: const Icon(Icons.account_circle),
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          ProfilePage(token: widget.token), // Pass the token
+                      builder: (context) => ProfilePage(token: widget.token),
                     ),
                   );
                 },

@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, prefer_const_constructors, avoid_print
 
 import 'dart:convert';
 import 'package:client/constants.dart';
@@ -38,22 +38,58 @@ class _ForgetPasswordFormState extends State<ForgetPasswordForm> {
   }
 
   final String apiUrl = "http://192.168.0.28:8000";
-
   void showErrorDialog(String message) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Password Reset Failed"),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text("Try Again"),
+          contentPadding: EdgeInsets.all(20),
+          content: SizedBox(
+            width: 500,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Password Reset Failed",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  message,
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 20),
+                Center(
+                  child: SizedBox(
+                    height: 50,
+                    width: 180,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color.fromARGB(255, 229, 89, 79),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                      ),
+                      child: Text("Try Again",
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
+          backgroundColor: Colors.red,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30.0),
+          ),
         );
       },
     );
@@ -64,24 +100,80 @@ class _ForgetPasswordFormState extends State<ForgetPasswordForm> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Verification Successful"),
-          content: const Text("You can now login using your new password."),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text("OK"),
+          contentPadding: EdgeInsets.all(20),
+          content: SizedBox(
+            height: 250,
+            width: 500,
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 30),
+                    child: Center(
+                      child: Text(
+                        "Verification Successful",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 38,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    "You can now login using your new password. Your account has been successfully verified.",
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 20),
+                  Center(
+                    child: SizedBox(
+                      height: 50,
+                      width: 180,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Navigator.of(context)
+                              .pushReplacement(MaterialPageRoute(
+                            builder: (context) => LoginScreen(
+                              token: null,
+                            ),
+                          ));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color.fromARGB(255, 8, 131, 57),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
+                        ),
+                        child: Text(
+                          "Proceed to Login",
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
+          ),
+          backgroundColor: Colors.green,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
         );
       },
     );
   }
 
   Future<void> resetPassword() async {
-    print('Reset Password function called');
-
     try {
       final response = await http.post(
         Uri.parse('$apiUrl/forgetpass'),
@@ -122,7 +214,7 @@ class _ForgetPasswordFormState extends State<ForgetPasswordForm> {
                 decoration: InputDecoration(
                   labelText: "Verification Code",
                   filled: true,
-                  fillColor: const Color(0xFFE3E3E3), // Background color
+                  fillColor: const Color(0xFFE3E3E3),
                   hintStyle: const TextStyle(color: Colors.black),
                   contentPadding: const EdgeInsets.all(12.0),
                   enabledBorder: OutlineInputBorder(
@@ -166,6 +258,14 @@ class _ForgetPasswordFormState extends State<ForgetPasswordForm> {
   }
 
   Future<void> verifyPasswordReset() async {
+    final email = emailController.text;
+    final verificationCode = verificationCodeController.text;
+    final newPassword = newPasswordController.text;
+
+    if (email.isEmpty || verificationCode.isEmpty || newPassword.isEmpty) {
+      showErrorDialog('Please fill in all the required fields.');
+      return;
+    }
     final response = await http.post(
       Uri.parse('$apiUrl/verifyAndResetPassword'),
       body: jsonEncode({
@@ -186,6 +286,11 @@ class _ForgetPasswordFormState extends State<ForgetPasswordForm> {
 
   @override
   Widget build(BuildContext context) {
+    final _formKey = GlobalKey<FormState>();
+    final emailErrorController = TextEditingController();
+    final newPasswordErrorController = TextEditingController();
+    final confirmPasswordErrorController = TextEditingController();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Password Reset'),
@@ -200,12 +305,14 @@ class _ForgetPasswordFormState extends State<ForgetPasswordForm> {
                 const Text(
                   "Forgot Password",
                   style: TextStyle(
-                    fontSize: 74,
+                    fontSize: 64,
                     fontWeight: FontWeight.bold,
                   ),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
                 Form(
+                  key: _formKey,
                   child: Column(
                     children: [
 //---------------------------- EMAIL ADDRESS -----------------------------------
@@ -240,6 +347,7 @@ class _ForgetPasswordFormState extends State<ForgetPasswordForm> {
                         style: const TextStyle(
                           color: Colors.black,
                         ),
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Email is required';
@@ -297,6 +405,14 @@ class _ForgetPasswordFormState extends State<ForgetPasswordForm> {
                           if (value == null || value.isEmpty) {
                             return 'New Password is required';
                           }
+                          if (value.length < 8) {
+                            return 'Password must be at least 8 characters long';
+                          }
+                          if (!RegExp(
+                                  r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$%^&*])')
+                              .hasMatch(value)) {
+                            return 'Password must contain upper and lower case letters, numbers, and special characters';
+                          }
                           return null;
                         },
                       ),
@@ -350,15 +466,36 @@ class _ForgetPasswordFormState extends State<ForgetPasswordForm> {
                           if (value == null || value.isEmpty) {
                             return 'Confirm Password is required';
                           }
+                          if (value != newPasswordController.text) {
+                            return 'Passwords do not match';
+                          }
                           return null;
                         },
                       ),
 //--------------------------------------- RESET BUTTON -----------------------------------------
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        onPressed: resetPassword,
+                        onPressed: () {
+                          if (_formKey.currentState != null &&
+                              _formKey.currentState!.validate()) {
+                            resetPassword();
+                          } else {
+                            if (emailController.text.isEmpty) {
+                              emailErrorController.text = 'Email is required';
+                            }
+                            if (newPasswordController.text.isEmpty) {
+                              newPasswordErrorController.text =
+                                  'New Password is required';
+                            }
+                            if (confirmPasswordController.text.isEmpty) {
+                              confirmPasswordErrorController.text =
+                                  'Confirm Password is required';
+                            }
+                          }
+                        },
                         child: Text("Reset Password".toUpperCase()),
                       ),
+
                       const SizedBox(height: 16),
                     ],
                   ),

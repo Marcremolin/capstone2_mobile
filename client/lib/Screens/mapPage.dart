@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class mapPage extends StatelessWidget {
   final String evacName;
   final String evacAddress;
   final String evacContact;
   final String mapImage;
-
   final String directionButton;
   final List<String> imageList;
+  final List<String> imageName;
 
-  const mapPage({
+  List<Map<String, String>> imageAndNameList = [];
+
+  mapPage({
     Key? key,
     required this.mapImage,
     required this.evacName,
@@ -18,7 +19,20 @@ class mapPage extends StatelessWidget {
     required this.evacContact,
     required this.directionButton,
     required this.imageList,
-  }) : super(key: key);
+    required this.imageName,
+  }) : super(key: key) {
+    initializeImageAndNameList();
+  }
+
+  void initializeImageAndNameList() {
+    imageAndNameList = List.generate(
+      imageList.length,
+      (index) => {
+        'imagePath': imageList[index],
+        'name': imageName[index],
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,18 +126,8 @@ class mapPage extends StatelessWidget {
                           ),
                         ),
                       ),
-
-                      // Move the InkWell here
                       InkWell(
-                        onTap: () async {
-                          const url =
-                              'https://www.google.com/maps/place/Magalona+St,+Mandaluyong,+Metro+Manila/@14.5931888,121.0298685,17z/data=!3m1!4b1!4m6!3m5!1s0x3397c9cd88270ea9:0x48ccddf8a2ffb3ff!8m2!3d14.5931888!4d121.0298685!16s%2Fg%2F1vd6zw89?entry=ttu'; // Replace with your desired URL
-                          if (await canLaunch(url)) {
-                            await launch(url);
-                          } else {
-                            throw 'Could not launch $url';
-                          }
-                        },
+                        onTap: () async {},
                         child: Container(
                           margin: const EdgeInsets.only(left: 40),
                           decoration: BoxDecoration(
@@ -158,7 +162,6 @@ class mapPage extends StatelessWidget {
                     ),
                   ),
 
-                  // IMAGES SECTION
                   const Text(
                     "Nearby Location",
                     style: TextStyle(
@@ -169,40 +172,84 @@ class mapPage extends StatelessWidget {
                   const SizedBox(
                     height: 10,
                   ),
+                  // -------------------------------------- IMAGES SECTION SHIT --------------------
                   ListView(
                     physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: imageList.take(2).map((imagePath) {
-                          return Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Image.asset(
-                              imagePath,
-                              width: 140,
-                              height: 120,
-                              fit: BoxFit.cover,
-                            ),
+                        children: imageAndNameList.take(2).map((item) {
+                          return Column(
+                            children: [
+                              Image.asset(
+                                item['imagePath']!,
+                                width: 140,
+                                height: 200,
+                                fit: BoxFit.cover,
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 5),
+                                child: Divider(
+                                  height: 4,
+                                ),
+                              ),
+                              Text(
+                                item['name']!,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 15),
+                                child: Divider(
+                                  height: 4,
+                                ),
+                              ),
+                            ],
                           );
                         }).toList(),
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: imageList.take(2).map((imagePath) {
-                          return Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Image.asset(
-                              imagePath,
-                              width: 140,
-                              height: 120,
-                              fit: BoxFit.cover,
-                            ),
+                        children: imageAndNameList.skip(2).take(2).map((item) {
+                          return Column(
+                            children: [
+                              Image.asset(
+                                item['imagePath']!,
+                                width: 140,
+                                height: 200,
+                                fit: BoxFit.cover,
+                              ),
+
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 5),
+                                child: Divider(
+                                  height: 4,
+                                ),
+                              ), //
+                              Text(
+                                item['name']!,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 15),
+                                child: Divider(
+                                  height: 4,
+                                ),
+                              ),
+                            ],
                           );
                         }).toList(),
                       ),
                     ],
-                  ),
+                  )
+
+// -------------------------------------- END IMAGES SECTION SHIT -----------------------------
                 ],
               )),
         ));

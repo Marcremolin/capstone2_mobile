@@ -49,10 +49,12 @@ dependencies:
   http_parser:
   flutter_image_compress: ^2.0.4
   image_picker: ^1.0.4
+
+  # ADD FOR EMERGENCY BUTTON
   geolocator: ^10.1.0
   permission_handler: ^11.0.1
   geocoding: ^2.0.1
- 
+
   # ADD FOR EMAIL VALIDATION 
   check_disposable_email: ^0.0.1
   public_suffix: ^3.0.0
@@ -90,6 +92,10 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/icons/brgy.png
+    - assets/images/NearbyLocations/
+    - assets/images/Sample_Announcement_BANNER/
+
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
