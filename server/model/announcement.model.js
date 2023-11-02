@@ -8,8 +8,16 @@ const announcementSchema = new Schema({
   where: String,
   when: String,
   who: String,
-  filename: String,
-
+  filename: { //TO CATCH IMAGE
+    public_id: {
+      type: String,
+      required: true
+    },
+    url: {
+      type: String,
+      required: true
+    }
+  },
 });
 
 const announcement = db.model('announcement', announcementSchema);

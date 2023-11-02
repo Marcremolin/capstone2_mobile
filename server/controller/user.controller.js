@@ -1,85 +1,92 @@
 //FETCH THE DATA that is request and respond from the user (frontend)
 const UserService = require("../services/user.services");
 //handle the request & respond from FrontEnd
-const nodemailer = require('nodemailer'); // Used for sending email
-const Mailgen = require('mailgen'); // Used for generating HTML email content
+const nodemailer = require('nodemailer'); 
+const Mailgen = require('mailgen'); 
 const UserModel = require("../model/user.model");
 const config = require('../config/config');
 const jwt = require('jsonwebtoken');
-
 exports.register = async (req, res, next) => {
-    try { //pass the data from the services 
-        console.log("---req body---", req.body);
-        const {
-            lastName,
-            firstName,
-            middleName,
-            suffix,
-            houseNumber,
-            barangay,
-            cityMunicipality,
-            district,
-            province,
-            region,
-            phoneNum,
-            email,
-            nationality,
-            civilStatus,
-            highestEducation,
-            employmentStatus,
-            homeOwnership,
-            residentClass,
-            birthPlace,
-            age,
-            dateOfBirth,
-            sex,
-            companyName,
-            position,
-            votersRegistration, 
-            status,
-            password,
-            type} = req.body; //Get the data from frontend 
+  try {
+    let userImage;
 
+    if (req.file) {
+      userImage = req.file;
+    }
 
-        const successRes = await UserService.registerUser( 
-            //28 data from user 
-            lastName,
-            firstName,
-            middleName,
-            suffix,
-            houseNumber,
-            barangay,
-            cityMunicipality,
-            district,
-            province,
-            region,
-            phoneNum,
-            email,
-            nationality,
-            civilStatus,
-            highestEducation,
-            employmentStatus,
-            homeOwnership,
-            residentClass,
-            birthPlace,
-            age,
-            dateOfBirth,
-            sex,
-            companyName,
-            position,
-            votersRegistration, 
-            status,
-            password,
-            type);
+    const {
+      lastName,
+      firstName,
+      middleName,
+      suffix,
+      houseNumber,
+      barangay,
+      cityMunicipality,
+      district,
+      province,
+      region,
+      phoneNumber,
+      email,
+      nationality,
+      civilStatus,
+      highestEducation,
+      employmentStatus,
+      homeOwnership,
+      residentClass,
+      birthPlace,
+      age,
+      dateOfBirth,
+      sex,
+      companyName,
+      position,
+      votersRegistration,
+      status,
+      password,
+      type,
+    } = req.body; // Get the data from frontend
 
-        //RESPONSE BACK to frontend after successfully registration from user 
-        res.json({status:true,success:"USER REGISTERED SUCCESSFULLYYY!!"})
-} catch (error){
-    throw error
+    if (userImage) {
+      const successRes = await UserService.registerUser(
+        lastName,
+        firstName,
+        middleName,
+        suffix,
+        houseNumber,
+        barangay,
+        cityMunicipality,
+        district,
+        province,
+        region,
+        phoneNumber,
+        email,
+        nationality,
+        civilStatus,
+        highestEducation,
+        employmentStatus,
+        homeOwnership,
+        residentClass,
+        birthPlace,
+        age,
+        dateOfBirth,
+        sex,
+        companyName,
+        position,
+        votersRegistration,
+        userImage, // Include userImage in the registration function
+        status,
+        password,
+        type
+      );
+
+      // RESPONSE BACK to frontend after successful registration from the user
+      res.json({ status: true, success: "USER REGISTERED SUCCESSFULLYYY!!" });
+    } else {
+      res.json({ status: false, error: "User image not provided." });
+    }
+  } catch (error) {
+    throw error;
+  }
 }
-
-}
-
 exports.login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
@@ -126,8 +133,11 @@ exports.login = async (req, res, next) => {
           companyName: user.companyName,
           position: user.position,
           votersRegistration: user.votersRegistration,
+          filename: user.filename, 
           status: user.status};
-        const token = await UserService.generateToken(tokenData, config.secretKey, "1h");
+
+          
+        const token = await UserService.generateToken(tokenData, config.secretKey, "1D");
         const decoded = jwt.verify(token, config.secretKey);
         console.log('Verified Token:', decoded);
         res.status(200).json({ status: true, success: "sendData", token: token });
@@ -247,27 +257,3 @@ exports.verifyAndResetPassword = async (req, res) => {
   await user.save();
   res.status(200).json({ message: 'Password reset successfully' });
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -5,43 +5,77 @@ const { Schema } = mongoose;
 
 // BARANGAY INDIGENCY --------------------
 const barangayIndigencySchema = new Schema({
-  userId: { type: String, required: true },
-  userAddress:{type: String, required: true},
+  residentName: {type: String,required: true},
+  userId: {type: String, required: true},
+  address: {type: String, required: true},
   typeOfDocument:{type: String,required: true,index: true}, // used to optimize the retrieval of data and improve the performance of queries kasi NAGBUBUFFER SHIT
-  dateOfPickUp:{type: Date, required: true, index: true},
-  reasonForRequesting:{type: String, required: true, index: true}, 
-  paymentMethod:{type: String, required: true, index: true},
-  paymentReferenceNumber:{type: String,required: false },
-  status: {type: String}
+  reasonOfRequest: {type: String, required: true},
+  pickUpDate: {type: String, required: true },
+  modeOfPayment: {type: String, required: true},
+  reference: {type: String},
+  status: {type: String, default: 'New' },
 });
 
 const userIndigency = db.model('BarangayIndigency', barangayIndigencySchema); 
 
 // BARANGAY CERTIFICATE --------------------
 const barangayCertifcateSchema = new Schema({
-  userId: { type: String, required: true },
-  userAddress:{type: String,required: true},
-  typeOfDocument:{type: String,required: true,index: true},
-  dateOfPickUp:{type: Date,required: true, index: true},
-  reasonForRequesting:{type: String,required: true, index: true},
-  paymentMethod:{type: String, required: true, index: true},
-  paymentReferenceNumber:{type: String,required: false},
-  status: {type: String}
+  typeOfDocument:{type: String,required: true,index: true}, // used to optimize the retrieval of data and improve the performance of queries kasi NAGBUBUFFER SHIT
+
+  residentName: {type: String,required: true},
+  userId: {type: String, required: true},
+  address: {type: String, required: true},
+  reasonOfRequest: {type: String, required: true},
+  pickUpDate: {type: String, required: true },
+  modeOfPayment: {type: String, required: true},
+  reference: {type: String},
+  status: {type: String, default: 'New' },
 });
 
 const userCertificate = db.model('barangaycertificate', barangayCertifcateSchema); 
 
 // BUSINESS CLEARANCE --------------------
 const businessClearanceSchema = new Schema({
-  userId: { type: String, required: true },
-  businessName:{type: String, required: true},
-  businessAddress:{type: String, required: true},
-  typeOfDocument:{type: String, required: true, index: true},
-  dateOfPickUp:{type: Date, required: true, index: true},
-  reasonForRequesting:{type: String, required: true, index: true},
-  paymentMethod:{type: String, required: true, index: true},
-  paymentReferenceNumber:{type: String, required: false},
-  status: {type: String}
+  typeOfDocument:{type: String,required: true,index: true}, // used to optimize the retrieval of data and improve the performance of queries kasi NAGBUBUFFER SHIT
+
+  businessName:{
+    type:String,
+},
+address:{
+    type:String,
+    required:true
+},
+residentName:{
+  type:String,
+  required:true
+},
+userId: {
+  type: String,
+  required: true
+},
+type:{
+  type:String,
+  required:true
+},
+reasonOfRequest:{
+    type:String,
+    required:true
+},
+pickUpDate:{
+    type:String,
+    required:true
+},
+modeOfPayment:{
+  type:String,
+  required:true
+},
+reference:{
+  type:String
+},
+status:{
+  type:String,
+  default:'New'
+}
  
 });
 
@@ -50,13 +84,16 @@ const userBusinessClearance = db.model('BusinessClearance', businessClearanceSch
 
 // BARANGAY ID --------------------
 const BarangayIDSchema = new Schema({
-  userId: { type: String, required: true },
-  typeOfDocument:{type: String, required: true, index: true},
-  dateOfPickUp:{type: Date, required: true, index: true,},
-  reasonForRequesting:{type: String, required: true, index: true,},
-  paymentMethod:{type: String, required: true, index: true},
-  paymentReferenceNumber:{type: String, required: false,},
-  status: {type: String }
+  typeOfDocument:{type: String,required: true,index: true}, // used to optimize the retrieval of data and improve the performance of queries kasi NAGBUBUFFER SHIT
+
+  residentName: {type: String,required: true},
+  userId: {type: String, required: true},
+  address: {type: String, required: true},
+  reasonOfRequest: {type: String, required: true},
+  pickUpDate: {type: String, required: true },
+  modeOfPayment: {type: String, required: true},
+  reference: {type: String},
+  status: {type: String, default: 'New' },
 });
 
 const userBarangayID = db.model('barangayid', BarangayIDSchema); 
@@ -64,13 +101,16 @@ const userBarangayID = db.model('barangayid', BarangayIDSchema);
 
 // INSTALLATION PERMIT--------------------
 const installationSchema = new Schema({
-  userId: { type: String, required: true },
-  typeOfDocument:{type: String, required: true, index: true},
-  dateOfPickUp:{type: Date, required: true, index: true,},
-  reasonForRequesting:{type: String, required: true, index: true,},
-  paymentMethod:{type: String, required: true, index: true},
-  paymentReferenceNumber:{type: String, required: false,},
-  status: {type: String }
+  typeOfDocument:{type: String,required: true,index: true}, // used to optimize the retrieval of data and improve the performance of queries kasi NAGBUBUFFER SHIT
+
+  residentName: {type: String,required: true},
+  userId: {type: String, required: true},
+  address: {type: String, required: true},
+  reasonOfRequest: {type: String, required: true},
+  pickUpDate: {type: String, required: true },
+  modeOfPayment: {type: String, required: true},
+  reference: {type: String},
+  status: {type: String, default: 'New' },
 });
 
 const userInstallation = db.model('Installation', installationSchema); 
@@ -78,13 +118,16 @@ const userInstallation = db.model('Installation', installationSchema);
 
 // CONSTRUCTION PERMIT--------------------
 const constructionSchema = new Schema({
-  userId: { type: String, required: true },
-  typeOfDocument:{type: String, required: true, index: true},
-  dateOfPickUp:{type: Date, required: true, index: true,},
-  reasonForRequesting:{type: String, required: true, index: true,},
-  paymentMethod:{type: String, required: true, index: true},
-  paymentReferenceNumber:{type: String, required: false,},
-  status: {type: String }
+  typeOfDocument:{type: String,required: true,index: true}, // used to optimize the retrieval of data and improve the performance of queries kasi NAGBUBUFFER SHIT
+
+  residentName: {type: String,required: true},
+  userId: {type: String, required: true},
+  address: {type: String, required: true},
+  reasonOfRequest: {type: String, required: true},
+  pickUpDate: {type: String, required: true },
+  modeOfPayment: {type: String, required: true},
+  reference: {type: String},
+  status: {type: String, default: 'New' },
 });
 
 const userConstruction = db.model('Construction', constructionSchema); 
