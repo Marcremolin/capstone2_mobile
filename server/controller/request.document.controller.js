@@ -6,12 +6,12 @@ exports.createDocumentRequest = async (req, res, next) => {
 
     const {
       userId,
-      userAddress,
+      address,
       typeOfDocument,
-      dateOfPickUp,
-      reasonForRequesting,
-      paymentMethod,
-      paymentReferenceNumber,
+      pickUpDate,
+      reasonOfRequest,
+      modeOfPayment,
+      reference,
       status
     } = req.body;
 
@@ -19,12 +19,12 @@ exports.createDocumentRequest = async (req, res, next) => {
 
     console.log("Extracted Data:");
     console.log("userId:", userId);
-    console.log("userAddress:", userAddress);
+    console.log("address:", address);
     console.log("typeOfDocument:", typeOfDocument);
-    console.log("dateOfPickUp:", dateOfPickUp);
-    console.log("reasonForRequesting:", reasonForRequesting);
-    console.log("paymentMethod:", paymentMethod);
-    console.log("paymentReferenceNumber:", paymentReferenceNumber);
+    console.log("pickUpDate:", pickUpDate);
+    console.log("reasonOfRequest:", reasonOfRequest);
+    console.log("modeOfPayment:", modeOfPayment);
+    console.log("reference:", reference);
     console.log("status:", status);
 
     switch (typeOfDocument) {
@@ -38,8 +38,8 @@ exports.createDocumentRequest = async (req, res, next) => {
       case "BusinessClearance":
         documentRequest = await DocumentRequestServices.createBusinessClearance({
           ...req.body,
-          businessName: userAddress,
-          businessAddress: userAddress, 
+          businessName: address,
+          businessAddress: address, 
         });
         break;
       case "BarangayID":

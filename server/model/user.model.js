@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 const db = require('../config/db')
 const bcrypt = require('bcrypt');
@@ -10,6 +11,7 @@ const userSchema = new Schema({
     type:String,
     required:true
 },
+
   lastName: {
     type: String,
     required: true,
@@ -55,7 +57,7 @@ const userSchema = new Schema({
 
   phoneNumber: {
     type: String,
-    required: true,
+
   },
 
   email: {
@@ -76,6 +78,7 @@ const userSchema = new Schema({
   },
   highestEducation: {
     type: String,
+
   },
   employmentStatus: {
     type: String,
@@ -87,12 +90,10 @@ const userSchema = new Schema({
   },
   residentClass: {
     type: String,
-    required: true,
   },
 
   dateOfBirth: {
     type: Date,
-    // required: true,
   },
     birthPlace: {
       type: String,
@@ -114,11 +115,29 @@ const userSchema = new Schema({
   votersRegistration: {
     type: String,
   },
+  filename: {
+    public_id: {
+      type: String,
+      required: true
+    },
+    url: {
+      type: String,
+      required: true
+    }
+  },
 
   password: {
     type: String,
     required: true,
   },
+  filename: {
+    public_id: {
+      type: String,
+      required: true
+    },
+    url:{
+      type: String,
+      required: true}  },
 
   type:{
     type:String,
@@ -128,6 +147,9 @@ const userSchema = new Schema({
     type:String,
     default:'Active'
 },
+
+
+
 //ADDED FOR USER VERIFICATION IN FORGET PASSWORD --- 
 verificationCode: String, 
 verificationCodeUsed: Boolean, 
@@ -165,3 +187,4 @@ userSchema.methods.comparePassword = async function (userPassword) {
 const UserModel = db.model('user', userSchema);
 
 module.exports = UserModel;
+

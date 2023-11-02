@@ -3,12 +3,11 @@ const jwt = require('jsonwebtoken')
 const nodemailer = require("nodemailer"); 
 require("dotenv").config(); 
 const config = require('../config/config');
-
+const cloudinary = require('../config/cloudinary');
 
 
 class UserService {
-
-  static async registerUser( 
+  static async registerUser(
     lastName,
     firstName,
     middleName,
@@ -33,91 +32,107 @@ class UserService {
     sex,
     companyName,
     position,
-    votersRegistration, 
+    votersRegistration,
+    userImage,
     status,
     password,
     type
-
-  )
-  
-   {
+  ) {
     try {
+      // Generate a unique user ID
+      const currentDate = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const lastCustomIdDoc = await UserModel.findOne().sort({ _id: -1 });
+      let newCustomId = currentDate + '01';
+      if (lastCustomIdDoc) {
+        const lastIncrement = parseInt(lastCustomIdDoc._id.slice(-2));
+        const newIncrement = (lastIncrement + 1).toString().padStart(2, '0');
+        newCustomId = currentDate + newIncrement;
+      }
 
-       // Generate a unique user ID
-       const currentDate = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-       const lastCustomIdDoc = await UserModel.findOne().sort({ _id: -1 });
-       let newCustomId = currentDate + '01';
-       if (lastCustomIdDoc) {
-         const lastIncrement = parseInt(lastCustomIdDoc._id.slice(-2));
-         const newIncrement = (lastIncrement + 1).toString().padStart(2, '0');
-         newCustomId = currentDate + newIncrement;
-       }
-
-       //nodemailer stuff
-       let transporter = nodemailer.createTransport({
-        service: "gmail",
+      // Nodemailer setup
+      let transporter = nodemailer.createTransport({
+        service: 'gmail',
         auth: {
-          user: process.env.AUTH_EMAIL, 
-          pass: process.env.AUTH_PASS, 
-        }
-       })
-       //testing success
-       transporter.verify((error, success) => {
-          if(error){
-            console.log(error); 
-          } else{
-            console.log("Ready for messages");
-            console.log(success);
-          }
-       })
-            
- 
-    
-
-
-       //store the data that the user has passed
-      const createUser = new UserModel({
-            _id: newCustomId,
-            lastName,
-            firstName,
-            middleName,
-            suffix,
-            houseNumber,
-            barangay,
-            cityMunicipality,
-            district,
-            province,
-            region,
-            phoneNumber,
-            email,
-            nationality,
-            civilStatus,
-            highestEducation,
-            employmentStatus,
-            homeOwnership,
-            residentClass,
-            birthPlace,
-            age,
-            dateOfBirth,
-            sex,
-            companyName,
-            position,
-            votersRegistration, 
-            status,
-            password,
-            type,
-            verified: false,
-        
-
+          user: process.env.AUTH_EMAIL,
+          pass: process.env.AUTH_PASS,
+        },
       });
 
-      return await createUser.save();
+      // Testing success
+      transporter.verify((error, success) => {
+        if (error) {
+          // console.log(error);
+        } else {
+          console.log('Ready for messages');
+          console.log(success);
+        }
+      });
 
+       // Upload the image to Cloudinary
+    const cloudinaryResponse = await cloudinary.uploader.upload(
+      `uploads/profile/${userImage.filename}`,
+      { folder: 'profile' } // Cloudinary folder where the image will be stored
+    );
 
+    
+
+      // Create a new user instance and set the userImage
+      const createUser = new UserModel({
+        _id: newCustomId,
+        lastName,
+        firstName,
+        middleName,
+        suffix,
+        houseNumber,
+        barangay,
+        cityMunicipality,
+        district,
+        province,
+        region,
+        phoneNumber,
+        email,
+        nationality,
+        civilStatus,
+        highestEducation,
+        employmentStatus,
+        homeOwnership,
+        residentClass,
+        birthPlace,
+        age,
+        dateOfBirth,
+        sex,
+        companyName,
+        position,
+        votersRegistration,
+        userImage: {
+          public_id: cloudinaryResponse.public_id, 
+          url: cloudinaryResponse.secure_url 
+        },
+        
+        filename: {
+          public_id: cloudinaryResponse.public_id, // Store the Cloudinary public_id
+          url: cloudinaryResponse.secure_url // Store the Cloudinary URL
+        },
+        
+
+        status,
+        password,
+        type,
+        verified: false,
+      });
+
+     
+
+      // Save the user data in the database
+      await createUser.save();
+
+      return createUser;
     } catch (err) {
-        throw (err)
+      throw err;
     }
   }
+
+
 
   //Make call to MongoDB database by making use of MODEL 
   // ------- Check if the user email exist in the database ---------- 
@@ -178,4 +193,3 @@ static async generateToken(tokenData,secretKey,jwt_expire){
 }
 
 module.exports = UserService;
-
