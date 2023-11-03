@@ -93,14 +93,14 @@ const userSchema = new Schema({
   },
 
   dateOfBirth: {
-    type: Date,
+    type: String,
   },
     birthPlace: {
       type: String,
       required: true,
     },
     age: {
-      type: Number,
+      type: String,
       required: true,
     },
     
@@ -141,11 +141,11 @@ const userSchema = new Schema({
 
   type:{
     type:String,
-    default:'Resident'
+    default:'resident'
 },
   status:{
     type:String,
-    default:'Active'
+    default:'active'
 },
 
 

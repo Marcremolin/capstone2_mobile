@@ -29,7 +29,7 @@ class _EditProfileState extends State<EditProfile> {
     try {
       Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(token);
       final response = await http.get(
-        Uri.parse('http://192.168.0.28:8000/profile/user'),
+        Uri.parse('https://dbarangay-mobile-e5o1.onrender.com/profile/user'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -41,8 +41,7 @@ class _EditProfileState extends State<EditProfile> {
         if (jwtDecodedToken['_id'] == data['_id']) {
           if (data.containsKey('lastName') &&
               data.containsKey('firstName') &&
-              data.containsKey('email') &&
-              data.containsKey('phoneNumber')) {
+              data.containsKey('email')) {
             setState(() {
               userProfile = data;
             });
@@ -102,10 +101,36 @@ class _EditProfileState extends State<EditProfile> {
 
   @override
   Widget build(BuildContext context) {
-    String dateOfBirthString = userProfile['dateOfBirth']; // FOR DATE OF BIRTH
+    String dateOfBirthString = userProfile['dateOfBirth'] ?? '';
     DateTime dateOfBirth = DateTime.parse(dateOfBirthString);
     String formattedDate = DateFormat('yyyy-MM-dd').format(dateOfBirth);
 
+    String lastName = userProfile['lastName'] ?? '';
+    String firstName = userProfile['firstName'] ?? '';
+    String middleName = userProfile['middleName'] ?? '';
+    String suffix = userProfile['suffix'] ?? '';
+    String houseNumber = userProfile['houseNumber'] ?? '';
+    String barangay = userProfile['barangay'] ?? '';
+    String cityMunicipality = userProfile['cityMunicipality'] ?? '';
+    String district = userProfile['district'] ?? '';
+    String province = userProfile['province'] ?? '';
+    String region = userProfile['region'] ?? '';
+    String sex = userProfile['sex'] ?? '';
+    String highestEducation = userProfile['highestEducation'] ?? '';
+    String civilStatus = userProfile['civilStatus'] ?? '';
+    String nationality = userProfile['nationality'] ?? '';
+    String birthPlace = userProfile['birthPlace'] ?? '';
+    String age = userProfile['age']?.toString() ?? '';
+    String companyName = userProfile['companyName'] ?? '';
+    String employmentStatus = userProfile['employmentStatus'] ?? '';
+    String position = userProfile['position'] ?? '';
+    String homeOwnership = userProfile['homeOwnership'] ?? '';
+    String phoneNumber = userProfile['phoneNumber']?.toString() ?? '';
+
+    String email = userProfile['email'] ?? '';
+    String residentClass = userProfile['residentClass'] ?? '';
+    String votersRegistration = userProfile['votersRegistration'] ?? '';
+    String status = userProfile['status'] ?? '';
     return Form(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,10 +180,10 @@ class _EditProfileState extends State<EditProfile> {
           ),
           const SizedBox(height: 8),
 
-          buildTextFormField('Last Name', userProfile['lastName']),
-          buildTextFormField('First Name', userProfile['firstName']),
-          buildTextFormField('Middle Name', userProfile['middleName']),
-          buildTextFormField('Suffix', userProfile['suffix']),
+          buildTextFormField('Last Name', lastName),
+          buildTextFormField('First Name', firstName),
+          buildTextFormField('Middle Name', middleName),
+          buildTextFormField('Suffix', suffix),
           const SizedBox(height: 12),
           const Divider(
             color: Color.fromARGB(255, 152, 191, 223),
@@ -187,12 +212,12 @@ class _EditProfileState extends State<EditProfile> {
 
           Column(
             children: [
-              buildTextFormField('House Number', userProfile['houseNumber']),
-              buildTextFormField('Barangay', userProfile['barangay']),
-              buildTextFormField('City', userProfile['cityMunicipality']),
-              buildTextFormField('District', userProfile['district']),
-              buildTextFormField('Province', userProfile['province']),
-              buildTextFormField('Region', userProfile['region']),
+              buildTextFormField('House Number', houseNumber),
+              buildTextFormField('Barangay', barangay),
+              buildTextFormField('City', cityMunicipality),
+              buildTextFormField('District', district),
+              buildTextFormField('Province', province),
+              buildTextFormField('Region', region),
               const SizedBox(height: 18),
             ],
           ),
@@ -220,15 +245,17 @@ class _EditProfileState extends State<EditProfile> {
             height: 1,
           ),
           const SizedBox(height: 8),
-          buildTextFormField('Gender', userProfile['sex']),
-          buildTextFormField('Civil Status', userProfile['civilStatus']),
-          buildTextFormField('Nationality', userProfile['nationality']),
+          buildTextFormField('Gender', sex),
+          buildTextFormField('Highest Education Attainment', highestEducation),
+          buildTextFormField('Civil Status', civilStatus),
+          buildTextFormField('Nationality', nationality),
           buildTextFormField('Date of Birth', formattedDate),
-          buildTextFormField('BirthPlace', userProfile['birthPlace']),
-          buildTextFormField('Age', userProfile['age'].toString()),
-          buildTextFormField('Company Name', userProfile['companyName']),
-          buildTextFormField('Position', userProfile['position']),
-          buildTextFormField('Home Ownership', userProfile['homeOwnership']),
+          buildTextFormField('Birthplace', birthPlace),
+          buildTextFormField('Age', age),
+          buildTextFormField('Company Name', companyName),
+          buildTextFormField('Employment Status', employmentStatus),
+          buildTextFormField('Position', position),
+          buildTextFormField('Home Ownership', homeOwnership),
           const SizedBox(height: 8),
 
 // CONTACT INFORMATION
@@ -255,8 +282,8 @@ class _EditProfileState extends State<EditProfile> {
             height: 1,
           ),
           const SizedBox(height: 8),
-          buildTextFormField('Phone Number', userProfile['phoneNumber']),
-          buildTextFormField('Email', userProfile['email']),
+          buildTextFormField('Phone Number', phoneNumber),
+          buildTextFormField('Email', email),
           const SizedBox(height: 8),
 
 // OTHER INFORMATION
@@ -284,10 +311,9 @@ class _EditProfileState extends State<EditProfile> {
           ),
           const SizedBox(height: 8),
 
-          buildTextFormField('Resident Class', userProfile['residentClass']),
-          buildTextFormField(
-              'Voters Number', userProfile['votersRegistration']),
-          buildTextFormField('Status', userProfile['status']),
+          buildTextFormField('Resident Class', residentClass),
+          buildTextFormField('Voters Registration', votersRegistration),
+          buildTextFormField('Status', status),
 
           ElevatedButton(
             onPressed: () {

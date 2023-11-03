@@ -5,8 +5,6 @@ import '../../../Screens/Homepage/bottom_nav.dart';
 import '../AdditionalContentPage.dart';
 import '../../Screens/ProfilePage.dart';
 import '../../Screens/Login/login_screen.dart';
-
-import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -33,9 +31,6 @@ class _AnnouncementPageState extends State<AnnouncementPage>
   void initState() {
     super.initState();
 
-    // final String? token;
-
-    // Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);
     _tabController = TabController(length: 3, vsync: this);
     _selectedCategory = 'Announcement';
     _tabController.addListener(_handleTabSelection);
@@ -100,7 +95,8 @@ class _AnnouncementPageState extends State<AnnouncementPage>
 
 //--------------------------- FUNCTION TO HIT THE API ANNOUNCEMENT  --------------------------------
   void fetchAnnouncementData() async {
-    final url = Uri.parse('http://192.168.0.28:8000/get/announcements');
+    final url = Uri.parse(
+        'https://dbarangay-mobile-e5o1.onrender.com/get/announcements');
 
     try {
       final response = await http.get(url);
@@ -119,8 +115,10 @@ class _AnnouncementPageState extends State<AnnouncementPage>
   }
 
 //-------------------  FUNCTION TO HIT THE API LIVELIHOOD  ----------------------------
+
   void fetchLivelihoodData() async {
-    final url = Uri.parse('http://192.168.0.28:8000/get/livelihood');
+    final url =
+        Uri.parse('https://dbarangay-mobile-e5o1.onrender.com/get/livelihood');
 
     try {
       final response = await http.get(url);
@@ -130,40 +128,20 @@ class _AnnouncementPageState extends State<AnnouncementPage>
         setState(() {
           livelihoodData = data;
         });
-        for (var livelihood in livelihoodData) {
-          final imageUrl = await fetchImageForLivelihood(livelihood['_id']);
-          livelihood['imageUrl'] = imageUrl;
-        }
       } else {
-        throw Exception('Failed to load data: ${response.statusCode}');
+        throw Exception(
+            'Failed to load data from LIVELIHOOD: ${response.statusCode}');
       }
     } catch (e) {
       print('Error: $e');
     }
   }
 
-  Future<String> fetchImageForLivelihood(String livelihoodId) async {
-    final imageUrlUrl = Uri.parse(
-        'http://192.168.0.28:8000/get/livelihood/$livelihoodId/image');
-
-    try {
-      final response = await http.get(imageUrlUrl);
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['imageUrl'];
-      } else {
-        throw Exception('Failed to load image: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error fetching image: $e');
-      throw Exception('Failed to load image');
-    }
-  }
-
 //--------------------------- FUNCTION TO HIT THE API BUSINESS PROMOTION  --------------------------------
+
   void fetchbusinessPromotionData() async {
-    final url = Uri.parse('http://192.168.0.28:8000/get/promoteBusiness');
+    final url = Uri.parse(
+        'https://dbarangay-mobile-e5o1.onrender.com/get/promoteBusiness');
 
     try {
       final response = await http.get(url);
@@ -173,36 +151,12 @@ class _AnnouncementPageState extends State<AnnouncementPage>
         setState(() {
           businessPromotionData = data;
         });
-        for (var promoteBusiness in businessPromotionData) {
-          final imageUrl =
-              await fetchImageForbusinessPromotion(promoteBusiness['_id']);
-          promoteBusiness['imageUrl'] = imageUrl;
-        }
       } else {
-        throw Exception('Failed to load data: ${response.statusCode}');
+        throw Exception(
+            'Failed to load data from BUSINESS PROMOTION: ${response.statusCode}');
       }
     } catch (e) {
       print('Error: $e');
-    }
-  }
-
-  Future<String> fetchImageForbusinessPromotion(
-      String promoteBusinessId) async {
-    final imageUrlUrl = Uri.parse(
-        'http://192.168.0.28:8000/get/promoteBusiness/$promoteBusinessId/image');
-
-    try {
-      final response = await http.get(imageUrlUrl);
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['imageUrl'];
-      } else {
-        throw Exception('Failed to load image: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error fetching image: $e');
-      throw Exception('Failed to load image');
     }
   }
 
@@ -251,20 +205,12 @@ class _AnnouncementPageState extends State<AnnouncementPage>
                     itemBuilder: (context, index) {
                       final announcement = announcementData[index];
                       if (announcement != null) {
-                        // final imageUrl =
-                        //     'http://192.168.0.28:8000/get/announcement/${announcement['filename']}';
-
                         return customListTile(
-                          announcement['filename'] ?? '',
-                          announcement['what'] ?? '',
-                          announcement['when'] ?? '',
-                          announcement['where'] ?? '',
-                          announcement['who'] ?? '',
-                          announcement['when'] ?? '',
+                          announcement, // Pass the announcement data here
                           context,
                         );
                       } else {
-                        return const SizedBox(); // Handle the case when data is null
+                        return const SizedBox();
                       }
                     },
                   ),
@@ -274,29 +220,39 @@ class _AnnouncementPageState extends State<AnnouncementPage>
                     itemBuilder: (context, index) {
                       final livelihood = livelihoodData[index];
                       if (livelihood != null) {
-                        return customLivelihoodListTile(
-                          livelihood['imageUrl'] ?? '', // URL for the image
-                          livelihood['what'] ?? '',
+                        final imageUrl = livelihood['filename']?['url'] ?? '';
+                        final livelihoodCategory = livelihood['what'] ?? '';
+                        final livelihoodLocation = livelihood['where'] ?? '';
+                        final livelihoodParticipants = livelihood['who'] ?? '';
+                        final livelihoodDate = livelihood['when'] ?? '';
 
-                          livelihood['where'] ?? '',
-                          livelihood['when'] ?? '',
-                          livelihood['who'] ?? '',
+                        return customLivelihoodListTile(
+                          imageUrl,
+                          livelihoodCategory,
+                          livelihoodLocation,
+                          livelihoodParticipants,
+                          livelihoodDate,
                           context,
                         );
                       } else {
-                        return const SizedBox(); // Handle the case when data is null
+                        return const SizedBox();
                       }
                     },
                   ),
+
 //  ------------------------------------------------- BUSINESS ADDITIONAL PAGE CONTENT  ----------------------------------------------------------
                   ListView.builder(
-                    itemCount: businessPromotionData
-                        .length, // Replace with your list of businesses
+                    itemCount: businessPromotionData.length,
                     itemBuilder: (context, index) {
                       final business = businessPromotionData[index];
                       if (business != null) {
+                        final filenameData = business['filename']
+                            as Map<String, dynamic>?; // Cast to nullable Map
+                        final imageUrl = filenameData?['url'] ?? '';
+
+                        // The rest of your code remains the same
                         return customBusinessListTile(
-                          business['imageUrl'] ?? '', // URL for the image
+                          imageUrl, // Use the imageUrl variable
                           business['businessName'] ?? '',
                           business['category'] ?? '',
                           context,
@@ -307,7 +263,7 @@ class _AnnouncementPageState extends State<AnnouncementPage>
                           business['contact'] ?? '',
                         );
                       } else {
-                        return const SizedBox(); // Handle the case when data is null
+                        return const SizedBox();
                       }
                     },
                   ),
@@ -321,7 +277,7 @@ class _AnnouncementPageState extends State<AnnouncementPage>
 
 // -------------------------------- DESIGN IN BUSINESS CATEGORY --------------------------------
 Widget customBusinessListTile(
-  String imagePath, //filename
+  String imageUrl, //filename
   String sourceName, //BUSINESS NAME
   String title, //CATEGORY
   BuildContext context,
@@ -331,14 +287,16 @@ Widget customBusinessListTile(
   String phone, //contact
   String owner, //residentName
 ) {
+  // Print the imageUrl to check its value
+  print('Debug: imageUrl = $imageUrl');
+
   return InkWell(
     onTap: () {
       Navigator.push(
-        //NEXT PAGE
         context,
         MaterialPageRoute(
           builder: (context) => AdditionalContentPage(
-            imagePath: imagePath,
+            imagePath: imageUrl,
             sourceName: sourceName,
             title: title,
             description: description,
@@ -369,8 +327,8 @@ Widget customBusinessListTile(
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12.0),
-            child: Image.asset(
-              imagePath,
+            child: Image.network(
+              imageUrl,
               height: 200.0,
               width: double.infinity,
               fit: BoxFit.cover,
@@ -415,11 +373,11 @@ Widget customBusinessListTile(
 
 // -------------------------------- FUNCTION AND DESIGN IN LIVELIHOOD CATEGORY --------------------------------
 Widget customLivelihoodListTile(
-  String imagePath,
-  String what,
-  String when,
-  String where,
-  String who,
+  String imageUrl,
+  String livelihoodCategory,
+  String livelihoodLocation,
+  String livelihoodParticipants,
+  String livelihoodDate,
   BuildContext context,
 ) {
   return Container(
@@ -435,109 +393,102 @@ Widget customLivelihoodListTile(
         ),
       ],
     ),
-    child: Row(
+    child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(12.0),
-          child: Image.asset(
-            imagePath,
-            height: 200.0,
-            width: 200.0, // Set the desired width for the image
-            fit: BoxFit.cover,
+          child: Container(
+            height: 150.0,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: 150.0,
+              errorBuilder: (context, error, stackTrace) {
+                return const Center(
+                  child: Icon(Icons.error_outline, size: 48, color: Colors.red),
+                );
+              },
+            ),
           ),
         ),
-        const SizedBox(width: 8.0),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6.0),
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
-                child: Text(
-                  what,
-                  style: const TextStyle(
-                    color: Colors.white,
-                  ),
-                ),
+        const SizedBox(height: 8.0),
+        Center(
+          child: Container(
+            padding: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(255, 35, 19, 139),
+              borderRadius: BorderRadius.circular(30.0),
+            ),
+            child: Text(
+              livelihoodCategory,
+              style: const TextStyle(
+                color: Colors.white,
               ),
-              const SizedBox(height: 8.0),
-
-              // WHEN
-              Row(
-                children: [
-                  const Text(
-                    'WHEN:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14.0,
-                      color: Colors.blue,
-                    ),
-                  ),
-                  const SizedBox(width: 4.0),
-                  Text(
-                    when,
-                    style: const TextStyle(
-                      fontSize: 14.0,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8.0),
-
-              // WHERE
-              Row(
-                children: [
-                  const Text(
-                    'WHERE:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14.0,
-                      color: Color.fromARGB(255, 1, 30, 53),
-                    ),
-                  ),
-                  const SizedBox(width: 4.0),
-                  Text(
-                    where,
-                    style: const TextStyle(
-                      fontSize: 14.0,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4.0),
-
-              // WHO
-              Row(
-                children: [
-                  const Text(
-                    'WHO:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14.0,
-                      color: Colors.blue,
-                    ),
-                  ),
-                  const SizedBox(width: 4.0),
-                  Text(
-                    who,
-                    style: const TextStyle(
-                      fontSize: 14.0,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8.0),
-              const SizedBox(height: 4.0),
-            ],
+            ),
           ),
+        ),
+        const SizedBox(height: 8.0),
+
+        // Rest of your widget content
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Location:',
+                    style: TextStyle(
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    livelihoodLocation,
+                    style: const TextStyle(fontSize: 12.0),
+                  ),
+                  const SizedBox(height: 8.0),
+                  const Text(
+                    'Participants:',
+                    style: TextStyle(
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    livelihoodParticipants,
+                    style: const TextStyle(fontSize: 12.0),
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Date:',
+                    style: TextStyle(
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    livelihoodDate,
+                    style: const TextStyle(fontSize: 12.0),
+                  ),
+                  const SizedBox(height: 8.0),
+                ],
+              ),
+            ),
+          ],
         ),
       ],
     ),
@@ -546,16 +497,14 @@ Widget customLivelihoodListTile(
 
 // -------------------------------- DESIGN IN ANNOUNCEMENT CATEGORY --------------------------------
 Widget customListTile(
-  String filename,
-  String announcementCategory,
-  String announcementTitle,
-  String announcementDate,
-  String announcementLocation,
-  String announcementParticipants,
+  Map<String, dynamic> announcement,
   BuildContext context,
 ) {
-  final imageUrl =
-      'http://192.168.0.28:8000/uploads/$filename'; // Construct the URL to fetch the image
+  final imageUrl = announcement['filename']['url'];
+  final announcementCategory = announcement['what'];
+  final announcementDate = announcement['when'];
+  final announcementLocation = announcement['where'];
+  final announcementParticipants = announcement['who'];
 
   return Container(
     margin: const EdgeInsets.symmetric(horizontal: 22.0, vertical: 8.0),
@@ -769,8 +718,7 @@ class AnnouncementDetailsPage extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar:
-          const BottomNav(), // No need to provide the token parameter
+      bottomNavigationBar: const BottomNav(),
     );
   }
 }

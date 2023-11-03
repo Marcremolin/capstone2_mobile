@@ -20,13 +20,9 @@ async function createCertificateOfIndigency(data) {
 
 
 
-async function createBarangayCertificate(data) {
-  return await Model.userCertificate.create(data);
-}
-
 async function createBusinessClearance(data) {
   console.log("Data received from frontend:", data); 
-  const result = await Model.userBusinessClearance.create(data); 
+  const result = await Model.userbusinessClearance.create(data); 
   console.log("Data stored in userBusinessClearance schema:", result);
   return result;
 }
@@ -42,6 +38,24 @@ async function createInstallationPermit(data) {
 async function createConstructionPermit(data) {
   return await Model.userConstruction.create(data);
 }
+
+
+async function createBarangayCertificate(data) {
+  try {
+    console.log('Data received:', data); 
+
+    if (!data) {
+      throw new Error('Data is empty'); 
+    }
+
+    const result = await Model.userCertificate.create(data);
+    console.log('Data stored:', result);
+    return result;
+  } catch (error) {
+    console.error('Error storing data:', error);
+    throw error;
+  }
+}
 //----------------- GET SUMMARY OF REQUEST ------------------------
 async function getRequestsForUser(userId) {
   try {
@@ -50,11 +64,11 @@ async function getRequestsForUser(userId) {
 
     // Query of each document type and push the results into the 'requests' array
     const certificateOfIndigencyRequests = await Model.userIndigency.find({ userId });
-    const certificateRequests = await Model.userCertificate.find({ userId });
-    const businessClearanceRequests = await Model.userBusinessClearance.find({ userId });
+    const businessClearanceRequests = await Model.userbusinessClearance.find({ userId });
     const barangayIDRequests = await Model.userBarangayID.find({ userId });
     const installationRequests = await Model.userInstallation.find({ userId });
     const constructionRequests = await Model.userConstruction.find({ userId });
+    const certificateRequests = await Model.userCertificate.find({ userId });
 
     // Push the results of each query into the 'requests' array
     requests.push(...certificateOfIndigencyRequests);
@@ -72,11 +86,11 @@ async function getRequestsForUser(userId) {
 }
 module.exports = {
   createCertificateOfIndigency,
-  createBarangayCertificate,
   createBusinessClearance,
   createBarangayID,
   createInstallationPermit,
   createConstructionPermit,
+  createBarangayCertificate,
   getRequestsForUser, 
 
 };

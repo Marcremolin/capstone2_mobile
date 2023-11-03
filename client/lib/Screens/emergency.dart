@@ -11,12 +11,10 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
-//--------------
-
 class Emergency extends StatefulWidget {
 // FOR TOKEN -----------------------------
   final token;
-  const Emergency({super.key, this.token});
+  Emergency({Key? key, this.token}) : super(key: key);
   @override
   _EmergencyState createState() => _EmergencyState();
 }
@@ -26,11 +24,13 @@ class _EmergencyState extends State<Emergency>
   late TabController _tabController;
   late String _selectedCategory;
   late String userId; //FOR TOKEN
-  String phoneNumber = ''; // Initialize with an empty string
+  String? phoneNumber;
 
 //ADD FOR DATABASE
   String? selectedDate;
   final dateController = TextEditingController();
+  final phoneNumberController = TextEditingController();
+
 //--------------
   @override
   void initState() {
@@ -41,6 +41,8 @@ class _EmergencyState extends State<Emergency>
     if (widget.token != null) {
       Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);
       userId = jwtDecodedToken['_id'];
+      phoneNumber = jwtDecodedToken['phoneNumber'];
+      phoneNumberController.text = "$phoneNumber";
     }
   }
 
@@ -89,13 +91,14 @@ class _EmergencyState extends State<Emergency>
           var reqBody = {
             "userId": userId,
             "currentLocation": "${street}, ${city} ${postalCode}, ${country}",
-            "contact": phoneNumber,
             "emergencyType": emergencyType,
             "date": formattedDate,
             "status": defaultStatus,
+            "phoneNumber": phoneNumberController.text,
           };
 
-          var url = Uri.parse('http://192.168.0.28:8000/emergencySignal');
+          var url = Uri.parse(
+              'https://dbarangay-mobile-e5o1.onrender.com/emergencySignal');
           try {
             var response = await sendDistressSignalRequest(url, reqBody);
 
@@ -381,7 +384,8 @@ class _EmergencyState extends State<Emergency>
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const ProfilePage()),
+                MaterialPageRoute(
+                    builder: (context) => ProfilePage(token: widget.token)),
               );
             },
           ),
@@ -641,8 +645,10 @@ class CustomButton extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         print('Emergency button tapped');
+
         print('context: $context');
         print('emergencyType: $emergencyType');
+
         onTapCallback();
       },
       child: Container(

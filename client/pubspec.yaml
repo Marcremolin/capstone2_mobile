@@ -47,8 +47,17 @@ dependencies:
   jwt_decoder: ^2.0.1
   mime:
   http_parser:
+
+  # ADD FOR IMAGE UPLOAD
   flutter_image_compress: ^2.0.4
   image_picker: ^1.0.4
+  cloudinary: ^1.2.0
+  cloudinary_sdk: ^5.0.0+1
+  cloudinary_flutter: ^1.0.0
+  cloudinary_url_gen: ^1.0.0
+  dio: ^5.3.3
+
+
 
   # ADD FOR EMERGENCY BUTTON
   geolocator: ^10.1.0
@@ -64,6 +73,7 @@ dependencies:
   json_annotation:
   flutter_secure_storage: ^9.0.0
   bcrypt: ^1.1.3
+  cloudinary_public: ^0.21.0
 
   
 dev_dependencies:
@@ -90,6 +100,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
+    - assets/images/logo//HABLogo.png
     - assets/icons/
     - assets/icons/brgy.png
     - assets/images/NearbyLocations/

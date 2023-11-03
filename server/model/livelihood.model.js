@@ -7,8 +7,15 @@ const livelihoodSchema = new Schema({
   where: String,
   when: String,
   who: String,
-  filename: String,
-});
+  filename: { //TO CATCH IMAGE
+    public_id: {
+      type: String,
+      required: true
+    },
+    url: {
+      type: String,
+      required: true
+    }}});
 
 const livelihood = db.model('livelihood', livelihoodSchema);
 

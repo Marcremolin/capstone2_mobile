@@ -8,7 +8,7 @@ import 'dart:convert';
 class Documentation extends StatefulWidget {
   // FOR TOKEN -----------------------------
   final token;
-  const Documentation({Key? key, this.token}) : super(key: key);
+  Documentation({Key? key, this.token}) : super(key: key);
   // -----------------------------------------
 
   @override
@@ -17,48 +17,56 @@ class Documentation extends StatefulWidget {
 
 class _DocumentationState extends State<Documentation>
     with SingleTickerProviderStateMixin {
-  late String userId; //FOR TOKEN
+  late String userId;
+  String? firstName;
+  String? middleName;
+  String? lastName;
+  String? suffix;
+
   late String selectedTypeOfDocuments;
   List<String> TypeOfDocumentsOptions = [
     'CertificateOfIndigency',
-    'BarangayCertificate',
     'BusinessClearance',
     'BarangayID',
     'InstallationPermit',
-    'ConstructionPermit'
+    'ConstructionPermit',
+    'BarangayCertificate',
   ];
   String? selectedDate;
   final dateController = TextEditingController();
 
-  final reasonForRequestingController = TextEditingController();
+  final reasonOfRequestController = TextEditingController();
 
   String? _selectedPaymentMethod;
   bool isGcashPayment = false;
   bool iscashPayment = false;
   bool showBusinessNameField = false;
   bool showBusinessAddressField = false;
-  final paymentReferenceNumberController = TextEditingController();
+  final referenceController = TextEditingController();
   final fileUploadController = TextEditingController();
   String? selectedFilePath;
-  final userAddressController = TextEditingController();
-
+  final addressController = TextEditingController();
   final businessNameController = TextEditingController();
   final businessAddressController = TextEditingController();
+  final residentNameController = TextEditingController();
 
   @override
   // Function to handle dropdowns selection
   void initState() {
     super.initState();
-    selectedTypeOfDocuments =
-        TypeOfDocumentsOptions[0]; // Initialize with a default value
+    selectedTypeOfDocuments = TypeOfDocumentsOptions[0];
 
     if (widget.token != null) {
       // Decode the JWT token and extract the user ID
       Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);
       userId = jwtDecodedToken['_id'];
-
+      firstName = jwtDecodedToken['firstName'];
+      middleName = jwtDecodedToken['middleName'];
+      lastName = jwtDecodedToken['lastName'];
+      suffix = jwtDecodedToken['suffix'];
       selectedTypeOfDocuments = TypeOfDocumentsOptions[0];
-    } else {}
+      residentNameController.text = "$lastName, $firstName, $middleName";
+    }
   }
 
   // -------------- DATABASE --------------------
@@ -66,18 +74,21 @@ class _DocumentationState extends State<Documentation>
     var defaultStatus = "NEW";
 
     var regBody = {
+      "residentName": residentNameController.text,
       "userId": userId,
       "typeOfDocument": selectedTypeOfDocuments,
-      "userAddress": userAddressController.text,
-      "dateOfPickUp": dateController.text,
-      "reasonForRequesting": reasonForRequestingController.text,
-      "paymentMethod": _selectedPaymentMethod,
-      "paymentReferenceNumber": paymentReferenceNumberController.text,
+      "businessName": businessNameController.text,
+      "address": addressController.text,
+      "pickUpDate": dateController.text,
+      "reasonOfRequest": reasonOfRequestController.text,
+      "modeOfPayment": _selectedPaymentMethod,
+      "reference": referenceController.text,
       "status": defaultStatus,
     };
+    print('Request Body: $regBody'); // Debug log to check the request payload
 
-    var url =
-        Uri.parse('http://192.168.0.28:8000/requestDocument'); //HOME IP ADDRESS
+    var url = Uri.parse(
+        'https://dbarangay-mobile-e5o1.onrender.com/requestDocument'); //HOME IP ADDRESS
 
     var response = await http.post(
       url,
@@ -87,10 +98,17 @@ class _DocumentationState extends State<Documentation>
 
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
-      (jsonResponse['status']);
-      showSuccessDialog();
+      print(
+          'Response: $jsonResponse'); // Debug log to check the response from the server
+      if (jsonResponse['status'] == 'success') {
+        showSuccessDialog();
+      } else {
+        print('Request failed with an error.');
+        // Handle any specific error responses here
+      }
     } else {
-      ('HTTP Error: ${response.statusCode}');
+      print('HTTP Error: ${response.statusCode}');
+      // Handle any HTTP error responses here
     }
   }
 
@@ -158,7 +176,9 @@ class _DocumentationState extends State<Documentation>
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const ProfilePage()),
+                MaterialPageRoute(
+                  builder: (context) => ProfilePage(token: widget.token),
+                ),
               );
             },
           ),
@@ -168,6 +188,27 @@ class _DocumentationState extends State<Documentation>
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           children: [
+            // ------------------------------------------- RESIDENT NAME  ---------------------------
+            const SizedBox(height: 16.0),
+            TextFormField(
+              controller: residentNameController,
+              style: const TextStyle(color: Colors.black),
+              decoration: InputDecoration(
+                hintText: 'Resident Name',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter the resident name';
+                }
+                return null;
+              },
+            ),
+
             // -------------------------------------------TYPE OF DOCUMENTS ---------------------------
             const SizedBox(height: 16.0),
             DropdownButtonFormField<String>(
@@ -192,10 +233,10 @@ class _DocumentationState extends State<Documentation>
               onChanged: (value) {
                 setState(() {
                   selectedTypeOfDocuments = value!;
-                  if (selectedTypeOfDocuments == 'Business Clearance') {
-                    userAddressController.text = '';
+                  if (selectedTypeOfDocuments == 'BusinessClearance') {
+                    addressController.text = '';
                   } else {
-                    userAddressController.text = '';
+                    addressController.text = '';
                   }
                 });
               },
@@ -209,10 +250,10 @@ class _DocumentationState extends State<Documentation>
             const SizedBox(height: 16.0),
 
 // BUSINESS NAME
-            SizedBox(
-              width: 500,
-              child: Visibility(
-                visible: selectedTypeOfDocuments == 'Business Clearance',
+            Visibility(
+              visible: selectedTypeOfDocuments == 'BusinessClearance',
+              child: SizedBox(
+                width: 500,
                 child: TextFormField(
                   controller: businessNameController,
                   style: const TextStyle(color: Colors.black),
@@ -235,14 +276,14 @@ class _DocumentationState extends State<Documentation>
             ),
             const SizedBox(height: 16.0),
 
-//USER ADDRESS -----------------
+// USER ADDRESS
             SizedBox(
               width: 500,
               child: TextFormField(
-                controller: userAddressController,
+                controller: addressController,
                 style: const TextStyle(color: Colors.black),
                 decoration: InputDecoration(
-                  hintText: selectedTypeOfDocuments == 'Business Clearance'
+                  hintText: selectedTypeOfDocuments == 'BusinessClearance'
                       ? 'Business Address'
                       : 'Complete Address',
                   border: OutlineInputBorder(
@@ -253,13 +294,16 @@ class _DocumentationState extends State<Documentation>
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter the payment reference number';
+                    return selectedTypeOfDocuments == 'BusinessClearance'
+                        ? 'Please enter the business address'
+                        : 'Please enter the complete address';
                   }
                   return null;
                 },
               ),
             ),
             const SizedBox(height: 16.0),
+
 // DATE OF PICKUP
             SizedBox(
               width: 550,
@@ -275,11 +319,13 @@ class _DocumentationState extends State<Documentation>
                   child: InkWell(
                     onTap: () async {
                       final currentDate = DateTime.now();
+                      final lastSelectableDate =
+                          currentDate.add(const Duration(days: 60));
                       final pickedDate = await showDatePicker(
                         context: context,
                         initialDate: DateTime.now(),
-                        firstDate: DateTime(1900),
-                        lastDate: currentDate,
+                        firstDate: currentDate,
+                        lastDate: lastSelectableDate,
                       );
 
                       if (pickedDate != null) {
@@ -311,7 +357,7 @@ class _DocumentationState extends State<Documentation>
             SizedBox(
               width: 500,
               child: TextFormField(
-                controller: reasonForRequestingController,
+                controller: reasonOfRequestController,
                 maxLines: 5,
                 style: const TextStyle(color: Colors.black),
                 decoration: InputDecoration(
@@ -376,7 +422,7 @@ class _DocumentationState extends State<Documentation>
               child: SizedBox(
                 width: 500,
                 child: TextFormField(
-                  controller: paymentReferenceNumberController,
+                  controller: referenceController,
                   style: const TextStyle(color: Colors.black),
                   decoration: InputDecoration(
                     hintText: 'Payment Reference Number',

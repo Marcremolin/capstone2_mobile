@@ -65,7 +65,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
         "feedback": feedbackController.text,
       };
 
-      var url = Uri.parse('http://192.168.0.28:8000/feedback');
+      var url =
+          Uri.parse('https://dbarangay-mobile-e5o1.onrender.com/feedback');
       var response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},

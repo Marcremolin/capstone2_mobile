@@ -8,7 +8,7 @@ const barangayIndigencySchema = new Schema({
   residentName: {type: String,required: true},
   userId: {type: String, required: true},
   address: {type: String, required: true},
-  typeOfDocument:{type: String,required: true,index: true}, // used to optimize the retrieval of data and improve the performance of queries kasi NAGBUBUFFER SHIT
+  typeOfDocument:{type: String,required: true,index: true}, 
   reasonOfRequest: {type: String, required: true},
   pickUpDate: {type: String, required: true },
   modeOfPayment: {type: String, required: true},
@@ -18,25 +18,9 @@ const barangayIndigencySchema = new Schema({
 
 const userIndigency = db.model('BarangayIndigency', barangayIndigencySchema); 
 
-// BARANGAY CERTIFICATE --------------------
-const barangayCertifcateSchema = new Schema({
-  typeOfDocument:{type: String,required: true,index: true}, // used to optimize the retrieval of data and improve the performance of queries kasi NAGBUBUFFER SHIT
-
-  residentName: {type: String,required: true},
-  userId: {type: String, required: true},
-  address: {type: String, required: true},
-  reasonOfRequest: {type: String, required: true},
-  pickUpDate: {type: String, required: true },
-  modeOfPayment: {type: String, required: true},
-  reference: {type: String},
-  status: {type: String, default: 'New' },
-});
-
-const userCertificate = db.model('barangaycertificate', barangayCertifcateSchema); 
-
 // BUSINESS CLEARANCE --------------------
 const businessClearanceSchema = new Schema({
-  typeOfDocument:{type: String,required: true,index: true}, // used to optimize the retrieval of data and improve the performance of queries kasi NAGBUBUFFER SHIT
+  typeOfDocument:{type: String}, // used to optimize the retrieval of data and improve the performance of queries kasi NAGBUBUFFER SHIT
 
   businessName:{
     type:String,
@@ -53,10 +37,11 @@ userId: {
   type: String,
   required: true
 },
-type:{
-  type:String,
-  required:true
+type: {
+  type: String,
+  required: false, 
 },
+
 reasonOfRequest:{
     type:String,
     required:true
@@ -79,13 +64,12 @@ status:{
  
 });
 
-const userBusinessClearance = db.model('BusinessClearance', businessClearanceSchema); 
+const userbusinessClearance = db.model('businessClearance', businessClearanceSchema); 
 
 
 // BARANGAY ID --------------------
 const BarangayIDSchema = new Schema({
-  typeOfDocument:{type: String,required: true,index: true}, // used to optimize the retrieval of data and improve the performance of queries kasi NAGBUBUFFER SHIT
-
+  typeOfDocument:{type: String,required: true,index: true}, 
   residentName: {type: String,required: true},
   userId: {type: String, required: true},
   address: {type: String, required: true},
@@ -101,8 +85,7 @@ const userBarangayID = db.model('barangayid', BarangayIDSchema);
 
 // INSTALLATION PERMIT--------------------
 const installationSchema = new Schema({
-  typeOfDocument:{type: String,required: true,index: true}, // used to optimize the retrieval of data and improve the performance of queries kasi NAGBUBUFFER SHIT
-
+  typeOfDocument:{type: String,required: true,index: true}, 
   residentName: {type: String,required: true},
   userId: {type: String, required: true},
   address: {type: String, required: true},
@@ -118,8 +101,7 @@ const userInstallation = db.model('Installation', installationSchema);
 
 // CONSTRUCTION PERMIT--------------------
 const constructionSchema = new Schema({
-  typeOfDocument:{type: String,required: true,index: true}, // used to optimize the retrieval of data and improve the performance of queries kasi NAGBUBUFFER SHIT
-
+  typeOfDocument:{type: String,required: true,index: true},
   residentName: {type: String,required: true},
   userId: {type: String, required: true},
   address: {type: String, required: true},
@@ -133,16 +115,36 @@ const constructionSchema = new Schema({
 const userConstruction = db.model('Construction', constructionSchema); 
 
 
+
+
+// BARANGAY CERTIFICATE --------------------
+const barangayCertificateSchema = new Schema({
+  residentName: { type: String,required: true,},
+  typeOfDocument:{type: String,required: true,index: true}, 
+  userId: {type: String,  required: true,},
+  address: {type: String,required: true},
+  reasonOfRequest: {type: String,required: true},
+  pickUpDate: {type: String, required: true},
+  modeOfPayment: { type: String, required: true },
+  reference: {type: String,},
+  status: {type: String,default: 'New'},
+});
+
+const userCertificate = db.model('barangaycertificate', barangayCertificateSchema);
+
+
+
+
 //---------------- MODULE EXPORTS ------------------------
 
   
   module.exports = {
     userIndigency,
-    userCertificate,
-    userBusinessClearance,
+    userbusinessClearance,
     userBarangayID,
     userInstallation,
     userConstruction,
+    userCertificate
   };
 
 

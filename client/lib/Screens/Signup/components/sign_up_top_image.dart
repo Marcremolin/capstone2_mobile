@@ -26,22 +26,12 @@ class SignUpScreenTopImage extends StatelessWidget {
             child: Text(
               "Registration".toUpperCase(),
               style: const TextStyle(
-                  fontWeight: FontWeight.bold, color: Colors.black),
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontSize: 32),
             ),
           ),
           centerTitle: true,
-        ),
-        const SizedBox(height: defaultPadding),
-        Row(
-          children: [
-            const Spacer(),
-            Expanded(
-              flex: 8,
-              child:
-                  Image.asset("assets/images/Notifications_Monochromatic.png"),
-            ),
-            const Spacer(),
-          ],
         ),
         const SizedBox(height: defaultPadding),
       ],
