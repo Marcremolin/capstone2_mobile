@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
 import 'package:client/constants.dart';
@@ -9,7 +9,7 @@ import 'components/editProfile.dart';
 
 class EditIconPage extends StatefulWidget {
   final String? token; // Make the token parameter optional
-  const EditIconPage({Key? key, this.token}) : super(key: key);
+  const EditIconPage({super.key, this.token});
 
   @override
   _EditIconPageState createState() => _EditIconPageState();
@@ -20,21 +20,18 @@ class _EditIconPageState extends State<EditIconPage> {
   void initState() {
     super.initState();
     if (widget.token != null) {
-      print('Token in EditIconPage: ${widget.token}');
-    } else {
-      print('Token in editProfile is null');
-    }
+    } else {}
   }
 
   @override
   Widget build(BuildContext context) {
+    final String token =
+        widget.token ?? ''; // Provide a default value if token is null
+
     return Background(
       child: SingleChildScrollView(
         child: Responsive(
-          mobile: MobileSignupScreen(
-              token: widget.token ??
-                  ''), // Provide a default value if token is null
-
+          mobile: MobileSignupScreen(token: token),
           desktop: Row(
             children: [
               const Expanded(
@@ -64,7 +61,7 @@ class _EditIconPageState extends State<EditIconPage> {
 }
 
 class MobileSignupScreen extends StatelessWidget {
-  final String token; // Add a token parameter to the constructor
+  final String? token;
   const MobileSignupScreen({
     Key? key,
     required this.token,
@@ -81,7 +78,7 @@ class MobileSignupScreen extends StatelessWidget {
             const Spacer(),
             Expanded(
               flex: 8,
-              child: EditProfile(token: token), // Use the token parameter
+              child: EditProfile(token: token),
             ),
             const Spacer(),
           ],

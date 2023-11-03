@@ -1,5 +1,7 @@
 const DocumentRequestServices = require("../services/request.document.services");
 
+const DocumentRequestServices = require("../services/request.document.services");
+
 exports.createDocumentRequest = async (req, res, next) => {
   try {
     console.log('Request Body:', req.body);
@@ -8,6 +10,7 @@ exports.createDocumentRequest = async (req, res, next) => {
       userId,
       address,
       typeOfDocument,
+      businessName,
       pickUpDate,
       reasonOfRequest,
       modeOfPayment,
@@ -15,11 +18,14 @@ exports.createDocumentRequest = async (req, res, next) => {
       status
     } = req.body;
 
+    console.log("Type of Document:", typeOfDocument);
+
     let documentRequest;
 
     console.log("Extracted Data:");
     console.log("userId:", userId);
     console.log("address:", address);
+    console.log("businessName:", businessName);
     console.log("typeOfDocument:", typeOfDocument);
     console.log("pickUpDate:", pickUpDate);
     console.log("reasonOfRequest:", reasonOfRequest);
@@ -29,41 +35,43 @@ exports.createDocumentRequest = async (req, res, next) => {
 
     switch (typeOfDocument) {
       case "CertificateOfIndigency":
-        documentRequest = await DocumentRequestServices.createCertificateOfIndigency(  
-          req.body);
-        break;
-      case "BarangayCertificate":
+        console.log("Creating CertificateOfIndigency request.");
         documentRequest = await DocumentRequestServices.createCertificateOfIndigency(req.body);
         break;
       case "BusinessClearance":
+        console.log("Creating BusinessClearance request.");
         documentRequest = await DocumentRequestServices.createBusinessClearance({
           ...req.body,
-          businessName: address,
-          businessAddress: address, 
+          businessName: businessName,
+          businessAddress: address,
         });
         break;
       case "BarangayID":
-        documentRequest = await DocumentRequestServices.createBarangayID(  
-          req.body);
+        console.log("Creating BarangayID request.");
+        documentRequest = await DocumentRequestServices.createBarangayID(req.body);
         break;
       case "InstallationPermit":
-        documentRequest = await DocumentRequestServices.createInstallationPermit(
-          req.body);
+        console.log("Creating InstallationPermit request.");
+        documentRequest = await DocumentRequestServices.createInstallationPermit(req.body);
         break;
       case "ConstructionPermit":
-        documentRequest = await DocumentRequestServices.createConstructionPermit(  
-          req.body);
+        console.log("Creating ConstructionPermit request.");
+        documentRequest = await DocumentRequestServices.createConstructionPermit(req.body);
         break;
-      default:
+      case "BarangayCertificate":
+        console.log("Creating BarangayCertificate request.");
+        documentRequest = await DocumentRequestServices.createBarangayCertificate(req.body);
         break;
+        default:
+          return res.status(400).json({ status: false, error: 'Invalid document type' });
+      }
+  
+      res.json({ status: true, success: documentRequest });
+    } catch (error) {
+      console.error('Request processing error:', error);
+      res.status(500).json({ status: false, error: 'Internal server error', details: error.message });
     }
-
-    res.json({ status: true, success: documentRequest });
-  } catch (error) {
-    next(error);
-  }
-};
-
+  };
 //----------------- GET SUMMARY OF REQUEST ------------------------
 exports.getSummaryOfRequests = async (req, res, next) => {
   try {

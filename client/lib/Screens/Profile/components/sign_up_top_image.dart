@@ -21,14 +21,14 @@ class SignUpScreenTopImage extends StatelessWidget {
             },
           ),
           toolbarHeight: 80.0, // toolbar height
-          title: Container(
-            margin: const EdgeInsets.only(top: 30.0), //  top margin
-            child: Text(
-              "Edit Profile".toUpperCase(),
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold, color: Colors.black),
-            ),
-          ),
+          // title: Container(
+          //   margin: const EdgeInsets.only(top: 30.0), //  top margin
+          //   child: Text(
+          //     "Edit Profile".toUpperCase(),
+          //     style: const TextStyle(
+          //         fontWeight: FontWeight.bold, color: Colors.black),
+          //   ),
+          // ),
           centerTitle: true,
         ),
         const SizedBox(height: defaultPadding),

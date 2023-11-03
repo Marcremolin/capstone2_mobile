@@ -1,4 +1,5 @@
 import 'package:client/Screens/Login/components/already_have_an_account_acheck.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../constants.dart';
@@ -7,14 +8,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 //FOR EMAIL VALIDATION
-import 'package:check_disposable_email/check_disposable_email.dart';
-import 'package:public_suffix/public_suffix.dart';
-import 'dart:io'; // Import dart:io to use SocketException
+import 'dart:io';
 
 class SignUpForm extends StatefulWidget {
   const SignUpForm({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   _SignUpFormState createState() => _SignUpFormState();
@@ -77,6 +76,8 @@ class _SignUpFormState extends State<SignUpForm> {
   final _formKey = GlobalKey<FormState>();
   final dateController = TextEditingController();
   String? selectedDate;
+  String? selectedImage;
+
   bool _checkBoxValue1 = false;
   bool _checkBoxValue2 = false;
   bool _homeOwnershipValue1 = false;
@@ -93,9 +94,7 @@ class _SignUpFormState extends State<SignUpForm> {
   final suffixController = TextEditingController();
   final houseNumberController = TextEditingController();
   final cityMunicipalityController = TextEditingController(text: 'Mandaluyong');
-  final districtController = TextEditingController();
   final provinceController = TextEditingController();
-  final regionController = TextEditingController();
   final nationalityController = TextEditingController(text: 'Filipino');
   final birthPlaceController = TextEditingController();
   final ageController = TextEditingController();
@@ -106,23 +105,6 @@ class _SignUpFormState extends State<SignUpForm> {
   final votersRegistrationController = TextEditingController();
   final barangayController = TextEditingController(text: 'Harapin ang Bukas');
   final passwordController = TextEditingController();
-
-  //FOR Voters Registration Number VALIDATION ---------------
-
-  bool isValidCityCode(String cityCode) {
-    final validCityCodes = {
-      '1550': 'Mandaluyong Central Post Office',
-      '1551': 'Vergara',
-      '1552': 'Shaw Boulevard',
-      '1553': 'National Center for Mental Health',
-      '1554': 'East EDSA',
-      '1555': 'Wack Wack',
-      '1556': 'Greenhills South',
-    };
-
-    // Check if the provided cityCode is a key in the validCityCodes map
-    return validCityCodes.containsKey(cityCode);
-  }
 
   //FOR EMAIL VALIDATION ---------------
   bool isEmailValid(String email) {
@@ -135,7 +117,7 @@ class _SignUpFormState extends State<SignUpForm> {
     try {
       final result = await InternetAddress.lookup(domain);
       return result.isNotEmpty;
-    } on SocketException catch (e) {
+    } on SocketException {
       return false;
     }
   }
@@ -148,38 +130,64 @@ class _SignUpFormState extends State<SignUpForm> {
     'com',
     'net',
     'org',
-    'io', /* add more */
+    'io',
   ];
 // FOR DROPDOWNS ---------------------------------------------
-  late String selectedCivilStatus;
-  List<String> civilStatusOptions = [
-    'Single',
-    'Married',
-    'Widowed',
-    'Separated'
+  late String? selectedDistrict;
+  List<String> districtOptions = [
+    'Lone District',
+    '1st District',
+    '2nd District',
+    '3rd District',
+    '4th District',
+    '5th District',
+    '6th District',
   ];
+
+  late String? selectedRegion;
+  List<String> regionOptions = [
+    'NCR',
+    'CAR',
+    'Region I - Ilocos Region',
+    'Region II - Cagayan Valley',
+    'Region III - Central Luzon',
+    'Region IV-A - CALABARZON',
+    'MIMAROPA Region',
+    'Region V - Bicol Region',
+    'Region VI - Western Visayas',
+    'Region VII - Central Visayas',
+    'Region VIII - Eastern Visayas',
+    'Region IX - Zamboanga Peninsula',
+    'Region X - Northern Mindanao',
+    'Region XI -  Davao Region',
+    'Region XII - SOCCSKSARGEN',
+    'Region XIII - Caraga',
+  ];
+  late String selectedCivilStatus;
+  List<String> civilStatusOptions = ['single', 'married', 'widow', 'separated'];
 
   late String selectedHighestEducation;
   List<String> highestEducationOptions = [
-    'No Formal Education',
-    'Elementary Level',
-    'High School Level',
-    'Technical Course',
-    'Bachelors Degree',
-    'Masters Degree',
-    'Doctorate or PhD'
+    'Undergraduate',
+    'Elementary',
+    'Highschool',
+    'Bachelor',
+    'Postgrad',
+    'Doctoral'
   ];
 
   late String selectedEmploymentStatus;
   List<String> employmentStatusOptions = [
-    'Permanent Employee',
-    'Volunteer',
-    'Self-Employed',
-    'Freelancer',
-    'Part-Time Employee',
-    'Project Based Employee',
+    'Employed',
+    'Unemployed',
+    'Student',
   ];
 
+  late String? selectedRegistrationStatus;
+  List<String> registrationStatusOptions = [
+    'registeredvoter',
+    'unregisteredvoter',
+  ];
   @override
   // Function to handle dropdowns selection
   void initState() {
@@ -187,6 +195,9 @@ class _SignUpFormState extends State<SignUpForm> {
     selectedCivilStatus = civilStatusOptions[0];
     selectedHighestEducation = highestEducationOptions[0];
     selectedEmploymentStatus = employmentStatusOptions[0];
+    selectedDistrict = districtOptions[0];
+    selectedRegion = regionOptions[0];
+    selectedRegistrationStatus = registrationStatusOptions[0];
   }
 
 // Function to handle checkbox selection
@@ -229,60 +240,55 @@ class _SignUpFormState extends State<SignUpForm> {
   void _registerUser() async {
     var defaultStatus = "Active";
     var type = "Resident";
-
-    var regBody = {
-      //Objects to send in the Backend
-      'lastName': lastNameController.text,
-      'firstName': firstNameController.text,
-      'middleName': middleNameController.text,
-      "suffix": suffixController.text,
-      "houseNumber": houseNumberController.text,
-      "barangay": barangayController.text,
-      "cityMunicipality": cityMunicipalityController.text,
-      "district": districtController.text,
-      "province": provinceController.text,
-      "region": regionController.text,
-      "nationality": nationalityController.text,
-      "birthPlace": birthPlaceController.text,
-      "age": ageController.text,
-      "companyName": companyNameController.text,
-      "position": positionController.text,
-      "phoneNumber": phoneNumberController.text,
-      "email": emailController.text,
-      "civilStatus": selectedCivilStatus,
-      "HighestEducation": selectedHighestEducation,
-      "EmploymentStatus": selectedEmploymentStatus,
-      "password": passwordController.text,
-      "dateOfBirth": selectedDate,
-      "sex": _checkBoxValue1 ? "Male" : "Female",
-      "homeOwnership": _homeOwnershipValue1 ? "Own" : "Rent",
-      "residentClass": _residentClassValue1
-          ? "PWD"
-          : (_residentClassValue2 ? "Solo Parent" : "OUT OF SCHOOL YOUTH"),
-      "votersRegistration": votersRegistrationController.text,
-      "status": defaultStatus,
-      "type": type,
-    };
-
     var url =
-        Uri.parse('http://192.168.0.28:8000/registration'); //HOME IP ADDRESS
-    print('Data to Send to Backend: $regBody');
+        Uri.parse('https://dbarangay-mobile-e5o1.onrender.com/registration');
+    var request = http.MultipartRequest('POST', url);
+    if (selectedImage != null) {
+      request.files
+          .add(await http.MultipartFile.fromPath('userImage', selectedImage!));
+    }
+
+    request.fields['lastName'] = lastNameController.text;
+    request.fields['firstName'] = firstNameController.text;
+    request.fields['middleName'] = middleNameController.text;
+    request.fields['suffix'] = suffixController.text;
+    request.fields['houseNumber'] = houseNumberController.text;
+    request.fields['barangay'] = barangayController.text;
+    request.fields['cityMunicipality'] = cityMunicipalityController.text;
+    request.fields['district'] = selectedDistrict!;
+    request.fields['province'] = provinceController.text;
+    request.fields['region'] = selectedRegion!;
+    request.fields['nationality'] = nationalityController.text;
+    request.fields['birthPlace'] = birthPlaceController.text;
+    request.fields['age'] = ageController.text;
+    request.fields['companyName'] = companyNameController.text;
+    request.fields['position'] = positionController.text;
+    request.fields['phoneNumber'] = phoneNumberController.text;
+    request.fields['email'] = emailController.text;
+    request.fields['civilStatus'] = selectedCivilStatus;
+    request.fields['highestEducation'] = selectedHighestEducation;
+    request.fields['employmentStatus'] = selectedEmploymentStatus;
+    request.fields['password'] = passwordController.text;
+    request.fields['dateOfBirth'] = selectedDate!;
+    request.fields['sex'] = _checkBoxValue1 ? "Male" : "Female";
+    request.fields['homeOwnership'] = _homeOwnershipValue1 ? "Own" : "Rent";
+    request.fields['residentClass'] = _residentClassValue1
+        ? "PWD"
+        : (_residentClassValue2 ? "Solo Parent" : "OUT OF SCHOOL YOUTH");
+    request.fields['votersRegistration'] = selectedRegistrationStatus!;
+    request.fields['status'] = defaultStatus;
+    request.fields['type'] = type;
 
     try {
-      var response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(regBody),
-      );
+      var response = await request.send();
 
       if (response.statusCode == 200) {
-        var jsonResponse = jsonDecode(response.body);
-        (jsonResponse['status']);
+        var jsonResponse = jsonDecode(await response.stream.bytesToString());
       } else {
-        ('HTTP Error: ${response.statusCode}');
+        print('HTTP Error: ${response.statusCode}');
       }
     } catch (e) {
-      ('Error: $e');
+      print('Error: $e');
     }
   }
 
@@ -409,6 +415,71 @@ class _SignUpFormState extends State<SignUpForm> {
             thickness: 2,
             height: 1,
           ),
+          //  ---------------------- Profile Picture ----------------------
+          const SizedBox(height: 16),
+          Center(
+            child: SizedBox(
+              width: 300,
+              height: 280,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: kPrimaryColor,
+                        width: 2,
+                      ),
+                    ),
+                    child: ClipOval(
+                      child: selectedImage != null
+                          ? Image.file(
+                              File(selectedImage!),
+                              width: 200,
+                              height: 200,
+                              fit: BoxFit.cover,
+                            )
+                          : const Icon(
+                              Icons.person,
+                              size: 160,
+                              color: kPrimaryColor,
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: 150,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        FilePickerResult? result =
+                            await FilePicker.platform.pickFiles(
+                          type: FileType.image,
+                          allowCompression: true,
+                        );
+                        if (result != null && result.files.isNotEmpty) {
+                          setState(() {
+                            selectedImage = result.files.first.path!;
+                          });
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        side: const BorderSide(width: 2, color: Colors.blue),
+                      ),
+                      child: const Text(
+                        'Select Image',
+                        style: TextStyle(
+                          color: Colors.blue,
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+
 // LAST NAME ---------------------
           Container(
             padding: const EdgeInsets.all(defaultPadding),
@@ -533,8 +604,8 @@ class _SignUpFormState extends State<SignUpForm> {
               Expanded(
                 child: Column(
                   children: [
-                    const SizedBox(height: 8),
 // HOUSE #---------------------
+                    const SizedBox(height: 12),
                     TextFormField(
                       controller: houseNumberController,
                       textInputAction: TextInputAction.next,
@@ -552,13 +623,12 @@ class _SignUpFormState extends State<SignUpForm> {
                         if (value == null || value.isEmpty) {
                           return 'House # / Street is required';
                         }
-
                         return null;
                       },
                     ),
 
-                    const SizedBox(height: 8),
 // CITY---------------------
+                    const SizedBox(height: 12),
                     TextFormField(
                       controller: cityMunicipalityController,
                       textInputAction: TextInputAction.next,
@@ -579,8 +649,16 @@ class _SignUpFormState extends State<SignUpForm> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 8),
-// PROVINCE  ---------------------
+                  ],
+                ),
+              ),
+
+              // 2ND COLUMN
+              Expanded(
+                child: Column(
+                  children: [
+                    // PROVINCE  ---------------------
+                    const SizedBox(height: 12),
                     TextFormField(
                       controller: provinceController,
                       textInputAction: TextInputAction.next,
@@ -600,17 +678,8 @@ class _SignUpFormState extends State<SignUpForm> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 18),
-                  ],
-                ),
-              ),
-
-              // 2ND COLUMN
-              Expanded(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 8),
 // BARANGAY ---------------------
+                    const SizedBox(height: 12),
                     TextFormField(
                       controller: barangayController,
                       textInputAction: TextInputAction.next,
@@ -623,54 +692,86 @@ class _SignUpFormState extends State<SignUpForm> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
-// DISTRICT---------------------
-                    TextFormField(
-                      controller: districtController,
-                      textInputAction: TextInputAction.next,
-                      keyboardType: TextInputType.text,
-                      cursorColor: kPrimaryColor,
-                      decoration: const InputDecoration(
-                        hintText: "District",
-                        prefixIcon: Padding(
-                          padding: EdgeInsets.all(defaultPadding),
-                          child: Icon(Icons.home),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'District is required';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 8),
-// REGION---------------------
-                    TextFormField(
-                      controller: regionController,
-                      textInputAction: TextInputAction.next,
-                      keyboardType: TextInputType.text,
-                      cursorColor: kPrimaryColor,
-                      decoration: const InputDecoration(
-                        hintText: "Region",
-                        prefixIcon: Padding(
-                          padding: EdgeInsets.all(defaultPadding),
-                          child: Icon(Icons.home),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Region is required';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 18),
                   ],
                 ),
               ),
             ],
           ),
+          const SizedBox(height: 12),
+
+          // DISTRICT---------------------
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: DropdownButtonFormField<String>(
+              decoration: const InputDecoration(
+                hintText: 'District',
+                hintStyle: TextStyle(fontSize: 12),
+              ),
+              value: selectedDistrict,
+              icon: const Icon(Icons.arrow_drop_down),
+              items: districtOptions.map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedDistrict = value!;
+                });
+              },
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'District is Required';
+                }
+                return null;
+              },
+            ),
+          ),
+          const SizedBox(height: 12),
+
+// REGION---------------------
+          SizedBox(
+            width: 450,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: SingleChildScrollView(
+                child: DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(
+                    hintText: 'Region',
+                    hintStyle: TextStyle(fontSize: 12),
+                  ),
+                  value: selectedRegion,
+                  icon: const Icon(Icons.arrow_drop_down),
+                  items: regionOptions.map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(
+                        value,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedRegion = value!;
+                    });
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Region is Required';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
 
           const Divider(
             color: Color.fromARGB(255, 152, 191, 223),
@@ -1045,8 +1146,7 @@ class _SignUpFormState extends State<SignUpForm> {
             child: TextFormField(
               controller: phoneNumberController,
               textInputAction: TextInputAction.next,
-              keyboardType: TextInputType
-                  .phone, // Use TextInputType.phone for phone numbers
+              keyboardType: TextInputType.phone,
               cursorColor: kPrimaryColor,
               decoration: const InputDecoration(
                 hintText: "Phone Number",
@@ -1202,20 +1302,33 @@ class _SignUpFormState extends State<SignUpForm> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
-            child: TextFormField(
-              controller: votersRegistrationController,
-              textInputAction: TextInputAction.next,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
+            child: DropdownButtonFormField<String>(
               decoration: const InputDecoration(
-                hintText: "Voters Registration Number",
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.person),
-                ),
+                hintText: 'Voters Registration Status',
+                hintStyle: TextStyle(fontSize: 12),
               ),
+              value: selectedRegistrationStatus,
+              icon: const Icon(Icons.arrow_drop_down),
+              items: registrationStatusOptions.map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedRegistrationStatus = value!;
+                });
+              },
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Voters Registration Status is Required';
+                }
+                return null;
+              },
             ),
           ),
+
 // --------------------------------- PASSWORD -------------------------------
           Container(
             padding: const EdgeInsets.all(defaultPadding),

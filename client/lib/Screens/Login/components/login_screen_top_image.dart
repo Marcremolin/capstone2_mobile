@@ -24,7 +24,7 @@ class LoginScreenTopImage extends StatelessWidget {
             const Spacer(),
             Expanded(
               flex: 2,
-              child: Image.asset("assets/icons/logo.png"),
+              child: Image.asset("assets/images/logo/HABLogo.png"),
             ),
             const Spacer(),
           ],

@@ -19,19 +19,19 @@ class RequestSummary extends StatefulWidget {
 class RequestData {
   final String userId;
   final String typeOfDocument;
-  final String dateOfPickUp;
-  final String reasonForRequesting;
-  final String paymentMethod;
-  final String paymentReferenceNumber;
+  final String pickUpDate;
+  final String reasonOfRequest;
+  final String modeOfPayment;
+  final String reference;
   final String status;
 
   RequestData({
     required this.userId,
     required this.typeOfDocument,
-    required this.dateOfPickUp,
-    required this.reasonForRequesting,
-    required this.paymentMethod,
-    required this.paymentReferenceNumber,
+    required this.pickUpDate,
+    required this.reasonOfRequest,
+    required this.modeOfPayment,
+    required this.reference,
     required this.status,
   });
 }
@@ -53,11 +53,11 @@ class _RequestSummaryState extends State<RequestSummary> {
   // Function to fetch request summary
   Future<void> fetchRequestSummary() async {
     var token = widget.token;
-    if (token.startsWith('Bearer ')) {
+    if (token != null && token.startsWith('Bearer ')) {
       token = token.substring(7);
     }
 
-    final url = Uri.parse('http://192.168.0.28:8000/summary');
+    final url = Uri.parse('https://dbarangay-mobile-e5o1.onrender.com/summary');
 
     try {
       final response = await http.get(
@@ -76,15 +76,19 @@ class _RequestSummaryState extends State<RequestSummary> {
         });
 
         for (var data in requestsData) {
+          print("Received Data: $data"); // Add this line for debugging
+
           final request = RequestData(
-            userId: data['userId'],
-            typeOfDocument: data['typeOfDocument'],
-            dateOfPickUp: data['dateOfPickUp'],
-            reasonForRequesting: data['reasonForRequesting'],
-            paymentMethod: data['paymentMethod'],
-            paymentReferenceNumber: data['paymentReferenceNumber'],
-            status: data['status'],
+            userId: data['userId'] ?? '',
+            typeOfDocument: data['typeOfDocument'] ?? '',
+            pickUpDate: data['pickUpDate'] ?? '',
+            reasonOfRequest: data['reasonOfRequest'] ?? '',
+            modeOfPayment: data['modeOfPayment'] ?? '',
+            reference: data['reference'] ?? '',
+            status: data['status'] ??
+                '', // default empty strings when the data is null, ensuring that your RequestData object always has non-null strings. You can adjust the default values to suit your specific requirements.
           );
+          print("Request: $request"); // Add this line for debugging
 
           setState(() {
             requests.add(request);
@@ -125,11 +129,11 @@ class _RequestSummaryState extends State<RequestSummary> {
               for (var request in requests)
                 RequestWidget(
                   userId: request.userId,
-                  reasonForRequesting: request.reasonForRequesting,
-                  paymentMethod: request.paymentMethod,
-                  paymentReferenceNumber: request.paymentReferenceNumber,
                   typeOfDocument: request.typeOfDocument,
-                  dateOfPickUp: request.dateOfPickUp,
+                  reasonOfRequest: request.reasonOfRequest,
+                  modeOfPayment: request.modeOfPayment,
+                  reference: request.reference,
+                  pickUpDate: request.pickUpDate,
                   status: request.status,
                 ),
             ],
@@ -143,26 +147,27 @@ class _RequestSummaryState extends State<RequestSummary> {
 class RequestWidget extends StatelessWidget {
   final String typeOfDocument;
   final String userId;
-  final String dateOfPickUp;
+  final String pickUpDate;
   final String status;
 
-  final String reasonForRequesting;
-  final String paymentMethod;
-  final String paymentReferenceNumber;
+  final String reasonOfRequest;
+  final String modeOfPayment;
+  final String reference;
+
   const RequestWidget({
-    super.key,
+    Key? key,
     required this.typeOfDocument,
     required this.userId,
-    required this.dateOfPickUp,
+    required this.pickUpDate,
     required this.status,
-    required this.reasonForRequesting,
-    required this.paymentMethod,
-    required this.paymentReferenceNumber,
+    required this.reasonOfRequest,
+    required this.modeOfPayment,
+    required this.reference,
   });
 
 // POPUP "VIEW REQUEST" DESIGN AND FUNCTION
   void _showRequestDetails(BuildContext context) {
-    DateTime parsedDate = DateTime.parse(dateOfPickUp);
+    DateTime parsedDate = DateTime.parse(pickUpDate);
     String formattedDate = DateFormat('y/MM/d').format(parsedDate);
 
     showDialog(
@@ -189,10 +194,9 @@ class RequestWidget extends StatelessWidget {
                   _buildFormEntry('User ID', userId),
                   _buildFormEntry('Request', typeOfDocument),
                   _buildFormEntry('Date of Pickup', formattedDate),
-                  _buildFormEntry('Reason for Requesting', reasonForRequesting),
-                  _buildFormEntry('Payment Method', paymentMethod),
-                  _buildFormEntry(
-                      'Payment Reference Number', paymentReferenceNumber),
+                  _buildFormEntry('Reason for Requesting', reasonOfRequest),
+                  _buildFormEntry('Payment Method', modeOfPayment),
+                  _buildFormEntry('Payment Reference Number', reference),
                   const SizedBox(height: 10),
                   _buildDivider(),
                   _buildCloseButton(context),
@@ -266,6 +270,8 @@ class RequestWidget extends StatelessWidget {
 // ----------- REQUEST WIDGET DESIGN AND FUNCTIONS -----------
   @override
   Widget build(BuildContext context) {
+    print("typeOfDocument: $typeOfDocument"); // Add this line
+
     return Container(
       width: double.infinity,
       height: 150,
@@ -297,7 +303,7 @@ class RequestWidget extends StatelessWidget {
               ],
             ),
             subtitle: Text(
-              dateOfPickUp,
+              pickUpDate,
               textAlign: TextAlign.center,
             ),
             contentPadding: const EdgeInsets.only(bottom: 8),
