@@ -327,12 +327,13 @@ Widget customBusinessListTile(
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12.0),
-            child: Image.network(
-              imageUrl,
-              height: 200.0,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            ),
+            child: Image.network(imageUrl,
+                height: 200.0,
+                width: double.infinity,
+                fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) {
+              return Image.asset(
+                  'assets/images/Screenshot 2023-11-03 152015.png');
+            }),
           ),
           const SizedBox(height: 8.0),
           Container(
@@ -434,8 +435,6 @@ Widget customLivelihoodListTile(
           ),
         ),
         const SizedBox(height: 8.0),
-
-        // Rest of your widget content
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -537,7 +536,6 @@ Widget customListTile(
               width: double.infinity,
               height: 150.0,
               errorBuilder: (context, error, stackTrace) {
-                // Handle errors while loading the image
                 return const Center(
                   child: Icon(Icons.error_outline, size: 48, color: Colors.red),
                 );
@@ -563,8 +561,6 @@ Widget customListTile(
           ),
         ),
         const SizedBox(height: 8.0),
-
-        // Rest of your widget content
 
 //  -------------- ANNOUNCEMENT COLUMNS  ------------
         Row(
