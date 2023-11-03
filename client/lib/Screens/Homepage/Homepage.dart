@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, missing_required_param
 
 import 'package:flutter/material.dart';
 import '../../../Screens/Homepage/bottom_nav.dart';
@@ -332,6 +332,10 @@ Widget customBusinessListTile(
               height: 200.0,
               width: double.infinity,
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Image.asset(
+                    'assets/images/BusinessBanner.png'); // Replace 'default_image.png' with the actual path to your default image asset.
+              },
             ),
           ),
           const SizedBox(height: 8.0),
@@ -410,9 +414,7 @@ Widget customLivelihoodListTile(
               width: double.infinity,
               height: 150.0,
               errorBuilder: (context, error, stackTrace) {
-                return const Center(
-                  child: Icon(Icons.error_outline, size: 48, color: Colors.red),
-                );
+                return Image.asset('assets/images/Livelihood.png');
               },
             ),
           ),
