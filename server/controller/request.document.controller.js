@@ -1,7 +1,4 @@
 const DocumentRequestServices = require("../services/request.document.services");
-
-const DocumentRequestServices = require("../services/request.document.services");
-
 exports.createDocumentRequest = async (req, res, next) => {
   try {
     console.log('Request Body:', req.body);
