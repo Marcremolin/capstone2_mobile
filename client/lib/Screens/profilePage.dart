@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'aboutBarangay.dart';
@@ -5,6 +7,7 @@ import 'feedbackpage.dart';
 import 'requestSummary.dart';
 import '../Screens/Profile/editProfile.dart';
 import '../../Screens/Login/login_screen.dart';
+import 'package:http/http.dart' as http;
 
 class ProfilePage extends StatefulWidget {
   final String? token;
@@ -21,6 +24,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String? lastName;
   String? suffix;
   String? imageUrl;
+  File? selectedProfilePicture;
 
   @override
   void initState() {
@@ -45,13 +49,19 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget buildProfileImage() {
     if (imageUrl != null) {
       print('Image URL: $imageUrl');
-      return SizedBox(
-        width: 120,
-        height: 120,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(100),
-          child: Image.network(imageUrl!),
-        ),
+      return Column(
+        // Wrap the content in a Column
+        children: [
+          SizedBox(
+            width: 120,
+            height: 120,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(100),
+              child: Image.network(imageUrl!),
+            ),
+          ),
+          const SizedBox(height: 10),
+        ],
       );
     } else {
       print('Image URL is null');
@@ -63,10 +73,51 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  void updateProfilePicture() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowCompression: true,
+    );
+
+    if (result != null && result.files.isNotEmpty) {
+      setState(() {
+        selectedProfilePicture = File(result.files.first.path!);
+      });
+
+      try {
+        var url = Uri.parse(
+            'https://dbarangay-mobile-e5o1.onrender.com/user/profile-picture');
+        var request = http.MultipartRequest('PUT', url);
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'userImage',
+            selectedProfilePicture!.path,
+          ),
+        );
+// Add your token for authentication
+        request.headers['Authorization'] = 'Bearer ${widget.token}';
+
+        var response = await request.send();
+
+        print('Response status code: ${response.statusCode}');
+
+        if (response.statusCode == 200) {
+          print('Profile picture updated successfully');
+          // You might want to update the image in the UI here.
+        } else {
+          print('HTTP Error: ${response.statusCode}');
+          print(await response.stream.bytesToString());
+        }
+      } catch (e) {
+        print('Error: $e');
+      }
+    }
+  }
+
   Widget buildButton(String text, void Function()? onPressed) {
     return SizedBox(
-      width: 150,
-      height: 30,
+      width: 200,
+      height: 40,
       child: ElevatedButton(
         onPressed: onPressed,
         child: Text(
@@ -111,7 +162,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
             const SizedBox(height: 10),
-            buildButton('Edit Profile', () {
+            buildButton('View Profile', () {
               if (widget.token?.isNotEmpty == true) {
                 Navigator.push(
                   context,
@@ -122,6 +173,10 @@ class _ProfilePageState extends State<ProfilePage> {
               } else {
                 print('Token is null or empty. Cannot proceed.');
               }
+            }),
+            const SizedBox(height: 20),
+            buildButton('Update Profile Picture', () {
+              updateProfilePicture();
             }),
             const SizedBox(height: 20),
             Padding(
