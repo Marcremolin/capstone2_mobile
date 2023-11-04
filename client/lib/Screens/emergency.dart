@@ -25,11 +25,15 @@ class _EmergencyState extends State<Emergency>
   late String _selectedCategory;
   late String userId; //FOR TOKEN
   String? phoneNumber;
+  String? firstName;
+  String? lastName;
+  String? middleName;
 
 //ADD FOR DATABASE
   String? selectedDate;
   final dateController = TextEditingController();
   final phoneNumberController = TextEditingController();
+  final residentNameController = TextEditingController();
 
 //--------------
   @override
@@ -42,6 +46,10 @@ class _EmergencyState extends State<Emergency>
       Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);
       userId = jwtDecodedToken['_id'];
       phoneNumber = jwtDecodedToken['phoneNumber'];
+      firstName = jwtDecodedToken['firstName'];
+      middleName = jwtDecodedToken['middleName'];
+      lastName = jwtDecodedToken['lastName'];
+      residentNameController.text = " $firstName, $middleName, $lastName";
       phoneNumberController.text = "$phoneNumber";
     }
   }
@@ -90,6 +98,7 @@ class _EmergencyState extends State<Emergency>
 
           var reqBody = {
             "userId": userId,
+            "residentName": residentNameController.text,
             "currentLocation": "${street}, ${city} ${postalCode}, ${country}",
             "emergencyType": emergencyType,
             "date": formattedDate,

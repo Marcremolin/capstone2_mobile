@@ -284,6 +284,7 @@ class _SignUpFormState extends State<SignUpForm> {
 
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(await response.stream.bytesToString());
+        showSuccessDialog(context);
       } else {
         print('HTTP Error: ${response.statusCode}');
       }
@@ -373,16 +374,74 @@ class _SignUpFormState extends State<SignUpForm> {
                 onPressed: () {
                   Navigator.of(context).pop();
                   _registerUser();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const LoginScreen(),
-                    ),
-                  );
                 },
               ),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  void showSuccessDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Center(
+          child: Container(
+            margin: const EdgeInsets.all(16.0),
+            child: AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30.0),
+              ),
+              title: const Center(
+                child: Text(
+                  'REGISTRATION SUCCESSFUL',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              content: const Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'You can now enjoy all the features and benefits of our community platform!',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 10.0),
+                ],
+              ),
+              backgroundColor: Colors.green,
+              actions: [
+                Padding(
+                    padding: const EdgeInsets.only(right: 16.0, bottom: 16.0),
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.pop(context); // Close the success dialog
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LoginScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        'Login',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ))
+              ],
+            ),
+          ),
         );
       },
     );
@@ -1247,7 +1306,7 @@ class _SignUpFormState extends State<SignUpForm> {
           const SizedBox(height: defaultPadding),
 // RESIDENT CLASS ---------------------
           const Text(
-            'RESIDENT CLASS',
+            'RESIDENT CLASS (Optional)',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,

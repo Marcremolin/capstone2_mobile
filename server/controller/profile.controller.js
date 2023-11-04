@@ -24,8 +24,27 @@ exports.getUserProfile = async (req, res) => {
     };
 
 
-    
-
+    exports.updateProfilePicture = async (req, res) => {
+      try {
+          const userId = req.user._id;
+  
+          // Assuming you receive the new profile picture information as part of the request
+          const newProfilePicture = {
+              public_id: 'new_public_id',
+              url: 'new_image_url',     
+          };
+  
+          const updatedUser = await ProfileService.updateProfilePicture(userId, newProfilePicture);
+            if (updatedUser) {
+              return res.status(200).json({ message: 'Profile picture updated successfully', user: updatedUser });
+          } else {
+              return res.status(500).json({ message: 'Failed to update profile picture' });
+          }
+      } catch (error) {
+          console.error(error);
+          res.status(500).json({ error: error.message });
+      }
+  };
 
 
 

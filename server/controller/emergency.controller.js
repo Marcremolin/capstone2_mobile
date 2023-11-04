@@ -8,6 +8,7 @@ exports.createEmergencySignal = async (req, res, next) => {
 
     const {
       userId,
+      residentName,
       currentLocation,
       phoneNumber,
       emergencyType,
@@ -19,6 +20,8 @@ exports.createEmergencySignal = async (req, res, next) => {
 
     let emergencyReq = await Emergency.createEmergencySignal(
       userId,
+      residentName,
+
       currentLocation,
       phoneNumber,
       emergencyType,
