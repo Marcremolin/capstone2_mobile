@@ -148,7 +148,6 @@ exports.login = async (req, res, next) => {
 }
 
 
-//------------------------ SHITS -------------------------------------
 exports.forgotpass = async (req, res) => {
   const BRGYEMAIL = 'dbarangayapplication@gmail.com';
   const PASSWORD = 'rrxc souh lvrv ybgm';
@@ -173,11 +172,9 @@ exports.forgotpass = async (req, res) => {
       return res.status(400).json({ error: 'User not found' });
     }
 
-    // Save the verification code in the user object and reset the usage flag
     user.verificationCode = verificationCode;
     user.verificationCodeUsed = false;
 
-    // Save the user with the verification code to the database
     await user.save();
 
     const MailGenerator = new Mailgen({
@@ -256,4 +253,36 @@ exports.verifyAndResetPassword = async (req, res) => {
 
   await user.save();
   res.status(200).json({ message: 'Password reset successfully' });
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+exports.updateProfile= async (req, res, next) => {
+  try {
+      const { userId } = req.body; // Assuming you have a way to identify the user
+      let userImage;
+
+      if (req.file) {
+          userImage = req.file;
+      }
+
+      await UserService.updateProfileImage(userId, userImage);
+
+      res.json({ status: true, success: "User profile image updated successfully" });
+  } catch (error) {
+      console.error('Error in updating user profile image:', error);
+      res.status(500).json({ error: 'Internal server error' });
+  }
 };
