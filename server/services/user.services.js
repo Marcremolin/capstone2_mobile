@@ -58,7 +58,6 @@ class UserService {
         },
       });
 
-      // Testing success
       transporter.verify((error, success) => {
         if (error) {
           // console.log(error);
@@ -68,10 +67,9 @@ class UserService {
         }
       });
 
-       // Upload the image to Cloudinary
     const cloudinaryResponse = await cloudinary.uploader.upload(
       `uploads/profile/${userImage.filename}`,
-      { folder: 'profile' } // Cloudinary folder where the image will be stored
+      { folder: 'profile' } 
     );
 
     
@@ -189,6 +187,35 @@ static async generateToken(tokenData,secretKey,jwt_expire){
     return jwt.sign(tokenData,secretKey,{expiresIn:jwt_expire});
 
 
+
+}
+
+static async updateProfileImage(userId, userImage) {
+  try {
+      const user = await UserModel.findById(userId);
+
+      if (!user) {
+          return null;
+      }
+
+      if (userImage) {
+          const cloudinaryResponse = await cloudinary.uploader.upload(
+              userImage.path, // Assuming 'userImage' contains the path to the uploaded image
+              { folder: 'profile' }
+          );
+
+          user.userImage = {
+              public_id: cloudinaryResponse.public_id,
+              url: cloudinaryResponse.secure_url
+          };
+
+          await user.save();
+      }
+
+      return user;
+  } catch (error) {
+      throw error;
+  }
 }
 }
 
