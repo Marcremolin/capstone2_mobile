@@ -22,6 +22,7 @@ const userSchema = new Schema({
   },
   middleName: {
     type: String,
+    
   },
 
   suffix: String,

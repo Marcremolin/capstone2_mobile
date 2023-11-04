@@ -201,16 +201,16 @@ class _FeedbackPageState extends State<FeedbackPage> {
                           ),
                         ),
                         const SizedBox(height: 16.0),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(
-                            starSelection.length,
-                            (index) => StarIcon(
-                              selected: starSelection[index],
-                              onPressed: () => selectStar(index),
-                            ),
-                          ),
-                        ),
+                        // Row(
+                        //   mainAxisAlignment: MainAxisAlignment.center,
+                        //   children: List.generate(
+                        //     starSelection.length,
+                        //     (index) => StarIcon(
+                        //       selected: starSelection[index],
+                        //       onPressed: () => selectStar(index),
+                        //     ),
+                        //   ),
+                        // ),
                         const SizedBox(height: 16.0),
                         SizedBox(
                           width: 200,
@@ -239,24 +239,24 @@ class _FeedbackPageState extends State<FeedbackPage> {
   }
 }
 
-class StarIcon extends StatelessWidget {
-  final bool selected;
-  final VoidCallback onPressed;
+// class StarIcon extends StatelessWidget {
+//   final bool selected;
+//   final VoidCallback onPressed;
 
-  const StarIcon({
-    Key? key,
-    required this.selected,
-    required this.onPressed,
-  }) : super(key: key);
+//   const StarIcon({
+//     Key? key,
+//     required this.selected,
+//     required this.onPressed,
+//   }) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      icon: Icon(
-        selected ? Icons.star : Icons.star_border,
-        color: selected ? Colors.yellow : Colors.white,
-      ),
-      onPressed: onPressed,
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return IconButton(
+//       icon: Icon(
+//         selected ? Icons.star : Icons.star_border,
+//         color: selected ? Colors.yellow : Colors.white,
+//       ),
+//       onPressed: onPressed,
+//     );
+//   }
+// }

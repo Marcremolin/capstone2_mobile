@@ -102,7 +102,7 @@ class _EditProfileState extends State<EditProfile> {
   @override
   Widget build(BuildContext context) {
     String dateOfBirthString = userProfile['dateOfBirth'] ?? '';
-    DateTime dateOfBirth = DateTime.parse(dateOfBirthString);
+    DateTime dateOfBirth = DateFormat('yyyy-MM-dd').parse(dateOfBirthString);
     String formattedDate = DateFormat('yyyy-MM-dd').format(dateOfBirth);
 
     String lastName = userProfile['lastName'] ?? '';

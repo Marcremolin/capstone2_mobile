@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken')
 class EmergencyService{
     static async createEmergencySignal(
         userId,
+        residentName,
         currentLocation,
         phoneNumber,
         emergencyType,
@@ -16,6 +17,7 @@ class EmergencyService{
         try{
             const createEmergencySignal = new EmergencyModel({  
                 userId,
+                residentName,
                 currentLocation,
                 phoneNumber,
                 emergencyType,
