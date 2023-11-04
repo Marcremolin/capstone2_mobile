@@ -424,7 +424,7 @@ class _SignUpFormState extends State<SignUpForm> {
                     padding: const EdgeInsets.only(right: 16.0, bottom: 16.0),
                     child: TextButton(
                       onPressed: () {
-                        Navigator.pop(context); // Close the success dialog
+                        Navigator.pop(context);
                         Navigator.push(
                           context,
                           MaterialPageRoute(

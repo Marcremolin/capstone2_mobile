@@ -12,6 +12,8 @@ class UserProfile {
       throw new Error('Error fetching user profile');
     }
   }
+
+
   static async updateProfilePicture(userId, newProfilePicture) {
     try {
       const user = await UserModel.findById(userId);
@@ -20,13 +22,9 @@ class UserProfile {
         return null;
       }
 
-      // Debugging: Log the newProfilePicture before updating
       console.log('Updating profile picture with:', newProfilePicture);
-
       user.userImage = newProfilePicture;
       const updatedUser = await user.save();
-
-      // Debugging: Log the updatedUser after the update
       console.log('Updated user:', updatedUser);
 
       return updatedUser;
@@ -34,7 +32,8 @@ class UserProfile {
       console.error('Error updating profile picture:', error);
       throw new Error('Error updating profile picture');
     }
-  }
+  
+}
 }
 
 

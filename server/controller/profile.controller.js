@@ -1,4 +1,5 @@
 const ProfileService = require("../services/profile.services");
+const cloudinary = require('../config/cloudinary');
 
 // Function to get a user's profile by ID
 exports.getUserProfile = async (req, res) => {
@@ -22,35 +23,29 @@ exports.getUserProfile = async (req, res) => {
       res.status(500).json({ error: error.message }); 
     }
     };
-
-
     exports.updateProfilePicture = async (req, res) => {
-      try {
+        try {
           const userId = req.user._id;
-  
-          // Assuming you receive the new profile picture information as part of the request
-          const newProfilePicture = {
-              public_id: 'new_public_id',
-              url: 'new_image_url',     
-          };
-  
-          const updatedUser = await ProfileService.updateProfilePicture(userId, newProfilePicture);
-            if (updatedUser) {
-              return res.status(200).json({ message: 'Profile picture updated successfully', user: updatedUser });
+          
+          // Upload the new profile picture to Cloudinary
+          const cloudinaryResponse = await cloudinary.uploader.upload(
+            `uploads/profile/${req.file.filename}`, 
+            { folder: 'profile' } // Cloudinary folder where the image will be stored
+          );
+          
+          const updatedUser = await ProfileService.updateProfilePicture(userId, {
+            public_id: cloudinaryResponse.public_id,
+            url: cloudinaryResponse.secure_url,
+          });
+          
+          if (updatedUser) {
+            return res.status(200).json({ message: 'Profile picture updated successfully', user: updatedUser });
           } else {
-              return res.status(500).json({ message: 'Failed to update profile picture' });
+            return res.status(500).json({ message: 'Failed to update profile picture' });
           }
-      } catch (error) {
+        } catch (error) {
           console.error(error);
           res.status(500).json({ error: error.message });
-      }
-  };
-
-
-
-
-
-
-
-
-
+        }
+      };
+      

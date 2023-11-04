@@ -72,7 +72,7 @@ exports.register = async (req, res, next) => {
         companyName,
         position,
         votersRegistration,
-        userImage, // Include userImage in the registration function
+        userImage,
         status,
         password,
         type
