@@ -277,7 +277,9 @@ exports.updateProfile= async (req, res, next) => {
       if (req.file) {
           userImage = req.file;
       }
-
+      console.log('Received request to update profile:', req.body);
+      console.log('Received file:', req.file);
+      
       await UserService.updateProfileImage(userId, userImage);
 
       res.json({ status: true, success: "User profile image updated successfully" });
