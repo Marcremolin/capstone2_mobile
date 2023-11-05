@@ -279,7 +279,8 @@ exports.updateUserImage = async (req, res) => {
 
     if (updatedUser) {
       console.log('UserImage updated successfully.');
-      res.json({ status: true, success: "UserImage updated successfully!" });
+      res.json({ status: true, success: "UserImage updated successfully!",   imageUrl: updatedImageUrl, // Pass the updated image URL here
+    });
     } else {
       console.error('Failed to update userImage.');
       res.json({ status: false, error: "Failed to update userImage." });
