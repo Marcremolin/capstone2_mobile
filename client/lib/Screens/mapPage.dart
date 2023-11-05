@@ -126,32 +126,6 @@ class mapPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      InkWell(
-                        onTap: () async {},
-                        child: Container(
-                          margin: const EdgeInsets.only(left: 40),
-                          decoration: BoxDecoration(
-                            color: Colors.blue,
-                            borderRadius: BorderRadius.circular(30.0),
-                          ),
-                          padding: const EdgeInsets.all(16.0),
-                          child: const Column(
-                            children: [
-                              Text(
-                                "GET DIRECTIONS",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              SizedBox(
-                                height: 5,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
                     ],
                   ),
 

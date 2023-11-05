@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const multer = require('multer');
 const UserController = require('../controller/user.controller');
+const authenticate = require('./verifyToken');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -16,7 +17,7 @@ router.post('/registration', upload.single('userImage'), UserController.register
 router.post('/login', UserController.login);
 router.post('/forgetpass', UserController.forgotpass);
 router.post('/verifyAndResetPassword', UserController.verifyAndResetPassword);
-router.put('/updateUserImage/:id', upload.single('userImage'), UserController.updateUserImage);
+router.put('/updateUserImage', authenticate, upload.single('userImage'), UserController.updateUserImage);
 
 module.exports = router;
 

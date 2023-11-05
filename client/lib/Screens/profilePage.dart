@@ -1,7 +1,8 @@
+// ignore_for_file: avoid_print
+
+import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
-import 'package:http/http.dart' as http;
-
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'aboutBarangay.dart';
@@ -9,6 +10,7 @@ import 'feedbackpage.dart';
 import 'requestSummary.dart';
 import '../Screens/Profile/editProfile.dart';
 import '../../Screens/Login/login_screen.dart';
+import 'package:http/http.dart' as http;
 
 class ProfilePage extends StatefulWidget {
   final String? token;
@@ -47,46 +49,11 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  void _changeProfilePicture() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      allowCompression: true,
-    );
-
-    if (result != null && result.files.isNotEmpty) {
-      final newProfilePicturePath = result.files.first.path;
-      // Update the UI with the new profile picture.
-      setState(() {
-        selectedProfilePicture = File(newProfilePicturePath!);
-      });
-
-      // Upload the new profile picture to Cloudinary or your server.
-      final imageUrl = await _uploadProfilePicture(newProfilePicturePath!);
-
-      // Update the user's profile in MongoDB with the new image URL.
-      await _updateUserProfileImage(imageUrl);
-    }
-  }
-
-  Future<String> _uploadProfilePicture(String imagePath) async {
-    // Implement code to upload the image to Cloudinary or your server.
-    // Return the URL of the uploaded image.
-    // Replace this placeholder with your actual implementation.
-    return 'https://your-cloudinary-url.com/your-uploaded-image.jpg';
-  }
-
-  Future<void> _updateUserProfileImage(String imageUrl) async {
-    // Implement code to update the user's profile image in MongoDB.
-    // Replace this placeholder with your actual implementation.
-    print('Updating user profile image in MongoDB with URL: $imageUrl');
-  }
-
   Widget buildProfileImage() {
     if (imageUrl != null) {
       print('Image URL: $imageUrl');
 
       return Column(
-        // Wrap the content in a Column
         children: [
           SizedBox(
             width: 120,
@@ -107,6 +74,20 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Image.asset('assets/images/bot.png'),
       );
     }
+  }
+
+  Widget buildEditImageButton() {
+    return SizedBox(
+      width: 200,
+      height: 40,
+      child: ElevatedButton(
+        onPressed: updateProfilePicture,
+        child: const Text(
+          'Edit User Image',
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+    );
   }
 
   Widget buildButton(String text, void Function()? onPressed) {
@@ -132,6 +113,155 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       trailing: const Icon(Icons.arrow_forward_ios, color: Colors.black),
       onTap: onTap,
+    );
+  }
+
+  Future<void> updateProfilePicture() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+    );
+
+    if (result != null) {
+      File imageFile = File(result.files.single.path!);
+
+      var request = http.MultipartRequest(
+        'PUT',
+        Uri.parse('https://dbarangay-mobile-e5o1.onrender.com/updateUserImage'),
+      );
+      request.headers['Authorization'] = 'Bearer ${widget.token}';
+
+      request.files
+          .add(await http.MultipartFile.fromPath('userImage', imageFile.path));
+
+      try {
+        var response = await request.send();
+
+        if (response.statusCode == 200) {
+          final responseJson = await response.stream.bytesToString();
+          final responseData = json.decode(responseJson);
+
+          if (responseData['status'] == true) {
+            String newImageUrl = responseData['user']['userImage'];
+            setState(() {
+              imageUrl = newImageUrl;
+            });
+
+            updateSuccessDialog();
+          } else {
+            print('Failed to update user image.');
+          }
+        } else {
+          print(
+              'Failed to update user image. Status code: ${response.statusCode}');
+        }
+      } catch (error) {
+        print('Error during image upload: $error');
+      }
+    }
+  }
+
+  // Future<void> updateProfilePicture() async {
+  //   FilePickerResult? result = await FilePicker.platform.pickFiles(
+  //     type: FileType.image,
+  //   );
+
+  //   if (result != null) {
+  //     File imageFile = File(result.files.single.path!);
+
+  //     var request = http.MultipartRequest(
+  //       'PUT',
+  //       Uri.parse('https://dbarangay-mobile-e5o1.onrender.com/updateUserImage'),
+  //     );
+
+  //     request.files
+  //         .add(await http.MultipartFile.fromPath('userImage', imageFile.path));
+
+  //     try {
+  //       var response = await request.send();
+
+  //       if (response.statusCode == 200) {
+  //         final responseJson = await response.stream.bytesToString();
+  //         final responseData = json.decode(responseJson);
+
+  //         if (responseData['status'] == true) {
+  //           String newImageUrl = responseData['user']['userImage'];
+  //           setState(() {
+  //             imageUrl = newImageUrl;
+  //           });
+
+  //           updateSuccessDialog();
+  //         } else {
+  //           print('Failed to update user image.');
+  //         }
+  //       } else {
+  //         print(
+  //             'Failed to update user image. Status code: ${response.statusCode}');
+  //       }
+  //     } catch (error) {
+  //       print('Error during image upload: $error');
+  //     }
+  //   }
+  // }
+
+  void updateSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50.0),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(24.0),
+            decoration: BoxDecoration(
+              color: Colors.green,
+              borderRadius: BorderRadius.circular(30.0),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Center(
+                  child: Text(
+                    'PROFILE PICTURE UPDATED SUCCESFULLY!',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20.0,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 16.0),
+                const Center(
+                  child: Text(
+                    'Your profile picture has been updated.',
+                    style: TextStyle(color: Colors.white),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 16.0),
+                SizedBox(
+                  width: 120,
+                  height: 40,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    style: ButtonStyle(
+                      backgroundColor:
+                          MaterialStateProperty.all<Color>(Colors.white),
+                    ),
+                    child: const Text(
+                      'OK',
+                      style: TextStyle(color: Colors.green),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -169,6 +299,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 print('Token is null or empty. Cannot proceed.');
               }
             }),
+            const SizedBox(height: 10),
+            buildEditImageButton(),
+            const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 50),
               child: Container(
