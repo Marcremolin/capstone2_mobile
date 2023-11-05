@@ -117,96 +117,68 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> updateProfilePicture() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
+    FilePickerResult? result;
+    try {
+      result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+      );
+    } catch (error) {
+      print('Error picking a file: $error');
+      return;
+    }
+
+    if (result == null || result.files.isEmpty) {
+      print('No image selected');
+      return;
+    }
+
+    File imageFile = File(result.files.single.path!);
+
+    var request = http.MultipartRequest(
+      'PUT',
+      Uri.parse('https://dbarangay-mobile-e5o1.onrender.com/updateUserImage'),
     );
 
-    if (result != null) {
-      File imageFile = File(result.files.single.path!);
+    // Verify and format the token
+    String? formattedToken = widget.token;
+    if (!formattedToken!.startsWith("Bearer ")) {
+      formattedToken = "Bearer $formattedToken";
+    }
 
-      var request = http.MultipartRequest(
-        'PUT',
-        Uri.parse('https://dbarangay-mobile-e5o1.onrender.com/updateUserImage'),
-      );
-      // Verify and format the token
-      String? formattedToken = widget.token;
-      if (!formattedToken!.startsWith("Bearer ")) {
-        formattedToken = "Bearer $formattedToken";
-      }
+    request.headers['Authorization'] = formattedToken;
+    request.files
+        .add(await http.MultipartFile.fromPath('userImage', imageFile.path));
 
-      request.headers['Authorization'] = formattedToken;
-      request.files
-          .add(await http.MultipartFile.fromPath('userImage', imageFile.path));
+    try {
+      var response = await request.send();
 
-      try {
-        var response = await request.send();
+      if (response.statusCode == 200) {
+        final responseJson = await response.stream.bytesToString();
+        print('Response JSON: $responseJson');
+        final responseData = json.decode(responseJson);
+        print('Response Data: $responseData');
 
-        if (response.statusCode == 200) {
-          final responseJson = await response.stream.bytesToString();
-          final responseData = json.decode(responseJson);
-
+        if (responseData != null) {
           if (responseData['status'] == true) {
-            String newImageUrl = responseData['user']['userImage'];
+            String updatedImageUrl = responseData['imageUrl'];
             setState(() {
-              imageUrl = newImageUrl;
+              imageUrl = updatedImageUrl;
             });
-
             updateSuccessDialog();
           } else {
             print('Failed to update user image.');
           }
         } else {
-          print(
-              'Failed to update user image. Status code: ${response.statusCode}');
+          print('Invalid response format.');
         }
-      } catch (error) {
-        print('Error during image upload: $error');
+      } else {
+        print(
+            'Failed to update user image. Status code: ${response.statusCode}');
       }
+    } catch (error) {
+      print('Error during image upload: $error');
     }
   }
-
-  // Future<void> updateProfilePicture() async {
-  //   FilePickerResult? result = await FilePicker.platform.pickFiles(
-  //     type: FileType.image,
-  //   );
-
-  //   if (result != null) {
-  //     File imageFile = File(result.files.single.path!);
-
-  //     var request = http.MultipartRequest(
-  //       'PUT',
-  //       Uri.parse('https://dbarangay-mobile-e5o1.onrender.com/updateUserImage'),
-  //     );
-
-  //     request.files
-  //         .add(await http.MultipartFile.fromPath('userImage', imageFile.path));
-
-  //     try {
-  //       var response = await request.send();
-
-  //       if (response.statusCode == 200) {
-  //         final responseJson = await response.stream.bytesToString();
-  //         final responseData = json.decode(responseJson);
-
-  //         if (responseData['status'] == true) {
-  //           String newImageUrl = responseData['user']['userImage'];
-  //           setState(() {
-  //             imageUrl = newImageUrl;
-  //           });
-
-  //           updateSuccessDialog();
-  //         } else {
-  //           print('Failed to update user image.');
-  //         }
-  //       } else {
-  //         print(
-  //             'Failed to update user image. Status code: ${response.statusCode}');
-  //       }
-  //     } catch (error) {
-  //       print('Error during image upload: $error');
-  //     }
-  //   }
-  // }
 
   void updateSuccessDialog() {
     showDialog(
