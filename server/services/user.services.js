@@ -199,8 +199,7 @@ static async updateUserImage(userId, userImage) {
 
     if (!user) {
       console.error('User not found with ID:', userId);
-
-      return null; 
+      return null;
     }
 
     const cloudinaryResponse = await cloudinary.uploader.upload(
@@ -209,13 +208,17 @@ static async updateUserImage(userId, userImage) {
     );
 
     user.userImage = cloudinaryResponse.secure_url;
+    
+    // Update the 'public_id' and 'url' in the 'filename' field
+    user.filename.public_id = cloudinaryResponse.public_id;
+    user.filename.url = cloudinaryResponse.secure_url;
+
     await user.save();
     console.log('UserImage updated successfully.');
 
     return user;
   } catch (error) {
     console.error('Error in updateUserImage:', error);
-
     throw error;
   }
 }
