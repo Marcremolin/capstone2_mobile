@@ -127,7 +127,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                   height: 40,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.of(context).pop(); // Close the dialog
+                      Navigator.of(context).pop();
                     },
                     style: ButtonStyle(
                       backgroundColor:
@@ -201,28 +201,17 @@ class _FeedbackPageState extends State<FeedbackPage> {
                           ),
                         ),
                         const SizedBox(height: 16.0),
-                        // Row(
-                        //   mainAxisAlignment: MainAxisAlignment.center,
-                        //   children: List.generate(
-                        //     starSelection.length,
-                        //     (index) => StarIcon(
-                        //       selected: starSelection[index],
-                        //       onPressed: () => selectStar(index),
-                        //     ),
-                        //   ),
-                        // ),
                         const SizedBox(height: 16.0),
                         SizedBox(
                           width: 200,
                           child: ElevatedButton(
                             onPressed: feedbackReq,
-                            child: const Text('Submit Feedback'),
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                    30.0), // Adjust the radius as needed
+                                borderRadius: BorderRadius.circular(30.0),
                               ),
                             ),
+                            child: Text('Submit Feedback'),
                           ),
                         ),
                         const SizedBox(height: 16.0),
@@ -238,25 +227,3 @@ class _FeedbackPageState extends State<FeedbackPage> {
     );
   }
 }
-
-// class StarIcon extends StatelessWidget {
-//   final bool selected;
-//   final VoidCallback onPressed;
-
-//   const StarIcon({
-//     Key? key,
-//     required this.selected,
-//     required this.onPressed,
-//   }) : super(key: key);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return IconButton(
-//       icon: Icon(
-//         selected ? Icons.star : Icons.star_border,
-//         color: selected ? Colors.yellow : Colors.white,
-//       ),
-//       onPressed: onPressed,
-//     );
-//   }
-// }

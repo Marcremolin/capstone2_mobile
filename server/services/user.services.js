@@ -198,6 +198,8 @@ static async updateUserImage(userId, userImage) {
     const user = await UserModel.findById(userId);
 
     if (!user) {
+      console.error('User not found with ID:', userId);
+
       return null; 
     }
 
@@ -208,9 +210,12 @@ static async updateUserImage(userId, userImage) {
 
     user.userImage = cloudinaryResponse.secure_url;
     await user.save();
+    console.log('UserImage updated successfully.');
 
     return user;
   } catch (error) {
+    console.error('Error in updateUserImage:', error);
+
     throw error;
   }
 }

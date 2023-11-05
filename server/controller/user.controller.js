@@ -267,17 +267,21 @@ exports.verifyAndResetPassword = async (req, res) => {
 
 
 // ------------- UPDATE PROFILE ---------------- 
-
 exports.updateUserImage = async (req, res) => {
   try {
-    const userId = req.params.id; 
     const userImage = req.file; 
+
+    const userId = req.user._id;
+    console.log('Received user ID:', userId);
+    console.log('Received user image:', userImage);
 
     const updatedUser = await UserService.updateUserImage(userId, userImage);
 
     if (updatedUser) {
+      console.log('UserImage updated successfully.');
       res.json({ status: true, success: "UserImage updated successfully!" });
     } else {
+      console.error('Failed to update userImage.');
       res.json({ status: false, error: "Failed to update userImage." });
     }
   } catch (error) {
