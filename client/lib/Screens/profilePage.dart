@@ -128,8 +128,13 @@ class _ProfilePageState extends State<ProfilePage> {
         'PUT',
         Uri.parse('https://dbarangay-mobile-e5o1.onrender.com/updateUserImage'),
       );
-      request.headers['Authorization'] = 'Bearer ${widget.token}';
+      // Verify and format the token
+      String? formattedToken = widget.token;
+      if (!formattedToken!.startsWith("Bearer ")) {
+        formattedToken = "Bearer $formattedToken";
+      }
 
+      request.headers['Authorization'] = formattedToken;
       request.files
           .add(await http.MultipartFile.fromPath('userImage', imageFile.path));
 
