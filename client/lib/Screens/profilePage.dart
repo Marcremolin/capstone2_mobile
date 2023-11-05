@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -89,9 +90,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
       try {
         var url = Uri.parse(
-            'https://dbarangay-mobile-e5o1.onrender.com/updateProfile'); // Adjust the URL
+            'https://dbarangay-mobile-e5o1.onrender.com/updateProfile');
 
-        var request = http.MultipartRequest('PUT', url);
+        var request = http.MultipartRequest('POST', url);
         request.files.add(
           await http.MultipartFile.fromPath(
             'userImage',
@@ -106,8 +107,37 @@ class _ProfilePageState extends State<ProfilePage> {
         print('Response status code: ${response.statusCode}');
 
         if (response.statusCode == 200) {
-          print('Profile picture updated successfully');
+          final responseJson = await response.stream.bytesToString();
+          final parsedResponse = json.decode(responseJson);
+
+          if (parsedResponse != null && parsedResponse['filename'] != null) {
+            // Parse the Cloudinary response and update the UI
+            setState(() {
+              imageUrl = parsedResponse['filename']['url'];
+            });
+          } else {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: const Text('Error'),
+                  content: const Text(
+                    'Failed to update profile picture. Please try again later.',
+                  ),
+                  actions: <Widget>[
+                    TextButton(
+                      child: const Text('OK'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          }
         } else {
+          // Handle HTTP error from the backend
           print('HTTP Error: ${response.statusCode}');
           print(await response.stream.bytesToString());
           showDialog(
@@ -131,6 +161,7 @@ class _ProfilePageState extends State<ProfilePage> {
           );
         }
       } catch (e) {
+        // Handle other errors
         print('Error: $e');
         showDialog(
           context: context,
