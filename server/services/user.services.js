@@ -188,8 +188,7 @@ static async generateToken(tokenData,secretKey,jwt_expire){
 
 
 
-}
-static async updateProfileImage(userId, userImage) {
+}static async updateProfileImage(userId, userImage) {
   try {
     const user = await UserModel.findById(userId);
 
@@ -198,34 +197,29 @@ static async updateProfileImage(userId, userImage) {
     }
 
     if (userImage) {
-      try {
-        const cloudinaryResponse = await cloudinary.uploader.upload(
-          userImage.path,
-          { folder: 'profile' }
-        );
+      const cloudinaryResponse = await cloudinary.uploader.upload(
+        userImage.path, // Assuming 'userImage' contains the path to the uploaded image
+        { folder: 'profile' }
+      );
 
-        user.userImage = {
-          public_id: cloudinaryResponse.public_id,
-          url: cloudinaryResponse.secure_url,
-        };
+      // Construct the desired 'filename' object
+      const filename = {
+        public_id: cloudinaryResponse.public_id,
+        url: cloudinaryResponse.secure_url
+      };
 
-        await user.save();
+      // Assign the 'filename' object to the user
+      user.filename = filename;
 
-        return {
-          filename: {
-            public_id: cloudinaryResponse.public_id,
-            url: cloudinaryResponse.secure_url,
-          },
-        };
-      } catch (cloudinaryError) {
-        console.error('Error uploading image to Cloudinary:', cloudinaryError);
-        throw cloudinaryError;
-      }
+      await user.save();
+
+      // Return the 'filename' object
+      return { filename };
     }
 
-    return null;
+    // Handle the case when userImage is not provided
+    return { error: 'User image not provided' };
   } catch (error) {
-    console.error('Error in updating user profile image:', error);
     throw error;
   }
 }
