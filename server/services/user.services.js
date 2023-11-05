@@ -188,37 +188,28 @@ static async generateToken(tokenData,secretKey,jwt_expire){
 
 
 
-}static async updateProfileImage(userId, userImage) {
+}
+
+
+
+// ------------- UPDATE PROFILE ---------------- 
+static async updateUserImage(userId, userImage) {
   try {
     const user = await UserModel.findById(userId);
 
     if (!user) {
-      return null;
+      return null; 
     }
 
-    if (userImage) {
-      const cloudinaryResponse = await cloudinary.uploader.upload(
-        userImage.path, // Assuming 'userImage' contains the path to the uploaded image
-        { folder: 'profile' }
-      );
+    const cloudinaryResponse = await cloudinary.uploader.upload(
+      `uploads/profile/${userImage.filename}`,
+      { folder: 'profile' }
+    );
 
-      // Construct the desired 'filename' object
-      const filename = {
-        public_id: cloudinaryResponse.public_id,
-        url: cloudinaryResponse.secure_url
-      };
+    user.userImage = cloudinaryResponse.secure_url;
+    await user.save();
 
-      // Assign the 'filename' object to the user
-      user.filename = filename;
-
-      await user.save();
-
-      // Return the 'filename' object
-      return { filename };
-    }
-
-    // Handle the case when userImage is not provided
-    return { error: 'User image not provided' };
+    return user;
   } catch (error) {
     throw error;
   }
