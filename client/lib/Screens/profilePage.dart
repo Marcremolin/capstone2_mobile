@@ -99,7 +99,6 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         );
 
-        // Add your token for authentication
         request.headers['Authorization'] = 'Bearer ${widget.token}';
 
         var response = await request.send();
@@ -108,11 +107,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
         if (response.statusCode == 200) {
           print('Profile picture updated successfully');
-          // You might want to update the image in the UI here.
         } else {
           print('HTTP Error: ${response.statusCode}');
           print(await response.stream.bytesToString());
-          // Handle the error gracefully and show a user-friendly message.
           showDialog(
             context: context,
             builder: (context) {
