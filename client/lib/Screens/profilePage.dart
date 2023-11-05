@@ -59,7 +59,8 @@ class _ProfilePageState extends State<ProfilePage> {
             height: 120,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(100),
-              child: Image.network(imageUrl!),
+              child: Image.network(
+                  '$imageUrl?timestamp=${DateTime.now().millisecondsSinceEpoch}'),
             ),
           ),
           const SizedBox(height: 10),
@@ -88,7 +89,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
       try {
         var url = Uri.parse(
-            'https://dbarangay-mobile-e5o1.onrender.com/user/profile-picture');
+            'https://dbarangay-mobile-e5o1.onrender.com/updateProfile'); // Adjust the URL
+
         var request = http.MultipartRequest('PUT', url);
         request.files.add(
           await http.MultipartFile.fromPath(
@@ -96,7 +98,8 @@ class _ProfilePageState extends State<ProfilePage> {
             selectedProfilePicture!.path,
           ),
         );
-// Add your token for authentication
+
+        // Add your token for authentication
         request.headers['Authorization'] = 'Bearer ${widget.token}';
 
         var response = await request.send();
@@ -116,7 +119,8 @@ class _ProfilePageState extends State<ProfilePage> {
               return AlertDialog(
                 title: const Text('Error'),
                 content: const Text(
-                    'Failed to update profile picture. Please try again later.'),
+                  'Failed to update profile picture. Please try again later.',
+                ),
                 actions: <Widget>[
                   TextButton(
                     child: const Text('OK'),
@@ -131,7 +135,6 @@ class _ProfilePageState extends State<ProfilePage> {
         }
       } catch (e) {
         print('Error: $e');
-        // Handle the error gracefully and show a user-friendly message.
         showDialog(
           context: context,
           builder: (context) {
