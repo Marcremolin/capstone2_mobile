@@ -11,7 +11,7 @@ class AdditionalContentPage extends StatelessWidget {
   final String owner;
 
   const AdditionalContentPage({
-    Key? key,
+    super.key,
     required this.imagePath,
     required this.sourceName,
     required this.title,
@@ -20,11 +20,11 @@ class AdditionalContentPage extends StatelessWidget {
     required this.location,
     required this.phone,
     required this.owner,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    final Color secondaryTextColor = Colors.grey;
+    const Color secondaryTextColor = Colors.grey;
 
     return Scaffold(
       appBar: AppBar(
@@ -64,11 +64,14 @@ class AdditionalContentPage extends StatelessWidget {
               ),
 
               // MAIN IMAGE
-              Image.asset(
+              Image.network(
                 imagePath,
                 width: 500,
                 height: 200,
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset('assets/images/BusinessBanner.png');
+                },
               ),
 
               // Description section
@@ -90,7 +93,7 @@ class AdditionalContentPage extends StatelessWidget {
               ),
               Text(
                 description,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   color: secondaryTextColor,
                 ),
@@ -123,7 +126,7 @@ class AdditionalContentPage extends StatelessWidget {
                         ),
                         Text(
                           operatingHours,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16,
                             color: secondaryTextColor,
                           ),
@@ -148,7 +151,7 @@ class AdditionalContentPage extends StatelessWidget {
                         ),
                         Text(
                           location,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16,
                             color: secondaryTextColor,
                           ),
@@ -185,7 +188,7 @@ class AdditionalContentPage extends StatelessWidget {
                         ),
                         Text(
                           operatingHours,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16,
                             color: secondaryTextColor,
                           ),
@@ -210,7 +213,7 @@ class AdditionalContentPage extends StatelessWidget {
                         ),
                         Text(
                           location,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16,
                             color: secondaryTextColor,
                           ),
