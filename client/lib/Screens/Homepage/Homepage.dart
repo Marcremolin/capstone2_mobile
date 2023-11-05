@@ -333,8 +333,7 @@ Widget customBusinessListTile(
               width: double.infinity,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
-                return Image.asset(
-                    'assets/images/BusinessBanner.png'); // Replace 'default_image.png' with the actual path to your default image asset.
+                return Image.asset('assets/images/BusinessBanner.png');
               },
             ),
           ),
