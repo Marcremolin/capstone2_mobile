@@ -266,25 +266,22 @@ exports.verifyAndResetPassword = async (req, res) => {
 
 
 
+// ------------- UPDATE PROFILE ---------------- 
 
-
-
-exports.updateProfile= async (req, res, next) => {
+exports.updateUserImage = async (req, res) => {
   try {
-      const { userId } = req.body; // Assuming you have a way to identify the user
-      let userImage;
+    const userId = req.params.id; 
+    const userImage = req.file; 
 
-      if (req.file) {
-          userImage = req.file;
-      }
-      console.log('Received request to update profile:', req.body);
-      console.log('Received file:', req.file);
-      
-      await UserService.updateProfileImage(userId, userImage);
+    const updatedUser = await UserService.updateUserImage(userId, userImage);
 
-      res.json({ status: true, success: "User profile image updated successfully" });
+    if (updatedUser) {
+      res.json({ status: true, success: "UserImage updated successfully!" });
+    } else {
+      res.json({ status: false, error: "Failed to update userImage." });
+    }
   } catch (error) {
-      console.error('Error in updating user profile image:', error);
-      res.status(500).json({ error: 'Internal server error' });
+    console.error('Error in updateUserImage:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };

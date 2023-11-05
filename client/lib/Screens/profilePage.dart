@@ -1,8 +1,7 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:http/http.dart' as http;
+
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'aboutBarangay.dart';
@@ -10,7 +9,6 @@ import 'feedbackpage.dart';
 import 'requestSummary.dart';
 import '../Screens/Profile/editProfile.dart';
 import '../../Screens/Login/login_screen.dart';
-import 'package:http/http.dart' as http;
 
 class ProfilePage extends StatefulWidget {
   final String? token;
@@ -49,9 +47,44 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  void _changeProfilePicture() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowCompression: true,
+    );
+
+    if (result != null && result.files.isNotEmpty) {
+      final newProfilePicturePath = result.files.first.path;
+      // Update the UI with the new profile picture.
+      setState(() {
+        selectedProfilePicture = File(newProfilePicturePath!);
+      });
+
+      // Upload the new profile picture to Cloudinary or your server.
+      final imageUrl = await _uploadProfilePicture(newProfilePicturePath!);
+
+      // Update the user's profile in MongoDB with the new image URL.
+      await _updateUserProfileImage(imageUrl);
+    }
+  }
+
+  Future<String> _uploadProfilePicture(String imagePath) async {
+    // Implement code to upload the image to Cloudinary or your server.
+    // Return the URL of the uploaded image.
+    // Replace this placeholder with your actual implementation.
+    return 'https://your-cloudinary-url.com/your-uploaded-image.jpg';
+  }
+
+  Future<void> _updateUserProfileImage(String imageUrl) async {
+    // Implement code to update the user's profile image in MongoDB.
+    // Replace this placeholder with your actual implementation.
+    print('Updating user profile image in MongoDB with URL: $imageUrl');
+  }
+
   Widget buildProfileImage() {
     if (imageUrl != null) {
       print('Image URL: $imageUrl');
+
       return Column(
         // Wrap the content in a Column
         children: [
@@ -60,8 +93,7 @@ class _ProfilePageState extends State<ProfilePage> {
             height: 120,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(100),
-              child: Image.network(
-                  '$imageUrl?timestamp=${DateTime.now().millisecondsSinceEpoch}'),
+              child: Image.network(imageUrl!),
             ),
           ),
           const SizedBox(height: 10),
@@ -74,113 +106,6 @@ class _ProfilePageState extends State<ProfilePage> {
         height: 120,
         child: Image.asset('assets/images/bot.png'),
       );
-    }
-  }
-
-  void updateProfilePicture() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      allowCompression: true,
-    );
-
-    if (result != null && result.files.isNotEmpty) {
-      setState(() {
-        selectedProfilePicture = File(result.files.first.path!);
-      });
-
-      try {
-        var url = Uri.parse(
-            'https://dbarangay-mobile-e5o1.onrender.com/updateProfile');
-
-        var request = http.MultipartRequest('POST', url);
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'userImage',
-            selectedProfilePicture!.path,
-          ),
-        );
-
-        request.headers['Authorization'] = 'Bearer ${widget.token}';
-
-        var response = await request.send();
-
-        print('Response status code: ${response.statusCode}');
-
-        if (response.statusCode == 200) {
-          final responseJson = await response.stream.bytesToString();
-          final parsedResponse = json.decode(responseJson);
-
-          if (parsedResponse != null && parsedResponse['filename'] != null) {
-            // Parse the Cloudinary response and update the UI
-            setState(() {
-              imageUrl = parsedResponse['filename']['url'];
-            });
-          } else {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: const Text('Error'),
-                  content: const Text(
-                    'Failed to update profile picture. Please try again later.',
-                  ),
-                  actions: <Widget>[
-                    TextButton(
-                      child: const Text('OK'),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  ],
-                );
-              },
-            );
-          }
-        } else {
-          // Handle HTTP error from the backend
-          print('HTTP Error: ${response.statusCode}');
-          print(await response.stream.bytesToString());
-          showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: const Text('Error'),
-                content: const Text(
-                  'Failed to update profile picture. Please try again later.',
-                ),
-                actions: <Widget>[
-                  TextButton(
-                    child: const Text('OK'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
-          );
-        }
-      } catch (e) {
-        // Handle other errors
-        print('Error: $e');
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Error'),
-              content: const Text('An error occurred. Please try again later.'),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('OK'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          },
-        );
-      }
     }
   }
 
@@ -244,11 +169,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 print('Token is null or empty. Cannot proceed.');
               }
             }),
-            const SizedBox(height: 20),
-            buildButton('Update Profile Picture', () {
-              updateProfilePicture();
-            }),
-            const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 50),
               child: Container(
