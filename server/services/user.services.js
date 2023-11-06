@@ -222,6 +222,8 @@ static async updateUserImage(userId, userImage) {
     throw error;
   }
 }
+}
+module.exports = UserService;
 
 //-------- WORKING PERO DI NAGSASAVE SA DATABASE ----------
 // static async updateUserImage(userId, userImage) {
@@ -258,4 +260,4 @@ static async updateUserImage(userId, userImage) {
 //   }
 // }
 // }
-module.exports = UserService;
+// module.exports = UserService;
