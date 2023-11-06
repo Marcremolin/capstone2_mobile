@@ -211,14 +211,11 @@ static async updateUserImage(userId, userImage) {
     await user.save();
     console.log('UserImage updated successfully.');
 
-    // Print the 'filename' before updating
     console.log('Before updating filename:', user.filename);
 
-    // Update the 'public_id' and 'url' in the 'filename' field
     user.filename.public_id = cloudinaryResponse.public_id;
     user.filename.url = cloudinaryResponse.secure_url;
 
-    // Print the 'filename' after updating
     console.log('After updating filename:', user.filename);
 
     await user.save();
@@ -232,40 +229,3 @@ static async updateUserImage(userId, userImage) {
 }
 }
 module.exports = UserService;
-
-//-------- WORKING PERO DI NAGSASAVE SA DATABASE ----------
-// static async updateUserImage(userId, userImage) {
-//   try {
-//     const user = await UserModel.findById(userId);
-
-//     if (!user) {
-//       console.error('User not found with ID:', userId);
-//       return null;
-//     }
-
-//     const cloudinaryResponse = await cloudinary.uploader.upload(
-//       `uploads/profile/${userImage.filename}`,
-//       { folder: 'profile' }
-//     );
-
-//     user.userImage = cloudinaryResponse.secure_url;
-//     await user.save();
-//     console.log('UserImage updated successfully.');
-
-
-
-//     // Update the 'public_id' and 'url' in the 'filename' field
-//     user.filename.public_id = cloudinaryResponse.public_id;
-//     user.filename.url = cloudinaryResponse.secure_url;
-
-//     await user.save();
-//     console.log('UserImage updated successfully.');
-
-//     return user;
-//   } catch (error) {
-//     console.error('Error in updateUserImage:', error);
-//     throw error;
-//   }
-// }
-// }
-// module.exports = UserService;

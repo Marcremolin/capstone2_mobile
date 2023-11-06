@@ -11,6 +11,7 @@ import 'requestSummary.dart';
 import '../Screens/Profile/editProfile.dart';
 import '../../Screens/Login/login_screen.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends StatefulWidget {
   final String? token;
@@ -42,10 +43,23 @@ class _ProfilePageState extends State<ProfilePage> {
         imageUrl = filenameData['url'];
       }
 
+      // Retrieve the imageUrl from shared preferences
+      loadStoredImageUrl();
+
       firstName = userData['firstName'];
       middleName = userData['middleName'];
       lastName = userData['lastName'];
       suffix = userData['suffix'];
+    }
+  }
+
+  void loadStoredImageUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? storedImageUrl = prefs.getString('imageUrl');
+    if (storedImageUrl != null) {
+      setState(() {
+        imageUrl = storedImageUrl;
+      });
     }
   }
 
@@ -161,9 +175,14 @@ class _ProfilePageState extends State<ProfilePage> {
         if (responseData != null) {
           if (responseData['status'] == true) {
             String updatedImageUrl = responseData['imageUrl'];
+            // Save the updated imageUrl to shared preferences
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            await prefs.setString('imageUrl', updatedImageUrl);
+
             setState(() {
               imageUrl = updatedImageUrl;
             });
+
             updateSuccessDialog();
           } else {
             print('Failed to update user image.');
