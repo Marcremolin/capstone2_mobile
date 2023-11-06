@@ -208,13 +208,21 @@ static async updateUserImage(userId, userImage) {
     );
 
     user.userImage = cloudinaryResponse.secure_url;
-    
+    await user.save();
+    console.log('UserImage updated successfully.');
+
+    // Print the 'filename' before updating
+    console.log('Before updating filename:', user.filename);
+
     // Update the 'public_id' and 'url' in the 'filename' field
     user.filename.public_id = cloudinaryResponse.public_id;
     user.filename.url = cloudinaryResponse.secure_url;
 
+    // Print the 'filename' after updating
+    console.log('After updating filename:', user.filename);
+
     await user.save();
-    console.log('UserImage updated successfully.');
+    console.log('UserImage and filename updated successfully.');
 
     return user;
   } catch (error) {
