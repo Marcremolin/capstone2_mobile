@@ -193,7 +193,7 @@ exports.forgotpass = async (req, res) => {
           instructions: 'Your verification code:',
           button: {
             color: '#4BA2FF',
-            text: verificationCode.toString(), // Include the verification code
+            text: verificationCode.toString(), 
             link: '',
           }
         },
