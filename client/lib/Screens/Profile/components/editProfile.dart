@@ -1,4 +1,6 @@
-// ignore_for_file: unused_local_variable, avoid_print, library_private_types_in_public_api, prefer_typing_uninitialized_variables
+// VIEW PROFILE PAGE ---------------
+
+// ignore_for_file: prefer_typing_uninitialized_variables
 
 import 'package:flutter/material.dart';
 import '../../../constants.dart';

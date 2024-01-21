@@ -11,7 +11,7 @@ class ChatApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Chat App',
+      title: 'Frequent;y Ask Questions',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -48,9 +48,9 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 2, 95, 170),
+      backgroundColor: const Color.fromARGB(255, 230, 239, 246),
       appBar: AppBar(
-        title: const Text('Chat'),
+        title: const Text('FAQ'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {

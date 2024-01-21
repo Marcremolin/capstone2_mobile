@@ -1,3 +1,5 @@
+// ignore_for_file: use_super_parameters, prefer_typing_uninitialized_variables, library_private_types_in_public_api, avoid_unnecessary_containers
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -8,7 +10,7 @@ import 'dart:convert';
 class Documentation extends StatefulWidget {
   // FOR TOKEN -----------------------------
   final token;
-  Documentation({Key? key, this.token}) : super(key: key);
+  const Documentation({Key? key, this.token}) : super(key: key);
   // -----------------------------------------
 
   @override
@@ -71,6 +73,8 @@ class _DocumentationState extends State<Documentation>
 
   // -------------- DATABASE --------------------
   void requestDocument() async {
+    print('showSuccessDialog called');
+
     var defaultStatus = "NEW";
 
     var regBody = {
@@ -85,7 +89,7 @@ class _DocumentationState extends State<Documentation>
       "reference": referenceController.text,
       "status": defaultStatus,
     };
-    print('Request Body: $regBody'); // Debug log to check the request payload
+    print('Request Body: $regBody');
 
     var url = Uri.parse(
         'https://dbarangay-mobile-e5o1.onrender.com/requestDocument'); //HOME IP ADDRESS
@@ -98,21 +102,20 @@ class _DocumentationState extends State<Documentation>
 
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
-      print(
-          'Response: $jsonResponse'); // Debug log to check the response from the server
+      ('HTTP Status Code: ${response.statusCode}');
+      ('Response: $jsonResponse');
+      showSuccessDialog();
+
       if (jsonResponse['status'] == 'success') {
-        showSuccessDialog();
-      } else {
-        print('Request failed with an error.');
-        // Handle any specific error responses here
-      }
+      } else {}
     } else {
-      print('HTTP Error: ${response.statusCode}');
-      // Handle any HTTP error responses here
+      ('HTTP Error: ${response.statusCode}');
     }
   }
 
   void showSuccessDialog() {
+    ('showSuccessDialog() called');
+
     showDialog(
       context: context,
       builder: (context) {
@@ -123,7 +126,7 @@ class _DocumentationState extends State<Documentation>
           child: Container(
             padding: const EdgeInsets.all(24.0),
             decoration: BoxDecoration(
-              color: Colors.green,
+              color: const Color.fromARGB(255, 59, 157, 62),
               borderRadius: BorderRadius.circular(30.0),
             ),
             child: Column(
@@ -134,26 +137,42 @@ class _DocumentationState extends State<Documentation>
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 20.0,
+                    fontSize: 32.0,
                   ),
                 ),
                 const SizedBox(height: 16.0),
                 const Text(
                   'Request submitted successfully.',
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24.0,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16.0),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
+
+                    businessNameController.clear();
+                    addressController.clear();
+                    dateController.clear();
+                    reasonOfRequestController.clear();
+                    referenceController.clear();
                   },
                   style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(Colors.white),
+                    backgroundColor: MaterialStateProperty.all<Color>(
+                      const Color.fromARGB(255, 6, 140, 6),
+                    ),
+                    minimumSize:
+                        MaterialStateProperty.all<Size>(const Size(150, 50)),
+                    padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                      const EdgeInsets.all(8),
+                    ),
                   ),
                   child: const Text(
                     'OK',
-                    style: TextStyle(color: Colors.green),
+                    style: TextStyle(color: Colors.white),
                   ),
                 ),
               ],
@@ -167,7 +186,7 @@ class _DocumentationState extends State<Documentation>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 2, 95, 170),
+      backgroundColor: const Color.fromARGB(255, 230, 239, 246),
       appBar: AppBar(
         title: const Text('Request Document'),
         actions: [
@@ -304,53 +323,47 @@ class _DocumentationState extends State<Documentation>
             ),
             const SizedBox(height: 16.0),
 
-// DATE OF PICKUP
+            // DATE OF PICKUP
             SizedBox(
-              width: 550,
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(40),
-                    color: const Color.fromARGB(255, 245, 245, 245),
+              width: 500,
+              child: TextFormField(
+                controller: dateController,
+                style: const TextStyle(color: Colors.black),
+                decoration: InputDecoration(
+                  hintText: 'Date of Pickup',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30.0),
                   ),
-                  child: InkWell(
-                    onTap: () async {
-                      final currentDate = DateTime.now();
-                      final lastSelectableDate =
-                          currentDate.add(const Duration(days: 60));
-                      final pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now(),
-                        firstDate: currentDate,
-                        lastDate: lastSelectableDate,
-                      );
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                onTap: () async {
+                  final currentDate = DateTime.now();
+                  final lastSelectableDate =
+                      currentDate.add(const Duration(days: 60));
+                  final pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: currentDate,
+                    lastDate: lastSelectableDate,
+                  );
 
-                      if (pickedDate != null) {
-                        setState(() {
-                          dateController.text =
-                              DateFormat('yyyy-MM-dd').format(pickedDate);
-                        });
-                      }
-                    },
-                    child: ListTile(
-                      title: const Text(
-                        'Date of Pick-up',
-                        style: TextStyle(fontSize: 16.0),
-                      ),
-                      trailing: Text(
-                        dateController.text.isNotEmpty
-                            ? dateController.text
-                            : 'Select date',
-                        style: const TextStyle(fontSize: 16.0),
-                      ),
-                    ),
-                  ),
-                ),
+                  if (pickedDate != null) {
+                    setState(() {
+                      dateController.text =
+                          DateFormat('yyyy-MM-dd').format(pickedDate);
+                    });
+                  }
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please provide a Date of Pickup';
+                  }
+                  return null;
+                },
               ),
             ),
+            const SizedBox(height: 16.0),
 
 // REASON FOR REQUESTING
             const SizedBox(height: 16.0),
@@ -384,9 +397,7 @@ class _DocumentationState extends State<Documentation>
               child: RadioListTile<String>(
                 title: const Text(
                   'Pay with Cash',
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
+                  style: TextStyle(color: Color.fromARGB(255, 0, 34, 129)),
                 ),
                 value: 'Cash',
                 groupValue: _selectedPaymentMethod,
@@ -402,9 +413,7 @@ class _DocumentationState extends State<Documentation>
               child: RadioListTile<String>(
                 title: const Text(
                   'Pay with GCash',
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
+                  style: TextStyle(color: Color.fromARGB(255, 0, 34, 129)),
                 ),
                 value: 'GCash',
                 groupValue: _selectedPaymentMethod,

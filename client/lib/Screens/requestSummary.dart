@@ -105,7 +105,7 @@ class _RequestSummaryState extends State<RequestSummary> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 2, 95, 170),
+      backgroundColor: const Color.fromARGB(255, 230, 239, 246),
       appBar: AppBar(
         title: const Text('Request Summary'),
         actions: [

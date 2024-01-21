@@ -14,7 +14,7 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 class Emergency extends StatefulWidget {
 // FOR TOKEN -----------------------------
   final token;
-  Emergency({Key? key, this.token}) : super(key: key);
+  const Emergency({Key? key, this.token}) : super(key: key);
   @override
   _EmergencyState createState() => _EmergencyState();
 }
@@ -72,7 +72,7 @@ class _EmergencyState extends State<Emergency>
 
 //ADD FOR DATABASE ----------------------------------------------
   void sendDistressSignal(String emergencyType) async {
-    var defaultStatus = "NEW";
+    var defaultStatus = "New";
 
     var now = DateTime.now();
     var formattedDate =
@@ -384,7 +384,7 @@ class _EmergencyState extends State<Emergency>
   Widget build(BuildContext context) {
     List<String> tabs = ['Evacuation Center', 'Emergency Report '];
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 2, 95, 170),
+      backgroundColor: const Color.fromARGB(255, 230, 239, 246),
       appBar: AppBar(
         title: Text(_selectedCategory),
         actions: [
@@ -404,7 +404,7 @@ class _EmergencyState extends State<Emergency>
         children: [
           TabBar(
             controller: _tabController,
-            labelColor: const Color.fromARGB(255, 255, 255, 255),
+            labelColor: const Color.fromARGB(255, 8, 123, 218),
             tabs: tabs.map((String tab) {
               return Tab(
                 text: tab,
@@ -494,7 +494,7 @@ class _EmergencyState extends State<Emergency>
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 255, 255, 255),
+                          color: Color.fromARGB(255, 8, 123, 218),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -686,7 +686,7 @@ class CustomButton extends StatelessWidget {
               width: 396,
               height: 146,
               decoration: BoxDecoration(
-                color: const Color.fromRGBO(233, 238, 249, 1),
+                color: const Color.fromARGB(255, 255, 255, 255),
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Column(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../constants.dart';
 
 class WelcomeImage extends StatelessWidget {
@@ -10,33 +11,45 @@ class WelcomeImage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 30),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Center(
               child: Padding(
-                padding: EdgeInsets.all(10), // Added contentPadding
+                padding: const EdgeInsets.all(20),
                 child: Text(
                   "Welcome to D'Barangay Mobile",
-                  style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign
-                      .center, // Center the text within the Text widget.
+                  style: GoogleFonts.robotoSlab(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 32,
+                    color: const Color.fromARGB(255, 9, 71, 151),
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),
           ),
-          const SizedBox(height: defaultPadding * 0.5),
+          const SizedBox(height: defaultPadding * 0.2),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(),
               Expanded(
                 flex: 8,
-                child: Image.asset("assets/icons/logo.png"),
+                child: Padding(
+                  padding: const EdgeInsets.all(40),
+                  child: Transform.scale(
+                    scale: 1.3,
+                    child: Image.asset(
+                      "assets/icons/brgy.png",
+                      width: 250,
+                      height: 250,
+                    ),
+                  ),
+                ),
               ),
               const Spacer(),
             ],
           ),
-          const SizedBox(height: defaultPadding * 2),
         ],
       ),
     );

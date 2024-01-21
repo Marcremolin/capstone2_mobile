@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_super_parameters, library_private_types_in_public_api
 
 import 'dart:convert';
 import 'dart:io';
@@ -74,7 +74,10 @@ class _ProfilePageState extends State<ProfilePage> {
             height: 120,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(100),
-              child: Image.network(imageUrl!),
+              child: Image.network(
+                imageUrl!,
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           const SizedBox(height: 10),
@@ -85,20 +88,31 @@ class _ProfilePageState extends State<ProfilePage> {
       return SizedBox(
         width: 120,
         height: 120,
-        child: Image.asset('assets/images/bot.png'),
+        child: Image.asset('assets/images/bot.png', fit: BoxFit.cover),
       );
     }
   }
 
   Widget buildEditImageButton() {
     return SizedBox(
-      width: 200,
+      width: 180,
       height: 40,
       child: ElevatedButton(
         onPressed: updateProfilePicture,
+        style: ElevatedButton.styleFrom(
+          primary: Colors.transparent,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+            side: const BorderSide(
+              color: Color.fromARGB(255, 6, 143, 255),
+              width: 3.0,
+            ),
+          ),
+        ),
         child: const Text(
-          'Edit User Image',
-          style: TextStyle(color: Colors.white),
+          'Update Image',
+          style: TextStyle(color: Color.fromARGB(255, 6, 143, 255)),
         ),
       ),
     );
@@ -106,7 +120,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget buildButton(String text, void Function()? onPressed) {
     return SizedBox(
-      width: 200,
+      width: 180,
       height: 40,
       child: ElevatedButton(
         onPressed: onPressed,
@@ -267,22 +281,27 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         title: const Text('Profile'),
       ),
+
+      //PROFILE PICTURE --------------------
       body: Container(
-        color: const Color.fromARGB(255, 2, 95, 170),
+        color: const Color.fromARGB(255, 230, 239, 246), //BACKGROUND COLOR
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             buildProfileImage(),
             const SizedBox(height: 10),
+
+            //NAME OF THE USER
             Text(
               '$firstName $middleName $lastName $suffix',
               style: const TextStyle(
-                fontSize: 16,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Color.fromARGB(255, 8, 123, 218),
               ),
             ),
             const SizedBox(height: 10),
+
             buildButton('View Profile', () {
               if (widget.token?.isNotEmpty == true) {
                 Navigator.push(
@@ -297,57 +316,80 @@ class _ProfilePageState extends State<ProfilePage> {
             }),
             const SizedBox(height: 10),
             buildEditImageButton(),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
+// BOX DESIGN
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 50),
-              child: Container(
-                width: double.infinity,
-                height: 300,
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 228, 228, 228),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    buildMenuTile(Icons.info, 'About Barangay', () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AboutBarangayPage(),
-                        ),
-                      );
-                    }),
-                    buildMenuTile(Icons.view_list, 'View Request', () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              RequestSummary(token: widget.token),
-                        ),
-                      );
-                    }),
-                    buildMenuTile(Icons.feedback, 'Send Feedback', () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              FeedbackPage(token: widget.token),
-                        ),
-                      );
-                    }),
-                    buildMenuTile(Icons.logout, 'Logout', () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(token: null),
-                        ),
-                      );
-                    }),
-                  ],
-                ),
-              ),
-            ),
+                padding: const EdgeInsets.symmetric(horizontal: 50),
+                child: Container(
+                  width: double.infinity,
+                  height: 300,
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color.fromARGB(255, 0, 98, 179),
+                        offset: Offset(5, 5),
+                        blurRadius: 10.0,
+                        spreadRadius: 0.0,
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Container(
+                      width: 200,
+                      height: 300,
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 255, 255, 255),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+
+                      // BOX CONTENT
+
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          buildMenuTile(Icons.info, 'About Barangay', () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AboutBarangayPage(),
+                              ),
+                            );
+                          }),
+                          buildMenuTile(Icons.view_list, 'View Request', () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    RequestSummary(token: widget.token),
+                              ),
+                            );
+                          }),
+                          buildMenuTile(Icons.feedback, 'Send Feedback', () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    FeedbackPage(token: widget.token),
+                              ),
+                            );
+                          }),
+                          buildMenuTile(Icons.logout, 'Logout', () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const LoginScreen(token: null),
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                  ),
+                ))
           ],
         ),
       ),

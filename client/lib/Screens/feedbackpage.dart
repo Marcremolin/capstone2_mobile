@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, prefer_typing_uninitialized_variables, unnecessary_null_comparison, library_private_types_in_public_api, use_super_parameters
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -151,76 +151,84 @@ class _FeedbackPageState extends State<FeedbackPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: const Color.fromARGB(255, 2, 95, 170),
+        backgroundColor: const Color.fromARGB(255, 230, 239, 246),
         appBar: AppBar(
           title: const Text("Feedback"),
         ),
-        body: Container(
-          decoration: const BoxDecoration(
-            color: Color.fromARGB(255, 2, 95, 170),
-          ),
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Image.asset(
-                          'assets/images/Feedback.png',
-                          width: 150,
-                          height: 150,
+        body: SingleChildScrollView(
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Color.fromARGB(255, 230, 239, 246),
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/images/Feedback.png',
+                        width: 150,
+                        height: 150,
+                      ),
+                      const SizedBox(height: 16.0),
+                      const Text(
+                        'We value your feedback and suggestions!',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color.fromARGB(255, 255, 193, 59),
                         ),
-                        const SizedBox(height: 16.0),
-                        const Text(
-                          'We value your feedback and suggestions!',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.yellow,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(
+                        height: 16.0,
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: const Color.fromARGB(255, 8, 123, 218),
+                            width: 5.0,
                           ),
-                          textAlign: TextAlign.center,
+                          borderRadius: BorderRadius.circular(30.0),
+                          color: Colors.white,
                         ),
-                        const SizedBox(height: 16.0),
-                        Container(
-                          padding: const EdgeInsets.all(8.0),
-                          decoration: BoxDecoration(
-                            color: const Color.fromARGB(255, 138, 175, 227),
-                            borderRadius: BorderRadius.circular(10.0),
+                        child: TextFormField(
+                          controller: feedbackController,
+                          style: const TextStyle(color: Colors.black),
+                          decoration: const InputDecoration(
+                            hintText: 'Enter your feedback...',
+                            border: InputBorder.none,
+                            fillColor: Colors.white,
+                            filled: true,
                           ),
-                          child: TextFormField(
-                            controller: feedbackController,
-                            decoration: const InputDecoration(
-                              hintText: 'Enter your feedback...',
-                              border: InputBorder.none,
+                          maxLines: 10,
+                        ),
+                      ),
+                      const SizedBox(height: 24.0),
+
+                      // SUBMIT FEEDBACK BUTTON ---
+                      SizedBox(
+                        width: 200,
+                        child: ElevatedButton(
+                          onPressed: feedbackReq,
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0),
                             ),
-                            maxLines: 10,
                           ),
+                          child: const Text('Submit Feedback'),
                         ),
-                        const SizedBox(height: 16.0),
-                        const SizedBox(height: 16.0),
-                        SizedBox(
-                          width: 200,
-                          child: ElevatedButton(
-                            onPressed: feedbackReq,
-                            style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30.0),
-                              ),
-                            ),
-                            child: Text('Submit Feedback'),
-                          ),
-                        ),
-                        const SizedBox(height: 16.0),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 16.0),
+                    ],
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
