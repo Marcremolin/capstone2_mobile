@@ -62,6 +62,7 @@ class _EditIconPageState extends State<EditIconPage> {
 
 class MobileSignupScreen extends StatelessWidget {
   final String? token;
+  // ignore: use_super_parameters
   const MobileSignupScreen({
     Key? key,
     required this.token,
@@ -78,7 +79,7 @@ class MobileSignupScreen extends StatelessWidget {
             const Spacer(),
             Expanded(
               flex: 8,
-              child: EditProfile(token: token),
+              child: EditProfile(token: token), //EDIT USER IMAGE
             ),
             const Spacer(),
           ],

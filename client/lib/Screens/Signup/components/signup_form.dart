@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable, use_build_context_synchronously, avoid_print
+
 import 'package:client/Screens/Login/components/already_have_an_account_acheck.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -74,6 +76,7 @@ final List<ComplianceItem> complianceItems = [
 
 class _SignUpFormState extends State<SignUpForm> {
   final _formKey = GlobalKey<FormState>();
+
   final dateController = TextEditingController();
   String? selectedDate;
   String? selectedImage;
@@ -135,13 +138,13 @@ class _SignUpFormState extends State<SignUpForm> {
 // FOR DROPDOWNS ---------------------------------------------
   late String? selectedDistrict;
   List<String> districtOptions = [
-    'Lone District',
     '1st District',
     '2nd District',
     '3rd District',
     '4th District',
     '5th District',
     '6th District',
+    'Lone District',
   ];
 
   late String? selectedRegion;
@@ -164,7 +167,12 @@ class _SignUpFormState extends State<SignUpForm> {
     'Region XIII - Caraga',
   ];
   late String selectedCivilStatus;
-  List<String> civilStatusOptions = ['single', 'married', 'widow', 'separated'];
+  List<String> civilStatusOptions = [
+    'Single',
+    'Married',
+    'Widowed',
+    'Separated'
+  ];
 
   late String selectedHighestEducation;
   List<String> highestEducationOptions = [
@@ -173,7 +181,8 @@ class _SignUpFormState extends State<SignUpForm> {
     'Highschool',
     'Bachelor',
     'Postgrad',
-    'Doctoral'
+    'Doctoral',
+    'No Formal Education',
   ];
 
   late String selectedEmploymentStatus;
@@ -185,8 +194,8 @@ class _SignUpFormState extends State<SignUpForm> {
 
   late String? selectedRegistrationStatus;
   List<String> registrationStatusOptions = [
-    'registeredvoter',
-    'unregisteredvoter',
+    'Registered',
+    'Unregistered',
   ];
   @override
   // Function to handle dropdowns selection
@@ -238,8 +247,8 @@ class _SignUpFormState extends State<SignUpForm> {
 //FUNCTION TO PASS THE DATA TO BACKEND ---------------------------------------------------
 
   void _registerUser() async {
-    var defaultStatus = "Active";
-    var type = "Resident";
+    var defaultStatus = "active";
+    var type = "resident";
     var url =
         Uri.parse('https://dbarangay-mobile-e5o1.onrender.com/registration');
     var request = http.MultipartRequest('POST', url);
@@ -274,7 +283,7 @@ class _SignUpFormState extends State<SignUpForm> {
     request.fields['homeOwnership'] = _homeOwnershipValue1 ? "Own" : "Rent";
     request.fields['residentClass'] = _residentClassValue1
         ? "PWD"
-        : (_residentClassValue2 ? "Solo Parent" : "OUT OF SCHOOL YOUTH");
+        : (_residentClassValue2 ? "Solo Parent" : "Out of School Youth");
     request.fields['votersRegistration'] = selectedRegistrationStatus!;
     request.fields['status'] = defaultStatus;
     request.fields['type'] = type;
@@ -402,27 +411,24 @@ class _SignUpFormState extends State<SignUpForm> {
                     fontSize: 24.0,
                     fontWeight: FontWeight.bold,
                   ),
+                  textAlign: TextAlign.center,
                 ),
               ),
-              content: const Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'You can now enjoy all the features and benefits of our community platform!',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                    ),
+              content: Column(mainAxisSize: MainAxisSize.min, children: [
+                const Text(
+                  'You can now enjoy all the features and benefits of our community platform!',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
                   ),
-                  SizedBox(height: 10.0),
-                ],
-              ),
-              backgroundColor: Colors.green,
-              actions: [
-                Padding(
-                    padding: const EdgeInsets.only(right: 16.0, bottom: 16.0),
-                    child: TextButton(
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20.0),
+                Center(
+                  child: SizedBox(
+                    width: 150,
+                    child: ElevatedButton(
                       onPressed: () {
                         Navigator.pop(context);
                         Navigator.push(
@@ -432,14 +438,28 @@ class _SignUpFormState extends State<SignUpForm> {
                           ),
                         );
                       },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(
+                            255, 6, 140, 6), // Change the button color
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 15,
+                        ),
+                      ),
                       child: const Text(
                         'Login',
                         style: TextStyle(
                           color: Colors.white,
                         ),
                       ),
-                    ))
-              ],
+                    ),
+                  ),
+                ),
+              ]),
+              backgroundColor: const Color.fromARGB(255, 57, 172, 61),
+              actions: [],
             ),
           ),
         );
@@ -1389,6 +1409,7 @@ class _SignUpFormState extends State<SignUpForm> {
           ),
 
 // --------------------------------- PASSWORD -------------------------------
+
           Container(
             padding: const EdgeInsets.all(defaultPadding),
             decoration: BoxDecoration(
@@ -1446,47 +1467,55 @@ class _SignUpFormState extends State<SignUpForm> {
             ),
           ),
 
-// CONFIRM PASSWORD
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              textInputAction: TextInputAction.next,
-              obscureText: !isConfirmPasswordVisible,
-              cursorColor: kPrimaryColor,
-              decoration: InputDecoration(
-                hintText: "Confirm password",
-                prefixIcon: const Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.lock),
-                ),
-                suffixIcon: Padding(
-                  padding: const EdgeInsets.only(right: defaultPadding / 2),
-                  child: IconButton(
-                    icon: Icon(
-                      isConfirmPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                      color: Colors.grey,
+          // Wrap the part where the keyboard may cover the text fields with a ListView.builder
+          ListView.builder(
+              shrinkWrap: true,
+              itemCount:
+                  1, // Adjust the itemCount based on the number of text fields
+              itemBuilder: (BuildContext context, int index) {
+                return Container(
+                  padding: const EdgeInsets.all(defaultPadding),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: TextFormField(
+                    textInputAction: TextInputAction.next,
+                    obscureText: !isConfirmPasswordVisible,
+                    cursorColor: kPrimaryColor,
+                    decoration: InputDecoration(
+                      hintText: "Confirm password",
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(defaultPadding),
+                        child: Icon(Icons.lock),
+                      ),
+                      suffixIcon: Padding(
+                        padding:
+                            const EdgeInsets.only(right: defaultPadding / 2),
+                        child: IconButton(
+                          icon: Icon(
+                            isConfirmPasswordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              isConfirmPasswordVisible =
+                                  !isConfirmPasswordVisible;
+                            });
+                          },
+                        ),
+                      ),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        isConfirmPasswordVisible = !isConfirmPasswordVisible;
-                      });
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your password';
+                      }
+                      return null;
                     },
                   ),
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your password';
-                }
-                return null;
-              },
-            ),
-          ),
+                );
+              }),
 
 // SIGN-UP BUTTON
           ElevatedButton(
@@ -1497,6 +1526,7 @@ class _SignUpFormState extends State<SignUpForm> {
             },
             child: Text("Sign Up".toUpperCase()),
           ),
+
           const SizedBox(height: 16.0),
           AlreadyHaveAnAccountCheck(
             login: false,
@@ -1511,6 +1541,11 @@ class _SignUpFormState extends State<SignUpForm> {
               );
             },
           ),
+
+// Add a SizedBox to create space at the bottom for scrolling
+          SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
+
+          const SizedBox(height: 16.0),
         ],
       ),
     );

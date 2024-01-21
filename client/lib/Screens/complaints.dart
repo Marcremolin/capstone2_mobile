@@ -60,7 +60,7 @@ class _ComplaintState extends State<Complaints>
     List<String> tabs = ['General Report', 'Blotter Report '];
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 2, 95, 170),
+      backgroundColor: const Color.fromARGB(255, 230, 239, 246),
       appBar: AppBar(
         title: Text(_selectedCategory),
         actions: [
@@ -79,7 +79,7 @@ class _ComplaintState extends State<Complaints>
         children: [
           TabBar(
             controller: _tabController,
-            labelColor: const Color.fromARGB(255, 255, 255, 255),
+            labelColor: Color.fromARGB(255, 8, 123, 218),
             tabs: tabs.map((String tab) {
               return Tab(
                 text: tab,

@@ -170,7 +170,7 @@ class _AnnouncementPageState extends State<AnnouncementPage>
           return false; // Prevents the default back button behavior
         },
         child: Scaffold(
-          backgroundColor: const Color.fromARGB(255, 2, 95, 170),
+          backgroundColor: const Color.fromARGB(255, 230, 239, 246),
           appBar: AppBar(
             title: Text(_selectedCategory),
             actions: [
@@ -191,7 +191,7 @@ class _AnnouncementPageState extends State<AnnouncementPage>
             children: [
               TabBar(
                 controller: _tabController,
-                labelColor: const Color.fromARGB(255, 252, 252, 252),
+                labelColor: const Color.fromARGB(255, 8, 123, 218),
                 tabs: tabs.map((String tab) {
                   return Tab(
                     text: tab,
@@ -246,11 +246,10 @@ class _AnnouncementPageState extends State<AnnouncementPage>
                     itemBuilder: (context, index) {
                       final business = businessPromotionData[index];
                       if (business != null) {
-                        final filenameData = business['filename']
-                            as Map<String, dynamic>?; // Cast to nullable Map
+                        final filenameData =
+                            business['filename'] as Map<String, dynamic>?;
                         final imageUrl = filenameData?['url'] ?? '';
 
-                        // The rest of your code remains the same
                         return customBusinessListTile(
                           imageUrl, // Use the imageUrl variable
                           business['businessName'] ?? '',

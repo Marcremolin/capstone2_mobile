@@ -20,7 +20,7 @@ class _BottomNavState extends State<BottomNav> {
   @override
   void initState() {
     super.initState();
-    print('Token in BottomNav: ${widget.token}');
+    ('Token in BottomNav: ${widget.token}');
 //reference to the token property that you passed to the BottomNav widget when you created an instance of it. The widget property is a reference to the current instance of the widget, and you can access its properties and methods using the widget keyword.
     screens = [
       AnnouncementPage(token: widget.token),
@@ -35,7 +35,7 @@ class _BottomNavState extends State<BottomNav> {
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 2, 95, 170),
+      backgroundColor: const Color.fromARGB(255, 230, 239, 246),
       body: IndexedStack(
         index: currentIndex,
         children: screens,
