@@ -1,4 +1,5 @@
-// ignore_for_file: use_build_context_synchronously, prefer_const_constructors, avoid_print
+// ignore: file_names
+// ignore_for_file: use_build_context_synchronously, prefer_const_constructors, avoid_print, library_private_types_in_public_api, use_super_parameters, no_leading_underscores_for_local_identifiers, file_names, duplicate_ignore
 
 import 'dart:convert';
 import 'package:client/constants.dart';

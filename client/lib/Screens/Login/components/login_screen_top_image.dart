@@ -1,12 +1,19 @@
+// ignore_for_file: use_super_parameters
+
 import 'package:flutter/material.dart';
 import '../../../constants.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class LoginScreenTopImage extends StatelessWidget {
+class LoginScreenTopImage extends StatefulWidget {
   const LoginScreenTopImage({
     Key? key,
   }) : super(key: key);
 
+  @override
+  State<LoginScreenTopImage> createState() => _LoginScreenTopImageState();
+}
+
+class _LoginScreenTopImageState extends State<LoginScreenTopImage> {
   @override
   Widget build(BuildContext context) {
     return Padding(

@@ -1,4 +1,4 @@
-// ignore_for_file: use_super_parameters, prefer_typing_uninitialized_variables, library_private_types_in_public_api, avoid_unnecessary_containers
+// ignore_for_file: use_super_parameters, prefer_typing_uninitialized_variables, library_private_types_in_public_api, avoid_unnecessary_containers, non_constant_identifier_names
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -73,7 +73,7 @@ class _DocumentationState extends State<Documentation>
 
   // -------------- DATABASE --------------------
   void requestDocument() async {
-    print('showSuccessDialog called');
+    ('showSuccessDialog called');
 
     var defaultStatus = "NEW";
 
@@ -89,7 +89,7 @@ class _DocumentationState extends State<Documentation>
       "reference": referenceController.text,
       "status": defaultStatus,
     };
-    print('Request Body: $regBody');
+    ('Request Body: $regBody');
 
     var url = Uri.parse(
         'https://dbarangay-mobile-e5o1.onrender.com/requestDocument'); //HOME IP ADDRESS

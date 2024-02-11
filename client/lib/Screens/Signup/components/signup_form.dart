@@ -1,4 +1,4 @@
-// ignore_for_file: unused_local_variable, use_build_context_synchronously, avoid_print
+// ignore_for_file: unused_local_variable, use_build_context_synchronously, avoid_print, missing_required_param, library_private_types_in_public_api
 
 import 'package:client/Screens/Login/components/already_have_an_account_acheck.dart';
 import 'package:file_picker/file_picker.dart';
@@ -90,7 +90,8 @@ class _SignUpFormState extends State<SignUpForm> {
   bool _residentClassValue3 = false;
   bool isPasswordVisible = false;
   bool isConfirmPasswordVisible = false;
-
+// Define a variable to store the age
+  int age = 0;
   final lastNameController = TextEditingController();
   final firstNameController = TextEditingController();
   final middleNameController = TextEditingController();
@@ -459,7 +460,7 @@ class _SignUpFormState extends State<SignUpForm> {
                 ),
               ]),
               backgroundColor: const Color.fromARGB(255, 57, 172, 61),
-              actions: [],
+              actions: const [],
             ),
           ),
         );
@@ -469,6 +470,7 @@ class _SignUpFormState extends State<SignUpForm> {
 
   @override
   Widget build(BuildContext context) {
+    int age;
     return Form(
       key: _formKey,
       child: Column(
@@ -558,10 +560,11 @@ class _SignUpFormState extends State<SignUpForm> {
               ),
             ),
           ),
-
+// --------------- START OF INPUTR FIELDS FOR USER -------------------------
 // LAST NAME ---------------------
           Container(
-            padding: const EdgeInsets.all(defaultPadding),
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -587,7 +590,8 @@ class _SignUpFormState extends State<SignUpForm> {
           ),
 // FIRST NAME ---------------------
           Container(
-            padding: const EdgeInsets.all(defaultPadding),
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -614,7 +618,8 @@ class _SignUpFormState extends State<SignUpForm> {
 
 // MIDDLE INITIAL ---------------------
           Container(
-            padding: const EdgeInsets.all(defaultPadding),
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -640,7 +645,8 @@ class _SignUpFormState extends State<SignUpForm> {
           ),
 // SUFFIX ---------------------
           Container(
-            padding: const EdgeInsets.all(defaultPadding),
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -652,12 +658,20 @@ class _SignUpFormState extends State<SignUpForm> {
               decoration: const InputDecoration(
                 hintText: "Suffix",
                 prefixIcon: Padding(
-                  padding: EdgeInsets.all(defaultPadding),
+                  padding:
+                      EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                   child: Icon(Icons.person),
                 ),
               ),
             ),
           ),
+
+// Additional spacing
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8.0),
+          ),
+
+// --------------------------------------------- COMPLETE ADDRESS ---------------------------------------------
           const Divider(
             color: Color.fromARGB(255, 152, 191, 223),
             thickness: 2,
@@ -678,18 +692,21 @@ class _SignUpFormState extends State<SignUpForm> {
             thickness: 2,
             height: 1,
           ),
+
           Row(
+            crossAxisAlignment: CrossAxisAlignment
+                .start, // Align columns at the start of the row
             children: [
               Expanded(
                 child: Column(
                   children: [
 // HOUSE #---------------------
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 24),
                     TextFormField(
                       controller: houseNumberController,
                       textInputAction: TextInputAction.next,
                       keyboardType: TextInputType
-                          .text, // Use TextInputType.number for numeric input
+                          .text, // Use to TextInputType.number for numeric input
                       cursorColor: kPrimaryColor,
                       decoration: const InputDecoration(
                         hintText: "House # / Street",
@@ -731,13 +748,13 @@ class _SignUpFormState extends State<SignUpForm> {
                   ],
                 ),
               ),
-
+              const SizedBox(width: 12),
               // 2ND COLUMN
               Expanded(
                 child: Column(
                   children: [
                     // PROVINCE  ---------------------
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 24),
                     TextFormField(
                       controller: provinceController,
                       textInputAction: TextInputAction.next,
@@ -776,9 +793,9 @@ class _SignUpFormState extends State<SignUpForm> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
 
           // DISTRICT---------------------
+          const SizedBox(height: 12),
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
@@ -809,9 +826,9 @@ class _SignUpFormState extends State<SignUpForm> {
               },
             ),
           ),
-          const SizedBox(height: 12),
 
 // REGION---------------------
+          const SizedBox(height: 12),
           SizedBox(
             width: 450,
             child: Container(
@@ -851,6 +868,10 @@ class _SignUpFormState extends State<SignUpForm> {
             ),
           ),
           const SizedBox(height: 12),
+// Additional spacing
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8.0),
+          ),
 
           const Divider(
             color: Color.fromARGB(255, 152, 191, 223),
@@ -875,6 +896,7 @@ class _SignUpFormState extends State<SignUpForm> {
           ),
 
 // GENDER---------------------
+
           const SizedBox(height: defaultPadding),
           Row(
             children: [
@@ -904,7 +926,8 @@ class _SignUpFormState extends State<SignUpForm> {
           ),
 // CIVIL STATUS ---------------------
           Container(
-            padding: const EdgeInsets.all(defaultPadding),
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -936,7 +959,8 @@ class _SignUpFormState extends State<SignUpForm> {
           ),
 // NATIONALITY ---------------------
           Container(
-            padding: const EdgeInsets.all(defaultPadding),
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -953,9 +977,11 @@ class _SignUpFormState extends State<SignUpForm> {
               ),
             ),
           ),
+
 // DATE OF BIRTH ---------------------
           Container(
-            padding: const EdgeInsets.all(defaultPadding),
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -978,6 +1004,69 @@ class _SignUpFormState extends State<SignUpForm> {
                     setState(() {
                       selectedDate =
                           DateFormat('yyyy-MM-dd').format(pickedDate);
+
+                      // Calculate age based on selected date of birth and current date
+                      DateTime currentDate = DateTime.now();
+                      DateTime birthDate = pickedDate;
+                      age = currentDate.year - birthDate.year;
+                      if (currentDate.month < birthDate.month ||
+                          (currentDate.month == birthDate.month &&
+                              currentDate.day < birthDate.day)) {
+                        age--;
+                      }
+
+                      // Check if the user is below 12 years old
+                      if (age < 12) {
+                        showDialog(
+                          context: context,
+                          builder: (context) => Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20.0),
+                              ),
+                              contentPadding: const EdgeInsets.all(24),
+                              content: const Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Center(
+                                    child: Text(
+                                      "Age Restriction",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 12),
+                                  Center(
+                                    child: Text(
+                                      "We're sorry, but registration is only available for individuals aged 12 and above.",
+                                      textAlign: TextAlign
+                                          .center, // Align text to center horizontally
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              actions: [
+                                Center(
+                                  child: SizedBox(
+                                    height: 40,
+                                    width: 100,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text("OK"),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
                     });
                   }
                 },
@@ -994,48 +1083,23 @@ class _SignUpFormState extends State<SignUpForm> {
               ),
             ),
           ),
-// BIRTHPLACE ---------------------
-          Container(
-            padding: const EdgeInsets.all(defaultPadding),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              controller: birthPlaceController,
-              textInputAction: TextInputAction.next,
-              keyboardType: TextInputType.text,
-              cursorColor: kPrimaryColor,
-              decoration: const InputDecoration(
-                hintText: "Birthplace",
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.person),
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Birthplace is required';
-                }
-                return null;
-              },
-            ),
-          ),
+
 // AGE ---------------------
           Container(
-            padding: const EdgeInsets.all(defaultPadding),
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextFormField(
               controller: ageController,
-              textInputAction: TextInputAction.next,
-              keyboardType: TextInputType
-                  .number, // Use TextInputType.number for numeric input
-              cursorColor: kPrimaryColor,
+              readOnly: true, // Set readOnly to true
+              keyboardType: TextInputType.number,
+              cursorColor: Colors.blue, // Change to desired color
               decoration: const InputDecoration(
                 hintText: "Age",
                 prefixIcon: Padding(
-                  padding: EdgeInsets.all(defaultPadding),
+                  padding: EdgeInsets.all(8.0),
                   child: Icon(Icons.person),
                 ),
               ),
@@ -1043,12 +1107,9 @@ class _SignUpFormState extends State<SignUpForm> {
                 if (value == null || value.isEmpty) {
                   return 'Age is required';
                 }
-
-                // Check if the input is a valid number
                 if (int.tryParse(value) == null) {
                   return 'Age should be a number';
                 }
-
                 return null;
               },
             ),
@@ -1056,7 +1117,8 @@ class _SignUpFormState extends State<SignUpForm> {
 
 // Highest Educational Attaintment
           Container(
-            padding: const EdgeInsets.all(defaultPadding),
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -1088,7 +1150,8 @@ class _SignUpFormState extends State<SignUpForm> {
           ),
 // EMPLOYMENT STATUS ---------------------
           Container(
-            padding: const EdgeInsets.all(defaultPadding),
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -1120,7 +1183,8 @@ class _SignUpFormState extends State<SignUpForm> {
           ),
 // COMPANY NAME ---------------------
           Container(
-            padding: const EdgeInsets.all(defaultPadding),
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -1140,7 +1204,8 @@ class _SignUpFormState extends State<SignUpForm> {
           ),
 // POSITION ---------------------
           Container(
-            padding: const EdgeInsets.all(defaultPadding),
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -1194,6 +1259,10 @@ class _SignUpFormState extends State<SignUpForm> {
               const Text('Renting'),
             ],
           ),
+// Additional spacing
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8.0),
+          ),
 
 // CONTACT INFORMATION  ----------------------------------------------------------
           const Divider(
@@ -1218,7 +1287,8 @@ class _SignUpFormState extends State<SignUpForm> {
           ),
 // PHONE NUMBER ---------------------
           Container(
-            padding: const EdgeInsets.all(defaultPadding),
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -1252,7 +1322,8 @@ class _SignUpFormState extends State<SignUpForm> {
 
 // EMAIL ADDRESS ---------------------
           Container(
-            padding: const EdgeInsets.all(defaultPadding),
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -1298,6 +1369,10 @@ class _SignUpFormState extends State<SignUpForm> {
                 return null;
               },
             ),
+          ),
+// Additional spacing
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8.0),
           ),
 
 // OTHER INFORMATION ----------------------------------------------------------
@@ -1377,7 +1452,8 @@ class _SignUpFormState extends State<SignUpForm> {
 
           // VOTERS REGISTRATION ---------------------
           Container(
-            padding: const EdgeInsets.all(defaultPadding),
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -1411,7 +1487,8 @@ class _SignUpFormState extends State<SignUpForm> {
 // --------------------------------- PASSWORD -------------------------------
 
           Container(
-            padding: const EdgeInsets.all(defaultPadding),
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
             ),

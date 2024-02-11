@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class Background extends StatelessWidget {
   final Widget child;
+  // ignore: use_super_parameters
   const Background({
     Key? key,
     required this.child,

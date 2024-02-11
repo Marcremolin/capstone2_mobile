@@ -1,3 +1,5 @@
+// ignore_for_file: use_super_parameters, library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
@@ -79,7 +81,7 @@ class _ComplaintState extends State<Complaints>
         children: [
           TabBar(
             controller: _tabController,
-            labelColor: Color.fromARGB(255, 8, 123, 218),
+            labelColor: const Color.fromARGB(255, 8, 123, 218),
             tabs: tabs.map((String tab) {
               return Tab(
                 text: tab,

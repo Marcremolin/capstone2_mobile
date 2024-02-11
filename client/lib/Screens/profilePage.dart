@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print, use_super_parameters, library_private_types_in_public_api
+// ignore_for_file: avoid_print, use_super_parameters, library_private_types_in_public_api, file_names
 
 import 'dart:convert';
 import 'dart:io';
@@ -100,7 +100,7 @@ class _ProfilePageState extends State<ProfilePage> {
       child: ElevatedButton(
         onPressed: updateProfilePicture,
         style: ElevatedButton.styleFrom(
-          primary: Colors.transparent,
+          backgroundColor: Colors.transparent,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
