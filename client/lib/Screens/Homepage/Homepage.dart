@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print, missing_required_param
+// ignore_for_file: avoid_print, missing_required_param, use_super_parameters, library_private_types_in_public_api, file_names
 
 import 'package:flutter/material.dart';
 import '../../../Screens/Homepage/bottom_nav.dart';
@@ -20,6 +20,10 @@ class _AnnouncementPageState extends State<AnnouncementPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late String _selectedCategory;
+// Track whether data is being refreshed
+
+  // ignore: unused_field
+  late Future<List<dynamic>> _announcementDataFuture;
 
   // late String email; //for TOKEN
   // ------- Part of GET Method-----------
@@ -33,6 +37,7 @@ class _AnnouncementPageState extends State<AnnouncementPage>
 
     _tabController = TabController(length: 3, vsync: this);
     _selectedCategory = 'Announcement';
+
     _tabController.addListener(_handleTabSelection);
 
     // ------- Part of GET Method (Make the API request when the app starts) -----------
@@ -41,6 +46,41 @@ class _AnnouncementPageState extends State<AnnouncementPage>
     fetchbusinessPromotionData();
 
     // email = jwtDecodedToken['email'];
+  }
+
+  // Method to refresh announcement data
+  Future<void> _refreshAnnouncements() async {
+    // Set the refreshing state to true
+    setState(() {});
+
+    // Simulate some delay for demonstration purposes
+    await Future.delayed(const Duration(seconds: 2));
+  }
+
+// Method to refresh livelihood data
+  Future<void> _refreshLivelihoodData() async {
+    setState(() {});
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    fetchLivelihoodData();
+
+    setState(() {});
+  }
+
+// Method to refresh business promotion data
+  Future<void> _refreshBusinessPromotionData() async {
+    // Set the refreshing state to true
+    setState(() {});
+
+    // Simulate some delay for demonstration purposes
+    await Future.delayed(const Duration(seconds: 2));
+
+    // Fetch business promotion data again
+    fetchbusinessPromotionData();
+
+    // Set the refreshing state to false after data is fetched
+    setState(() {});
   }
 
   void _handleTabSelection() {
@@ -200,71 +240,83 @@ class _AnnouncementPageState extends State<AnnouncementPage>
               ),
               Expanded(
                 child: TabBarView(controller: _tabController, children: [
-                  ListView.builder(
-                    itemCount: announcementData.length,
-                    itemBuilder: (context, index) {
-                      final announcement = announcementData[index];
-                      if (announcement != null) {
-                        return customListTile(
-                          announcement, // Pass the announcement data here
-                          context,
-                        );
-                      } else {
-                        return const SizedBox();
-                      }
-                    },
-                  ),
-// -------------------------------- LIVEHOOD LIST --------------------------------
-                  ListView.builder(
-                    itemCount: livelihoodData.length,
-                    itemBuilder: (context, index) {
-                      final livelihood = livelihoodData[index];
-                      if (livelihood != null) {
-                        final imageUrl = livelihood['filename']?['url'] ?? '';
-                        final livelihoodCategory = livelihood['what'] ?? '';
-                        final livelihoodLocation = livelihood['where'] ?? '';
-                        final livelihoodParticipants = livelihood['who'] ?? '';
-                        final livelihoodDate = livelihood['when'] ?? '';
-
-                        return customLivelihoodListTile(
-                          imageUrl,
-                          livelihoodCategory,
-                          livelihoodLocation,
-                          livelihoodParticipants,
-                          livelihoodDate,
-                          context,
-                        );
-                      } else {
-                        return const SizedBox();
-                      }
-                    },
+                  // RefreshIndicator for Announcement
+                  RefreshIndicator(
+                    onRefresh: _refreshAnnouncements,
+                    child: ListView.builder(
+                      itemCount: announcementData.length,
+                      itemBuilder: (context, index) {
+                        final announcement = announcementData[index];
+                        if (announcement != null) {
+                          return customListTile(
+                            announcement,
+                            context,
+                          );
+                        } else {
+                          return const SizedBox();
+                        }
+                      },
+                    ),
                   ),
 
-//  ------------------------------------------------- BUSINESS ADDITIONAL PAGE CONTENT  ----------------------------------------------------------
-                  ListView.builder(
-                    itemCount: businessPromotionData.length,
-                    itemBuilder: (context, index) {
-                      final business = businessPromotionData[index];
-                      if (business != null) {
-                        final filenameData =
-                            business['filename'] as Map<String, dynamic>?;
-                        final imageUrl = filenameData?['url'] ?? '';
+// RefreshIndicator for Livelihood
+                  RefreshIndicator(
+                    onRefresh: _refreshLivelihoodData,
+                    child: ListView.builder(
+                      itemCount: livelihoodData.length,
+                      itemBuilder: (context, index) {
+                        final livelihood = livelihoodData[index];
+                        if (livelihood != null) {
+                          final imageUrl = livelihood['filename']?['url'] ?? '';
+                          final livelihoodCategory = livelihood['what'] ?? '';
+                          final livelihoodLocation = livelihood['where'] ?? '';
+                          final livelihoodParticipants =
+                              livelihood['who'] ?? '';
+                          final livelihoodDate = livelihood['when'] ?? '';
 
-                        return customBusinessListTile(
-                          imageUrl, // Use the imageUrl variable
-                          business['businessName'] ?? '',
-                          business['category'] ?? '',
-                          context,
-                          business['contact'] ?? '',
-                          business['address'] ?? '',
-                          business['hours'] ?? '',
-                          business['contact'] ?? '',
-                          business['contact'] ?? '',
-                        );
-                      } else {
-                        return const SizedBox();
-                      }
-                    },
+                          return customLivelihoodListTile(
+                            imageUrl,
+                            livelihoodCategory,
+                            livelihoodLocation,
+                            livelihoodParticipants,
+                            livelihoodDate,
+                            context,
+                          );
+                        } else {
+                          return const SizedBox();
+                        }
+                      },
+                    ),
+                  ),
+
+                  // RefreshIndicator for Business Promotion
+                  RefreshIndicator(
+                    onRefresh: _refreshBusinessPromotionData,
+                    child: ListView.builder(
+                      itemCount: businessPromotionData.length,
+                      itemBuilder: (context, index) {
+                        final business = businessPromotionData[index];
+                        if (business != null) {
+                          final filenameData =
+                              business['filename'] as Map<String, dynamic>?;
+                          final imageUrl = filenameData?['url'] ?? '';
+
+                          return customBusinessListTile(
+                            imageUrl, // Use the imageUrl variable
+                            business['businessName'] ?? '',
+                            business['category'] ?? '',
+                            context,
+                            business['contact'] ?? '',
+                            business['address'] ?? '',
+                            business['hours'] ?? '',
+                            business['contact'] ?? '',
+                            business['contact'] ?? '',
+                          );
+                        } else {
+                          return const SizedBox();
+                        }
+                      },
+                    ),
                   ),
                 ]),
               ),

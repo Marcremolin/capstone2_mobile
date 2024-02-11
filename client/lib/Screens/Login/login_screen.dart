@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_typing_uninitialized_variables
+
 import 'package:flutter/material.dart';
 import 'package:client/responsive.dart';
 import '../../Screens/Login/components/background.dart';
@@ -6,7 +8,7 @@ import 'components/login_screen_top_image.dart';
 
 class LoginScreen extends StatelessWidget {
   final token;
-  const LoginScreen({@required this.token, Key? key}) : super(key: key);
+  const LoginScreen({@required this.token, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +42,8 @@ class LoginScreen extends StatelessWidget {
 
 class MobileLoginScreen extends StatelessWidget {
   const MobileLoginScreen({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

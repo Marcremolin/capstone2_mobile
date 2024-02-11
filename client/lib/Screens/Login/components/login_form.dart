@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously, avoid_print, library_private_types_in_public_api, use_super_parameters
+// ignore_for_file: use_build_context_synchronously, avoid_print, library_private_types_in_public_api, use_super_parameters, unused_local_variable
 
 import 'dart:convert';
 import 'package:client/Screens/Homepage/bottom_nav.dart';
@@ -36,26 +36,24 @@ class _LoginFormState extends State<LoginForm> {
     prefs = await SharedPreferences.getInstance();
   }
 
-// ---- DATABASE FUNCTION ----------------
   void loginUser() async {
     String email = emailController.text;
     String password = passwordController.text;
     password = password.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      print('Please enter both email and password.');
+      _showErrorDialog("Please enter both email and password.");
       return;
     }
 
     var reqBody = {"email": email, "password": password};
-    // var url = Uri.parse('http:localhost:192.168.0.28:8000/login');
+
     setState(() {
-      isLoading = true; // Set loading state to true when login starts
+      isLoading = true;
     });
 
-    var url = Uri.parse('https://dbarangay-mobile-e5o1.onrender.com/login');
     try {
-      print('Request Payload: ${jsonEncode(reqBody)}');
+      var url = Uri.parse('https://dbarangay-mobile-e5o1.onrender.com/login');
       var response = await http.post(
         url,
         headers: {
@@ -65,20 +63,23 @@ class _LoginFormState extends State<LoginForm> {
         body: jsonEncode(reqBody),
       );
 
-      print('Response: ${response.body}');
-
       var jsonResponse = jsonDecode(response.body);
       if (jsonResponse.containsKey('error')) {
         String errorMessage =
             jsonResponse['error'] ?? 'An unknown error occurred.';
         print('Login Failed: $errorMessage');
+        if (errorMessage == 'User does not exist') {
+          // Update condition to match the error message
+          _showUserNotFoundErrorDialog();
+        } else {
+          _showErrorDialog(errorMessage);
+        }
       } else if (jsonResponse.containsKey('token')) {
         String token = jsonResponse['token'];
         prefs = await SharedPreferences.getInstance();
         prefs.setString('token', token);
 
         Map<String, dynamic> payload = JwtDecoder.decode(token);
-
         String userId = payload['_id'];
 
         Navigator.push(
@@ -94,19 +95,12 @@ class _LoginFormState extends State<LoginForm> {
       print('Error: $e');
     } finally {
       setState(() {
-        isLoading = false; // Set loading state to false when login completes
+        isLoading = false;
       });
     }
   }
 
   void _showLoadingDialog() {
-    // Check if both email and password are not empty
-    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      // Show error message if either email or password is empty
-      _showErrorDialog("Please enter both email and password.");
-      return;
-    }
-
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -140,7 +134,9 @@ class _LoginFormState extends State<LoginForm> {
     );
   }
 
+// PROPMT WHEN THE USERS EMAIL AND PASSWORD FIELD IS EMPTY
   void _showErrorDialog(String errorMessage) {
+    Navigator.of(context).pop(); // Dismiss the loading dialog
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -153,6 +149,83 @@ class _LoginFormState extends State<LoginForm> {
                 Navigator.of(context).pop();
               },
               child: const Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+// PROMPT ALERT WHEN THE USERS INPUTTED DATA IS NOT YET IN THE DATABASE
+  void _showUserNotFoundErrorDialog() {
+    Navigator.of(context).pop();
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 24.0, horizontal: 24.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          title: const Padding(
+            padding: EdgeInsets.only(top: 24.0), // Add top padding
+            child: Text(
+              "USER NOT FOUND",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+            ),
+          ),
+          content: const Padding(
+            padding: EdgeInsets.only(top: 12.0),
+            child: Text(
+              "It appears you're not registered with us. Please sign up to continue.",
+              textAlign: TextAlign.center,
+            ),
+          ),
+          actions: [
+            Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                        minimumSize: const Size(100, 40),
+                      ),
+                      child:
+                          const Text("Try Again", textAlign: TextAlign.center),
+                    ),
+                    const SizedBox(width: 16), // Space between buttons
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SignUpScreen(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                        minimumSize: const Size(100, 40),
+                      ),
+                      child: const Text("Sign Up Now",
+                          textAlign: TextAlign.center),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+              ],
             ),
           ],
         );

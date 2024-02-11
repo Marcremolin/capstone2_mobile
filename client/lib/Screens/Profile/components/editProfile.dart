@@ -1,10 +1,8 @@
 // VIEW PROFILE PAGE ---------------
-
-// ignore_for_file: prefer_typing_uninitialized_variables
+// ignore_for_file: prefer_typing_uninitialized_variables, library_private_types_in_public_api, unused_import, file_names
 
 import 'package:flutter/material.dart';
 import '../../../constants.dart';
-import '../../../Screens/Homepage/bottom_nav.dart';
 // iMPORTANT IMPORTS
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:http/http.dart' as http;
@@ -48,18 +46,17 @@ class _EditProfileState extends State<EditProfile> {
               userProfile = data;
             });
           } else {
-            print('Incomplete or unexpected user profile data: $data');
+            ('Incomplete or unexpected user profile data: $data');
           }
         } else {
-          print('User ID from token does not match the user profile data.');
+          ('User ID from token does not match the user profile data.');
         }
       } else {
-        print(
-            'Failed to load user profile. Status code: ${response.statusCode}');
-        print('Response body: ${response.body}');
+        ('Failed to load user profile. Status code: ${response.statusCode}');
+        ('Response body: ${response.body}');
       }
     } catch (e) {
-      print('Error: $e');
+      ('Error: $e');
     }
   }
 
@@ -317,19 +314,6 @@ class _EditProfileState extends State<EditProfile> {
           buildTextFormField('Voters Registration', votersRegistration),
           buildTextFormField('Status', status),
 
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) {
-                    return const BottomNav();
-                  },
-                ),
-              );
-            },
-            child: Text("Save".toUpperCase()),
-          ),
           const SizedBox(height: defaultPadding),
         ],
       ),
