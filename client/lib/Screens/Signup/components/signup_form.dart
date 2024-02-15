@@ -8,9 +8,7 @@ import '../../../constants.dart';
 import '../../Login/login_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
-//FOR EMAIL VALIDATION
-import 'dart:io';
+import 'dart:io'; //FOR EMAIL VALIDATION
 
 class SignUpForm extends StatefulWidget {
   const SignUpForm({
@@ -80,7 +78,6 @@ class _SignUpFormState extends State<SignUpForm> {
   final dateController = TextEditingController();
   String? selectedDate;
   String? selectedImage;
-
   bool _checkBoxValue1 = false;
   bool _checkBoxValue2 = false;
   bool _homeOwnershipValue1 = false;

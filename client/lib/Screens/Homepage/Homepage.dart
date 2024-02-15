@@ -20,10 +20,6 @@ class _AnnouncementPageState extends State<AnnouncementPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late String _selectedCategory;
-// Track whether data is being refreshed
-
-  // ignore: unused_field
-  late Future<List<dynamic>> _announcementDataFuture;
 
   // late String email; //for TOKEN
   // ------- Part of GET Method-----------
@@ -48,38 +44,39 @@ class _AnnouncementPageState extends State<AnnouncementPage>
     // email = jwtDecodedToken['email'];
   }
 
-  // Method to refresh announcement data
+// Method to refresh announcement data
   Future<void> _refreshAnnouncements() async {
-    // Set the refreshing state to true
-    setState(() {});
+    // Fetch new announcement data
+    fetchAnnouncementData();
 
     // Simulate some delay for demonstration purposes
     await Future.delayed(const Duration(seconds: 2));
+
+    // Set the state to reflect the changes
+    setState(() {});
   }
 
 // Method to refresh livelihood data
   Future<void> _refreshLivelihoodData() async {
-    setState(() {});
-
-    await Future.delayed(const Duration(seconds: 2));
-
+    // Fetch new livelihood data
     fetchLivelihoodData();
 
+    // Simulate some delay for demonstration purposes
+    await Future.delayed(const Duration(seconds: 2));
+
+    // Set the state to reflect the changes
     setState(() {});
   }
 
 // Method to refresh business promotion data
   Future<void> _refreshBusinessPromotionData() async {
-    // Set the refreshing state to true
-    setState(() {});
+    // Fetch new business promotion data
+    fetchbusinessPromotionData();
 
     // Simulate some delay for demonstration purposes
     await Future.delayed(const Duration(seconds: 2));
 
-    // Fetch business promotion data again
-    fetchbusinessPromotionData();
-
-    // Set the refreshing state to false after data is fetched
+    // Set the state to reflect the changes
     setState(() {});
   }
 
@@ -213,6 +210,7 @@ class _AnnouncementPageState extends State<AnnouncementPage>
           backgroundColor: const Color.fromARGB(255, 230, 239, 246),
           appBar: AppBar(
             title: Text(_selectedCategory),
+            automaticallyImplyLeading: false,
             actions: [
               IconButton(
                 icon: const Icon(Icons.account_circle),
@@ -246,7 +244,8 @@ class _AnnouncementPageState extends State<AnnouncementPage>
                     child: ListView.builder(
                       itemCount: announcementData.length,
                       itemBuilder: (context, index) {
-                        final announcement = announcementData[index];
+                        final announcement =
+                            announcementData.reversed.toList()[index];
                         if (announcement != null) {
                           return customListTile(
                             announcement,
@@ -265,7 +264,8 @@ class _AnnouncementPageState extends State<AnnouncementPage>
                     child: ListView.builder(
                       itemCount: livelihoodData.length,
                       itemBuilder: (context, index) {
-                        final livelihood = livelihoodData[index];
+                        final livelihood =
+                            livelihoodData.reversed.toList()[index];
                         if (livelihood != null) {
                           final imageUrl = livelihood['filename']?['url'] ?? '';
                           final livelihoodCategory = livelihood['what'] ?? '';
@@ -295,7 +295,8 @@ class _AnnouncementPageState extends State<AnnouncementPage>
                     child: ListView.builder(
                       itemCount: businessPromotionData.length,
                       itemBuilder: (context, index) {
-                        final business = businessPromotionData[index];
+                        final business =
+                            businessPromotionData.reversed.toList()[index];
                         if (business != null) {
                           final filenameData =
                               business['filename'] as Map<String, dynamic>?;
