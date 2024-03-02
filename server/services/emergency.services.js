@@ -11,50 +11,40 @@ class EmergencyService {
     date,
     status,
     emergencyProofImage 
-  ) {
+) {
     try {
-      const uploadedProofImage = await this.uploadEmergencyProofImage(emergencyProofImage);
-      const createEmergencySignal = new EmergencyModel({
-        userId,
-        residentName,
-        currentLocation,
-        phoneNumber,
-        emergencyType,
-        date,
-        status,
-        emergencyProofImage: { // Include URL and public ID in the emergencyProofImage object
-          url: uploadedProofImage.secure_url,
-          public_id: uploadedProofImage.public_id
-        }
-      });
+        // Upload emergency proof image to Cloudinary
+        const cloudinaryResponse = await cloudinary.uploader.upload(emergencyProofImage.path, {
+            folder: 'emergency'
+        });
 
-      const savedEmergencySignal = await createEmergencySignal.save();
+        console.log('Emergency proof image uploaded to Cloudinary:', cloudinaryResponse);
 
-      console.log('Saved Emergency Signal:', savedEmergencySignal);
+        const createEmergencySignal = new EmergencyModel({
+            userId,
+            residentName,
+            currentLocation,
+            phoneNumber,
+            emergencyType,
+            date,
+            status,
+            emergencyProofImage: { // Include URL and public ID in the emergencyProofImage object
+                url: cloudinaryResponse.secure_url,
+                public_id: cloudinaryResponse.public_id
+            }
+        });
 
-      return savedEmergencySignal;
+        const savedEmergencySignal = await createEmergencySignal.save();
+
+        console.log('Saved Emergency Signal:', savedEmergencySignal);
+
+        return savedEmergencySignal;
     } catch (err) {
-      console.error('Error in createEmergencySignal:', err);
-      throw err;
+        console.error('Error in createEmergencySignal:', err);
+        throw err;
     }
-  }
+}
 
-  static async uploadEmergencyProofImage(emergencyProofImage) {
-    try {
-      // Upload emergency proof image to Cloudinary
-      const cloudinaryResponse = await cloudinary.uploader.upload(
-        `uploads/emergency/${emergencyProofImage.filename}`,
-        { folder: 'emergency' }
-      );
-
-      console.log('Emergency proof image uploaded to Cloudinary:', cloudinaryResponse);
-
-      return cloudinaryResponse; // Return the Cloudinary response
-    } catch (error) {
-      console.error('Error uploading emergency proof image:', error);
-      throw error;
-    }
-  }
 }
 
 module.exports = EmergencyService;
