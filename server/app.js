@@ -31,4 +31,7 @@ app.use('/get', promoteBusinessRouter);
 app.use('/profile', profileRouter); 
 app.use('/uploads', express.static('uploads'));
 
+
+app.use('/emergency', emergencyRouter); 
+app.use('/uploads', express.static('uploads'));
 module.exports = app;
