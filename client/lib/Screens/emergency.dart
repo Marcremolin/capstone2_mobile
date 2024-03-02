@@ -10,8 +10,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'dart:io'; // Import the dart:io library for the File class
-import 'package:image_picker/image_picker.dart'; // Import the image_picker package for ImagePicker and ImageSource
 
 class Emergency extends StatefulWidget {
 // FOR TOKEN -----------------------------
@@ -30,7 +28,6 @@ class _EmergencyState extends State<Emergency>
   String? firstName;
   String? lastName;
   String? middleName;
-  String? selectedImage;
 
 //ADD FOR DATABASE
   String? selectedDate;
@@ -228,88 +225,9 @@ class _EmergencyState extends State<Emergency>
     );
   }
 
-  void _uploadImage(BuildContext context, String emergencyType) async {
-    final picker = ImagePicker();
-    XFile? pickedFile;
-    try {
-      pickedFile = await picker.pickImage(source: ImageSource.camera);
-    } catch (e) {
-      print("Error picking image: $e");
-    }
+// -------------------------------------------------- ALERT DIALOGS --------------------------------------------------
 
-    if (pickedFile != null) {
-      File image = File(pickedFile.path);
-      if (emergencyType == "ProofOfEmergency") {
-      } else {}
-
-      // Show image preview
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            backgroundColor: Colors.transparent,
-            content: Container(
-              width: double.maxFinite,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 243, 76, 64),
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Preview',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Image.file(
-                    image,
-                    width: 200,
-                    height: 200,
-                    fit: BoxFit.cover,
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 90,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            sendDistressSignal(emergencyType);
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text('Proceed'),
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                      SizedBox(
-                        width: 90,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text('Close'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    } else {
-      // User canceled the picker.
-    }
-  }
-
+// POPUP RED CONFIRNMATION DIALOG
   void showConfirmationDialog(BuildContext context, String emergencyType) {
     showDialog(
       context: context,
@@ -341,7 +259,7 @@ class _EmergencyState extends State<Emergency>
                 ),
                 const SizedBox(height: 20),
                 const Text(
-                  'ARE YOU SURE YOU WANT TO SEND A DISTRESS SIGNAL?',
+                  ' ARE YOU SURE YOU WANT TO SEND DISTRESS SIGNAL? ',
                   style: TextStyle(
                     fontSize: 18,
                     color: Colors.white,
@@ -386,16 +304,6 @@ class _EmergencyState extends State<Emergency>
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    _uploadImage(context, emergencyType); // Pass emergencyType
-                  },
-                  child: const Text(
-                    'UPLOAD IMAGE',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
               ],
             ),
           ),
@@ -403,104 +311,6 @@ class _EmergencyState extends State<Emergency>
       },
     );
   }
-
-// -------------------------------------------------- ALERT DIALOGS --------------------------------------------------
-
-// POPUP RED CONFIRNMATION DIALOG
-
-  // void showConfirmationDialog(BuildContext context, String emergencyType) {
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         backgroundColor: Colors.transparent,
-  //         content: Container(
-  //           width: double.maxFinite,
-  //           padding: const EdgeInsets.all(20),
-  //           decoration: BoxDecoration(
-  //             color: const Color.fromARGB(255, 243, 76, 64),
-  //             borderRadius: BorderRadius.circular(30),
-  //           ),
-  //           child: Column(
-  //             mainAxisSize: MainAxisSize.min,
-  //             children: [
-  //               const Text(
-  //                 'Confirm',
-  //                 style: TextStyle(
-  //                   color: Colors.white,
-  //                   fontSize: 24,
-  //                   fontWeight: FontWeight.bold,
-  //                 ),
-  //               ),
-  //               const Divider(
-  //                 color: Color.fromARGB(168, 255, 255, 255),
-  //                 thickness: 2,
-  //                 height: 15,
-  //               ),
-  //               const SizedBox(height: 20),
-  //               const Text(
-  //                 'ARE YOU SURE YOU WANT TO SEND A DISTRESS SIGNAL?',
-  //                 style: TextStyle(
-  //                   fontSize: 18,
-  //                   color: Colors.white,
-  //                 ),
-  //                 textAlign: TextAlign.center,
-  //               ),
-  //               const SizedBox(height: 20),
-  //               const Divider(
-  //                 color: Color.fromARGB(168, 255, 255, 255),
-  //                 thickness: 2,
-  //                 height: 20,
-  //               ),
-  //               Row(
-  //                 mainAxisAlignment: MainAxisAlignment.center,
-  //                 children: [
-  //                   TextButton(
-  //                     onPressed: () {
-  //                       sendDistressSignal(emergencyType);
-  //                       Navigator.of(context).pop();
-  //                     },
-  //                     child: const Text(
-  //                       'PROCEED',
-  //                       style: TextStyle(
-  //                         color: Color.fromARGB(255, 15, 234, 22),
-  //                         fontSize: 16,
-  //                         fontWeight: FontWeight.bold,
-  //                       ),
-  //                     ),
-  //                   ),
-  //                   const SizedBox(width: 40),
-  //                   TextButton(
-  //                     onPressed: () {
-  //                       Navigator.pop(context);
-  //                     },
-  //                     child: const Text(
-  //                       'DISCARD',
-  //                       style: TextStyle(
-  //                         color: Color.fromARGB(255, 255, 255, 255),
-  //                         fontSize: 16,
-  //                       ),
-  //                     ),
-  //                   ),
-  //                 ],
-  //               ),
-  //               const SizedBox(height: 20),
-  //               ElevatedButton(
-  //                 onPressed: () {
-  //                   _uploadImage(context, );
-  //                 },
-  //                 child: const Text(
-  //                   'UPLOAD IMAGE',
-  //                   style: TextStyle(fontSize: 16),
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
 
   void showSuccessDialog(BuildContext context, [status]) {
     showDialog(
