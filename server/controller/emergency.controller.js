@@ -1,4 +1,5 @@
 const Emergency = require("../services/emergency.services");
+
 exports.createEmergencySignal = async (req, res, next) => {
   try {
     console.log('Request Body:', req.body); 
@@ -14,7 +15,13 @@ exports.createEmergencySignal = async (req, res, next) => {
       status
     } = req.body;
 
-    const emergencyProofImage = req.file; // Access the uploaded file
+    const cloudinaryResponse = req.file; // Access the Cloudinary response from req.file
+
+    // Extract URL and public ID from the Cloudinary response
+    const emergencyProofImage = {
+      url: cloudinaryResponse.secure_url,
+      public_id: cloudinaryResponse.public_id
+    };
 
     let emergencyReq = await Emergency.createEmergencySignal(
       userId,
@@ -24,7 +31,7 @@ exports.createEmergencySignal = async (req, res, next) => {
       emergencyType,
       date,
       status,
-      emergencyProofImage
+      emergencyProofImage // Pass emergencyProofImage to the service function
     );
 
     console.log('Emergency request created:', emergencyReq);
