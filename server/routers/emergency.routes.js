@@ -3,12 +3,12 @@ const multer = require('multer');
 const EmergencyController = require("../controller/emergency.controller");
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+  destination: function (req, filename, cb) {
     cb(null, 'uploads/emergency'); 
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname); 
-  },
+    cb(null, file.originalname); 
+  }
 });
 
 const upload = multer({ storage: storage });
