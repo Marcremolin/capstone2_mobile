@@ -1,5 +1,4 @@
 const Emergency = require("../services/emergency.services");
-
 exports.createEmergencySignal = async (req, res, next) => {
   try {
     console.log('Request Body:', req.body); 
