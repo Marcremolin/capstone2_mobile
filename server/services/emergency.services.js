@@ -1,5 +1,5 @@
-const UserModel = require('../model/user.model');
 const cloudinary = require('../config/cloudinary');
+const EmergencyModel = require('../model/emergency.model');
 
 class EmergencyService {
   static async createEmergencySignal(
