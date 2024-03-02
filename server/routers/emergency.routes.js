@@ -7,9 +7,8 @@ const storage = multer.diskStorage({
     cb(null, 'uploads/emergency'); 
   },
   filename: function (req, file, cb) {
-    // Ensure file.originalname is not undefined before concatenating
-    const originalname = file.originalname ? file.originalname : '';
-    cb(null, Date.now() + '-' + originalname); 
+    
+    cb(null, file.originalname); 
   }
 });
 
