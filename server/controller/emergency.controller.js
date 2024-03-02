@@ -1,9 +1,8 @@
 const Emergency = require("../services/emergency.services");
-
-
 exports.createEmergencySignal = async (req, res, next) => {
   try {
-    console.log('Request Body:', req.body);
+    console.log('Request Body:', req.body); 
+    console.log('Uploaded File:', req.file); // Check if the file is correctly received
 
     const {
       userId,
@@ -12,11 +11,11 @@ exports.createEmergencySignal = async (req, res, next) => {
       phoneNumber,
       emergencyType,
       date,
-      status,
-      emergencyProofImage // Add emergencyProofImage to the destructuring
+      status
     } = req.body;
 
-    // Call the service method to create emergency signal and upload emergency proof image
+    const emergencyProofImage = req.file; // Access the uploaded file
+
     let emergencyReq = await Emergency.createEmergencySignal(
       userId,
       residentName,
@@ -25,7 +24,7 @@ exports.createEmergencySignal = async (req, res, next) => {
       emergencyType,
       date,
       status,
-      emergencyProofImage // Pass emergencyProofImage to the service method
+      emergencyProofImage
     );
 
     console.log('Emergency request created:', emergencyReq);
