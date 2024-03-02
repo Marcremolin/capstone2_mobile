@@ -10,13 +10,10 @@ class EmergencyService {
     emergencyType,
     date,
     status,
-    emergencyProofImage // Add emergencyProofImage parameter
+    emergencyProofImage 
   ) {
     try {
-      // Call the method to upload emergency proof image
       const uploadedProofImage = await this.uploadEmergencyProofImage(emergencyProofImage);
-
-      // Create the emergency signal document
       const createEmergencySignal = new EmergencyModel({
         userId,
         residentName,
@@ -25,7 +22,10 @@ class EmergencyService {
         emergencyType,
         date,
         status,
-        emergencyProofImage: uploadedProofImage.secure_url // Store the Cloudinary URL in the document
+        emergencyProofImage: { // Include URL and public ID in the emergencyProofImage object
+          url: uploadedProofImage.secure_url,
+          public_id: uploadedProofImage.public_id
+        }
       });
 
       const savedEmergencySignal = await createEmergencySignal.save();
