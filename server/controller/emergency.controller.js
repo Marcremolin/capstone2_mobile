@@ -1,12 +1,6 @@
-//FETCH THE DATA that is request and respond from the user (frontend)
-const Emergency = require("../services/emergency.services");
-const multer = require('multer');
-const upload = multer(); // Initialize multer
-
 exports.createEmergencySignal = async (req, res, next) => {
   try {
     console.log('Request Body:', req.body);
-    console.log('Uploaded file:', req.file); // Check the uploaded file
 
     const {
       userId,
@@ -15,15 +9,11 @@ exports.createEmergencySignal = async (req, res, next) => {
       phoneNumber,
       emergencyType,
       date,
-      status
+      status,
+      emergencyProofImage // Add emergencyProofImage to the destructuring
     } = req.body;
 
-    // Check if file is uploaded
-    const image = req.file ? {
-      public_id: 'unique_id', // Generate a unique ID for the image
-      url: req.file.path // Store the file path temporarily, you can replace it with cloudinary response later
-    } : null;
-
+    // Call the service method to create emergency signal and upload emergency proof image
     let emergencyReq = await Emergency.createEmergencySignal(
       userId,
       residentName,
@@ -32,14 +22,13 @@ exports.createEmergencySignal = async (req, res, next) => {
       emergencyType,
       date,
       status,
-      image // Pass image data to service
+      emergencyProofImage // Pass emergencyProofImage to the service method
     );
+
     console.log('Emergency request created:', emergencyReq);
 
     res.json({ status: true, success: emergencyReq });
   } catch (error) {
-    console.error('Error in createEmergencySignal:', error);
-    res.status(500).json({ status: false, message: "Internal Server Error" });
     next(error);
   }
 }
