@@ -1,40 +1,37 @@
 //STORE THE DATA ENTERED BY A USER (Frontend)
+const EmergencyModel = require('../model/emergency.model');
 
-const EmergencyModel = require('../model/emergency.model')
-
-const jwt = require('jsonwebtoken')
-class EmergencyService{
-    static async createEmergencySignal(
+class EmergencyService {
+  static async createEmergencySignal(
+    userId,
+    residentName,
+    currentLocation,
+    phoneNumber,
+    emergencyType,
+    date,
+    status,
+    image // Receive image data
+  ){
+    try {
+      const createEmergencySignal = new EmergencyModel({  
         userId,
         residentName,
         currentLocation,
         phoneNumber,
         emergencyType,
         date,
-        status
-    ){
+        status,
+        proofOfEmergency: image // Store image data in the database
+      });
 
-        try{
-            const createEmergencySignal = new EmergencyModel({  
-                userId,
-                residentName,
-                currentLocation,
-                phoneNumber,
-                emergencyType,
-                date,
-                status
-              });
-
-              const savedEmergencySignal = await createEmergencySignal.save();
-
-      // Log the saved document
+      const savedEmergencySignal = await createEmergencySignal.save();
       console.log('Saved Emergency Signal:', savedEmergencySignal);
-
-      return savedEmergencySignal; // Return the saved document
+      return savedEmergencySignal;
     } catch (err) {
       console.error('Error in createEmergencySignal:', err);
-      throw err; // Re-throw the error
+      throw err;
     }
   }
 }
+
 module.exports = EmergencyService;

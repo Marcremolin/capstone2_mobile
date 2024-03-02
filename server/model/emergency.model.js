@@ -10,9 +10,11 @@ const emergencySchema = new Schema({
   phoneNumber:{type: String,required: true,index: true},
   emergencyType:{type: String,required: true,index: true},
   date:{type: Date,required: true,index: true},
-  status: {type: String}
-
+  status: {type: String},
+  proofOfEmergency: { // Define schema for proofOfEmergency
+    public_id: { type: String, required: true },
+    url: { type: String, required: true }
+  }
 });
-
 const EmergencyModel = db.model('emergency', emergencySchema); 
 module.exports = EmergencyModel;
