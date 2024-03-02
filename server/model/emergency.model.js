@@ -11,8 +11,8 @@ const emergencySchema = new Schema({
   date: { type: Date, required: true, index: true },
   status: { type: String },
   emergencyProofImage: {
-    public_id: { type: String, required: true },
-    url: { type: String, required: true }
+    public_id: { type: String },
+    url: { type: String}
   }
 });
 
