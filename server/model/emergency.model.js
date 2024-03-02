@@ -12,7 +12,7 @@ const emergencySchema = new Schema({
   status: { type: String },
   emergencyProofImage: {
     public_id: { type: String },
-    url: { type: String}
+    url: { type: String }
   }
 });
 
