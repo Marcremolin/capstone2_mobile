@@ -35,10 +35,11 @@ dependencies:
   file_picker: ^6.0.0
 
 
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
-  google_fonts: ^6.1.0
+  google_fonts: ^6.2.0
   carousel_slider: ^4.0.0
   url_launcher: ^6.0.13
   flutter_svg: ^2.0.7
@@ -50,7 +51,7 @@ dependencies:
   http_parser:
 
   # ADD FOR IMAGE UPLOAD
-  flutter_image_compress: ^2.0.4
+  flutter_image_compress: ^2.1.0
   cloudinary: ^1.2.0
   cloudinary_sdk: ^5.0.0+1
   cloudinary_flutter: ^1.0.0

@@ -1,6 +1,9 @@
 // ignore_for_file: library_private_types_in_public_api, avoid_print, use_key_in_widget_constructors, unnecessary_null_comparison, use_build_context_synchronously, unused_element, prefer_typing_uninitialized_variables, unnecessary_brace_in_string_interps, use_super_parameters
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'dart:typed_data'; // Import Uint8List
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'profilePage.dart';
 import '../../../Screens/mapPage.dart';
 //ADD FOR DATABASE
@@ -10,6 +13,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'dart:io';
 
 class Emergency extends StatefulWidget {
 // FOR TOKEN -----------------------------
@@ -28,6 +32,7 @@ class _EmergencyState extends State<Emergency>
   String? firstName;
   String? lastName;
   String? middleName;
+  File? _image;
 
 //ADD FOR DATABASE
   String? selectedDate;
@@ -70,10 +75,49 @@ class _EmergencyState extends State<Emergency>
     super.dispose();
   }
 
+  bool validateFileSize(File file) {
+    const maxSize = 5 * 1024 * 1024; // 5MB maximum file size
+    if (file.lengthSync() > maxSize) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Error'),
+            content: const Text('The file size exceeds the limit (5MB).'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+      return false;
+    }
+    return true;
+  }
+
+  Future<Uint8List> compressImage(File file) async {
+    Uint8List? result;
+    try {
+      result = await FlutterImageCompress.compressWithFile(
+        file.absolute.path,
+        minHeight: 1920,
+        minWidth: 1080,
+        quality: 75,
+      );
+    } catch (error) {
+      print('Error compressing image: $error');
+    }
+    return result ?? Uint8List(0); // Return an empty list if compression fails
+  }
+
 //ADD FOR DATABASE ----------------------------------------------
   void sendDistressSignal(String emergencyType) async {
     var defaultStatus = "New";
-
     var now = DateTime.now();
     var formattedDate =
         "${now.year}-${now.month}-${now.day} ${now.hour}:${now.minute}:${now.second}";
@@ -96,7 +140,16 @@ class _EmergencyState extends State<Emergency>
           var postalCode = placemarks[0].postalCode;
           var country = placemarks[0].country;
 
-          var reqBody = {
+          // Prepare the image file, if available
+          Uint8List? imageBytes; // Change to Uint8List
+          String? imageName;
+          if (_image != null) {
+            imageBytes = await compressImage(_image!); // Compress the image
+            imageName = _image!.path.split('/').last;
+          }
+
+          // Updated data type for reqBody
+          Map<String, dynamic> reqBody = {
             "userId": userId,
             "residentName": residentNameController.text,
             "currentLocation": "${street}, ${city} ${postalCode}, ${country}",
@@ -105,6 +158,14 @@ class _EmergencyState extends State<Emergency>
             "status": defaultStatus,
             "phoneNumber": phoneNumberController.text,
           };
+
+          // Add the image data to the request body, if available
+          if (imageBytes != null && imageName != null) {
+            reqBody["emergencyProofImage"] = {
+              "data": base64Encode(imageBytes),
+              "fileName": imageName,
+            };
+          }
 
           var url = Uri.parse(
               'https://dbarangay-mobile-e5o1.onrender.com/emergencySignal');
@@ -140,11 +201,34 @@ class _EmergencyState extends State<Emergency>
   Future<http.Response> sendDistressSignalRequest(
       Uri url, Map<String, dynamic> reqBody) async {
     try {
-      return await http.post(
+      var response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(reqBody),
       );
+
+      if (response.statusCode == 413) {
+        // Display an error message to the user
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: const Text('The file size exceeds the limit.'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+
+      return response;
     } catch (e) {
       print('Error sending distress signal request: $e');
       rethrow;
@@ -232,81 +316,103 @@ class _EmergencyState extends State<Emergency>
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.transparent,
-          content: Container(
-            width: double.maxFinite,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 243, 76, 64),
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Confirm',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Colors.transparent,
+              content: Container(
+                width: double.maxFinite,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 243, 76, 64),
+                  borderRadius: BorderRadius.circular(30),
                 ),
-                const Divider(
-                  color: Color.fromARGB(168, 255, 255, 255),
-                  thickness: 2,
-                  height: 15,
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  ' ARE YOU SURE YOU WANT TO SEND DISTRESS SIGNAL? ',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                const Divider(
-                  color: Color.fromARGB(168, 255, 255, 255),
-                  thickness: 2,
-                  height: 20,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    const Text(
+                      'Confirm',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Divider(
+                      color: Color.fromARGB(168, 255, 255, 255),
+                      thickness: 2,
+                      height: 15,
+                    ),
+                    const SizedBox(height: 20),
+                    _image != null
+                        ? Image.file(_image!, width: 200, height: 200)
+                        : const SizedBox(),
+                    const SizedBox(height: 20),
+                    // Add an option to take a picture
                     TextButton(
-                      onPressed: () {
-                        sendDistressSignal(emergencyType);
-                        Navigator.of(context).pop();
+                      onPressed: () async {
+                        // Open camera to take a picture
+                        final pickedFile = await ImagePicker().pickImage(
+                          source: ImageSource.camera,
+                        );
+
+                        if (pickedFile != null) {
+                          setState(() {
+                            _image = File(pickedFile.path);
+                          });
+                        }
                       },
                       child: const Text(
-                        'PROCEED',
+                        'UPLOAD PROOF OF EMERGENCY (Optional)',
                         style: TextStyle(
-                          color: Color.fromARGB(255, 15, 234, 22),
+                          color: Colors.white,
                           fontSize: 16,
-                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 40),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Text(
-                        'DISCARD',
-                        style: TextStyle(
-                          color: Color.fromARGB(255, 255, 255, 255),
-                          fontSize: 16,
+                    const SizedBox(height: 20),
+                    // Buttons for retake and proceed
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _image != null
+                            ? TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _image = null;
+                                  });
+                                },
+                                child: const Text(
+                                  'RETAKE',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              )
+                            : const SizedBox(),
+                        const SizedBox(width: 40),
+                        TextButton(
+                          onPressed: () {
+                            sendDistressSignal(emergencyType);
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text(
+                            'PROCEED',
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 15, 234, 22),
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
@@ -654,7 +760,6 @@ class CustomButton extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         print('Emergency button tapped');
-
         print('context: $context');
         print('emergencyType: $emergencyType');
 
