@@ -33,7 +33,11 @@ class _EmergencyState extends State<Emergency>
   String? lastName;
   String? middleName;
   File? _image;
+// Add the _imageBytes variable to store compressed image data
+  Uint8List? _imageBytes;
 
+// Add the _imageName variable to store the image name
+  String? _imageName;
 //ADD FOR DATABASE
   String? selectedDate;
   final dateController = TextEditingController();
@@ -100,19 +104,28 @@ class _EmergencyState extends State<Emergency>
     return true;
   }
 
-  Future<Uint8List> compressImage(File file) async {
-    Uint8List? result;
-    try {
-      result = await FlutterImageCompress.compressWithFile(
-        file.absolute.path,
-        minHeight: 1920,
-        minWidth: 1080,
-        quality: 75,
-      );
-    } catch (error) {
-      print('Error compressing image: $error');
+  Future<void> captureImage() async {
+    final pickedFile = await ImagePicker().pickImage(
+      source: ImageSource.camera,
+    );
+
+    if (pickedFile != null) {
+      final imageFile = File(pickedFile.path);
+      final compressedImage = await compressImage(imageFile);
+      setState(() {
+        _imageBytes = compressedImage;
+        _imageName = imageFile.path.split('/').last;
+      });
     }
-    return result ?? Uint8List(0); // Return an empty list if compression fails
+  }
+
+  Future<Uint8List?> compressImage(File file) async {
+    return await FlutterImageCompress.compressWithFile(
+      file.absolute.path,
+      minHeight: 1920,
+      minWidth: 1080,
+      quality: 75,
+    );
   }
 
 //ADD FOR DATABASE ----------------------------------------------
@@ -141,14 +154,13 @@ class _EmergencyState extends State<Emergency>
           var country = placemarks[0].country;
 
           // Prepare the image file, if available
-          Uint8List? imageBytes; // Change to Uint8List
-          String? imageName;
+          Uint8List? imageBytes;
+          String? imageBase64;
           if (_image != null) {
-            imageBytes = await compressImage(_image!); // Compress the image
-            imageName = _image!.path.split('/').last;
+            imageBytes = await compressImage(_image!);
+            imageBase64 = base64Encode(imageBytes!);
           }
-
-          // Updated data type for reqBody
+          // Prepare the request body
           Map<String, dynamic> reqBody = {
             "userId": userId,
             "residentName": residentNameController.text,
@@ -157,15 +169,18 @@ class _EmergencyState extends State<Emergency>
             "date": formattedDate,
             "status": defaultStatus,
             "phoneNumber": phoneNumberController.text,
+            "emergencyProofImage": imageBase64, // Include base64 image data
           };
 
-          // Add the image data to the request body, if available
-          if (imageBytes != null && imageName != null) {
+          if (_imageBytes != null && _imageName != null) {
             reqBody["emergencyProofImage"] = {
-              "data": base64Encode(imageBytes),
-              "fileName": imageName,
+              "data": base64Encode(_imageBytes!),
+              "fileName": _imageName,
             };
           }
+
+          // Add verification of request body
+          print('Request Body: $reqBody');
 
           var url = Uri.parse(
               'https://dbarangay-mobile-e5o1.onrender.com/emergencySignal');
@@ -360,6 +375,7 @@ class _EmergencyState extends State<Emergency>
                           setState(() {
                             _image = File(pickedFile.path);
                           });
+                          print('Image Path: ${_image!.path}');
                         }
                       },
                       child: const Text(
