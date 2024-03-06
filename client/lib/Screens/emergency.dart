@@ -153,14 +153,14 @@ class _EmergencyState extends State<Emergency>
           var postalCode = placemarks[0].postalCode;
           var country = placemarks[0].country;
 
-          // Prepare the image file, if available
+          // Compress and encode the image as base64
           Uint8List? imageBytes;
           String? imageBase64;
           if (_image != null) {
             imageBytes = await compressImage(_image!);
             imageBase64 = base64Encode(imageBytes!);
           }
-          // Prepare the request body
+
           Map<String, dynamic> reqBody = {
             "userId": userId,
             "residentName": residentNameController.text,
@@ -169,7 +169,6 @@ class _EmergencyState extends State<Emergency>
             "date": formattedDate,
             "status": defaultStatus,
             "phoneNumber": phoneNumberController.text,
-            "emergencyProofImage": imageBase64, // Include base64 image data
           };
 
           if (_imageBytes != null && _imageName != null) {
