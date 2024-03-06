@@ -1012,6 +1012,9 @@ class _SignUpFormState extends State<SignUpForm> {
                         age--;
                       }
 
+                      // Set the calculated age to the ageController
+                      ageController.text = age.toString();
+
                       // Check if the user is below 12 years old
                       if (age < 12) {
                         showDialog(
@@ -1039,8 +1042,7 @@ class _SignUpFormState extends State<SignUpForm> {
                                   Center(
                                     child: Text(
                                       "We're sorry, but registration is only available for individuals aged 12 and above.",
-                                      textAlign: TextAlign
-                                          .center, // Align text to center horizontally
+                                      textAlign: TextAlign.center,
                                     ),
                                   ),
                                 ],
@@ -1092,7 +1094,7 @@ class _SignUpFormState extends State<SignUpForm> {
               controller: ageController,
               readOnly: true, // Set readOnly to true
               keyboardType: TextInputType.number,
-              cursorColor: Colors.blue, // Change to desired color
+              cursorColor: Colors.blue,
               decoration: const InputDecoration(
                 hintText: "Age",
                 prefixIcon: Padding(
@@ -1598,9 +1600,15 @@ class _SignUpFormState extends State<SignUpForm> {
                 _showPrivacyComplianceDialog(context);
               }
             },
-            child: Text("Sign Up".toUpperCase()),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue[900],
+              elevation: 0,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(
+              "Sign Up".toUpperCase(),
+            ),
           ),
-
           const SizedBox(height: 16.0),
           AlreadyHaveAnAccountCheck(
             login: false,

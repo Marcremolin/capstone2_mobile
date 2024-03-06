@@ -104,6 +104,7 @@ class _EmergencyState extends State<Emergency>
     return true;
   }
 
+// Modify the function to handle image capture and compression
   Future<void> captureImage() async {
     final pickedFile = await ImagePicker().pickImage(
       source: ImageSource.camera,
@@ -119,13 +120,21 @@ class _EmergencyState extends State<Emergency>
     }
   }
 
-  Future<Uint8List?> compressImage(File file) async {
-    return await FlutterImageCompress.compressWithFile(
-      file.absolute.path,
-      minHeight: 1920,
-      minWidth: 1080,
-      quality: 75,
-    );
+  Future<Uint8List> compressImage(File file) async {
+    Uint8List? result;
+    try {
+      print('Compressing Image...');
+      result = await FlutterImageCompress.compressWithFile(
+        file.absolute.path,
+        minHeight: 1920,
+        minWidth: 1080,
+        quality: 75,
+      );
+      print('Image Compression Successful');
+    } catch (error) {
+      print('Error compressing image: $error');
+    }
+    return result ?? Uint8List(0); // Return an empty list if compression fails
   }
 
 //ADD FOR DATABASE ----------------------------------------------
@@ -153,14 +162,15 @@ class _EmergencyState extends State<Emergency>
           var postalCode = placemarks[0].postalCode;
           var country = placemarks[0].country;
 
-          // Compress and encode the image as base64
-          Uint8List? imageBytes;
-          String? imageBase64;
+          // Prepare the image file, if available
+          Uint8List? imageBytes; // Change to Uint8List
+          String? imageName;
           if (_image != null) {
-            imageBytes = await compressImage(_image!);
-            imageBase64 = base64Encode(imageBytes!);
+            imageBytes = await compressImage(_image!); // Compress the image
+            imageName = _image!.path.split('/').last;
           }
 
+          // Prepare the request body
           Map<String, dynamic> reqBody = {
             "userId": userId,
             "residentName": residentNameController.text,
@@ -171,10 +181,11 @@ class _EmergencyState extends State<Emergency>
             "phoneNumber": phoneNumberController.text,
           };
 
-          if (_imageBytes != null && _imageName != null) {
+          // Add the image data to the request body, if available
+          if (imageBytes != null && imageName != null) {
             reqBody["emergencyProofImage"] = {
-              "data": base64Encode(_imageBytes!),
-              "fileName": _imageName,
+              "data": base64Encode(imageBytes),
+              "fileName": imageName,
             };
           }
 

@@ -340,7 +340,14 @@ class _LoginFormState extends State<LoginForm> {
                 _showLoadingDialog();
                 loginUser();
               },
-              child: Text("Login".toUpperCase()),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 29, 119, 255),
+                elevation: 0,
+                foregroundColor: Colors.white,
+              ),
+              child: Text(
+                "Login".toUpperCase(),
+              ),
             ),
           ),
           const SizedBox(height: defaultPadding),
@@ -368,7 +375,8 @@ class _LoginFormState extends State<LoginForm> {
                 ),
               );
             },
-            child: const Text("Forgot Password?"),
+            child: const Text("Forgot Password?",
+                style: TextStyle(color: kPrimaryColor)),
           ),
           SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
         ],

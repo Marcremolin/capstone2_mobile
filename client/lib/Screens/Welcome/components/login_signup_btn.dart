@@ -1,5 +1,3 @@
-// ignore_for_file: use_super_parameters
-
 import 'package:flutter/material.dart';
 import '../../../constants.dart';
 import '../../Login/login_screen.dart';
@@ -14,43 +12,56 @@ class LoginAndSignupBtn extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Hero(
-          tag: "login_btn",
+        SizedBox(
+          width: 400,
+          child: Hero(
+            tag: "login_btn",
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return const LoginScreen(
+                        token: null,
+                      );
+                    },
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 29, 119, 255),
+                elevation: 0,
+                foregroundColor: Colors.white,
+              ),
+              child: Text(
+                "Login".toUpperCase(),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: 400,
           child: ElevatedButton(
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) {
-                    return const LoginScreen(
-                      token: null,
-                    );
+                    return const SignUpScreen();
                   },
                 ),
               );
             },
-            child: Text(
-              "Login".toUpperCase(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue[900],
+              elevation: 0,
+              foregroundColor: Colors.white,
             ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) {
-                  return const SignUpScreen();
-                },
-              ),
-            );
-          },
-          style: ElevatedButton.styleFrom(
-              backgroundColor: kPrimaryLightColor, elevation: 0),
-          child: Text(
-            "Sign Up".toUpperCase(),
-            style: const TextStyle(color: Colors.black),
+            child: Text(
+              "Sign Up".toUpperCase(),
+            ),
           ),
         ),
       ],
