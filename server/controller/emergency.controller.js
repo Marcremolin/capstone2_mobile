@@ -3,7 +3,7 @@ const Emergency = require("../services/emergency.services");
 exports.createEmergencySignal = async (req, res, next) => {
   try {
     console.log('Request Body:', req.body); 
-    console.log('Uploaded File:', req.file); // Check if the file is correctly received
+    console.log('Uploaded File:', req.file); 
 
     const {
       userId,
@@ -14,8 +14,12 @@ exports.createEmergencySignal = async (req, res, next) => {
       date,
       status
     } = req.body;
+    let emergencyProofImage = null;
+    if (req.file) {
+      console.log('Uploaded File:', req.file);
+      emergencyProofImage = req.file;
+    }
 
-    // Pass the file to the service function
     const savedEmergencySignal = await Emergency.createEmergencySignal(
       userId,
       residentName,
@@ -24,14 +28,16 @@ exports.createEmergencySignal = async (req, res, next) => {
       emergencyType,
       date,
       status,
-      req.file // Pass the file directly
+      emergencyProofImage
     );
 
     console.log('Emergency request created:', savedEmergencySignal);
 
     res.json({ status: true, success: savedEmergencySignal });
   } catch (error) {
-    console.error('Error in createEmergencySignal:', error); // Log any errors
+    console.error('Error in createEmergencySignal:', error); 
+
     next(error);
   }
 }
+
