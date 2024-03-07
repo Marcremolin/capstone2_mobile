@@ -1,4 +1,4 @@
-// ignore_for_file: library_private_types_in_public_api, avoid_print, use_key_in_widget_constructors, unnecessary_null_comparison, use_build_context_synchronously, unused_element, prefer_typing_uninitialized_variables, unnecessary_brace_in_string_interps, use_super_parameters
+// ignore_for_file: library_private_types_in_public_api, avoid_print, use_key_in_widget_constructors, unnecessary_null_comparison, use_build_context_synchronously, unused_element, prefer_typing_uninitialized_variables, unnecessary_brace_in_string_interps, use_super_parameters, unused_field
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'dart:typed_data'; // Import Uint8List
 
@@ -33,11 +33,9 @@ class _EmergencyState extends State<Emergency>
   String? lastName;
   String? middleName;
   File? _image;
-// Add the _imageBytes variable to store compressed image data
   Uint8List? _imageBytes;
-
-// Add the _imageName variable to store the image name
   String? _imageName;
+
 //ADD FOR DATABASE
   String? selectedDate;
   final dateController = TextEditingController();
@@ -162,40 +160,39 @@ class _EmergencyState extends State<Emergency>
           var postalCode = placemarks[0].postalCode;
           var country = placemarks[0].country;
 
-          // Prepare the image file, if available
-          Uint8List? imageBytes; // Change to Uint8List
-          String? imageName;
-          if (_image != null) {
-            imageBytes = await compressImage(_image!); // Compress the image
-            imageName = _image!.path.split('/').last;
-          }
-
-          // Prepare the request body
-          Map<String, dynamic> reqBody = {
-            "userId": userId,
-            "residentName": residentNameController.text,
-            "currentLocation": "${street}, ${city} ${postalCode}, ${country}",
-            "emergencyType": emergencyType,
-            "date": formattedDate,
-            "status": defaultStatus,
-            "phoneNumber": phoneNumberController.text,
-          };
-
-          // Add the image data to the request body, if available
-          if (imageBytes != null && imageName != null) {
-            reqBody["emergencyProofImage"] = {
-              "data": base64Encode(imageBytes),
-              "fileName": imageName,
-            };
-          }
-
-          // Add verification of request body
-          print('Request Body: $reqBody');
-
-          var url = Uri.parse(
+          var uri = Uri.parse(
               'https://dbarangay-mobile-e5o1.onrender.com/emergencySignal');
+
+          // Create a multipart request
+          var request = http.MultipartRequest('POST', uri);
+
+          // Add form fields
+          request.fields['userId'] = userId;
+          request.fields['residentName'] = residentNameController.text;
+          request.fields['currentLocation'] =
+              '${street}, ${city} ${postalCode}, ${country}';
+          request.fields['emergencyType'] = emergencyType;
+          request.fields['date'] = formattedDate;
+          request.fields['status'] = defaultStatus;
+          request.fields['phoneNumber'] = phoneNumberController.text;
+
+          // Add the image file if available
+          if (_image != null) {
+            var stream = http.ByteStream(_image!.openRead());
+            var length = await _image!.length();
+
+            var multipartFile = http.MultipartFile(
+              'emergencyProofImage',
+              stream,
+              length,
+              filename: _imageName,
+            );
+
+            request.files.add(multipartFile);
+          }
+
           try {
-            var response = await sendDistressSignalRequest(url, reqBody);
+            var response = await http.Response.fromStream(await request.send());
 
             if (response.statusCode == 200) {
               print('Request successful: ${response.body}');
@@ -373,7 +370,6 @@ class _EmergencyState extends State<Emergency>
                         ? Image.file(_image!, width: 200, height: 200)
                         : const SizedBox(),
                     const SizedBox(height: 20),
-                    // Add an option to take a picture
                     TextButton(
                       onPressed: () async {
                         // Open camera to take a picture

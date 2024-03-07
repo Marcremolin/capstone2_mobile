@@ -169,7 +169,7 @@ class _LoginFormState extends State<LoginForm> {
             borderRadius: BorderRadius.circular(16.0),
           ),
           title: const Padding(
-            padding: EdgeInsets.only(top: 24.0), // Add top padding
+            padding: EdgeInsets.only(top: 24.0),
             child: Text(
               "USER NOT FOUND",
               textAlign: TextAlign.center,
@@ -199,10 +199,13 @@ class _LoginFormState extends State<LoginForm> {
                         ),
                         minimumSize: const Size(100, 40),
                       ),
-                      child:
-                          const Text("Try Again", textAlign: TextAlign.center),
+                      child: const Text(
+                        "Try Again",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
-                    const SizedBox(width: 16), // Space between buttons
+                    const SizedBox(width: 16),
                     ElevatedButton(
                       onPressed: () {
                         Navigator.of(context).pop();
@@ -219,8 +222,11 @@ class _LoginFormState extends State<LoginForm> {
                         ),
                         minimumSize: const Size(100, 40),
                       ),
-                      child: const Text("Sign Up Now",
-                          textAlign: TextAlign.center),
+                      child: const Text(
+                        "Sign Up Now",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ],
                 ),

@@ -138,7 +138,8 @@ const userSchema = new Schema({
     },
     url:{
       type: String,
-      required: true}  },
+      required: true 
+    },
 
   type:{
     type:String,
@@ -155,7 +156,7 @@ const userSchema = new Schema({
 verificationCode: String, 
 verificationCodeUsed: Boolean, 
 
-});
+}});
 
  
 
