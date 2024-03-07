@@ -243,8 +243,36 @@ class _SignUpFormState extends State<SignUpForm> {
   }
 
 //FUNCTION TO PASS THE DATA TO BACKEND ---------------------------------------------------
-
   void _registerUser() async {
+    // Check if all required fields are filled
+    List<String> emptyFields = _validateFields();
+    if (emptyFields.isNotEmpty) {
+      // If not all fields are filled, construct the error message
+      String errorMessage = 'Please fill in the following required fields:\n';
+      errorMessage += emptyFields.join(', ');
+
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Error'),
+            content: const Text('Please fill in all required fields.'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+      return; // Exit the function if validation fails
+    }
+
+    // If all fields are filled, proceed with registration
+
     var defaultStatus = "active";
     var type = "resident";
     var url =
@@ -298,6 +326,25 @@ class _SignUpFormState extends State<SignUpForm> {
     } catch (e) {
       print('Error: $e');
     }
+  }
+
+  List<String> _validateFields() {
+    List<String> emptyFields = [];
+    // Check if all required fields are filled
+    if (lastNameController.text.isEmpty) emptyFields.add('Last Name');
+    if (firstNameController.text.isEmpty) emptyFields.add('First Name');
+    if (houseNumberController.text.isEmpty) emptyFields.add('House Number');
+    if (barangayController.text.isEmpty) emptyFields.add('Barangay');
+    if (cityMunicipalityController.text.isEmpty) {
+      emptyFields.add('City/Municipality');
+    }
+    if (selectedDistrict == null) emptyFields.add('District');
+    if (provinceController.text.isEmpty) emptyFields.add('Province');
+    if (selectedRegion == null) emptyFields.add('Region');
+    if (nationalityController.text.isEmpty) emptyFields.add('Nationality');
+    if (birthPlaceController.text.isEmpty) emptyFields.add('Birth Place');
+    if (ageController.text.isEmpty) emptyFields.add('Age');
+    return emptyFields;
   }
 
   @override
@@ -865,7 +912,6 @@ class _SignUpFormState extends State<SignUpForm> {
             ),
           ),
           const SizedBox(height: 12),
-// Additional spacing
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8.0),
           ),
@@ -1258,7 +1304,6 @@ class _SignUpFormState extends State<SignUpForm> {
               const Text('Renting'),
             ],
           ),
-// Additional spacing
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8.0),
           ),
@@ -1369,7 +1414,6 @@ class _SignUpFormState extends State<SignUpForm> {
               },
             ),
           ),
-// Additional spacing
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8.0),
           ),
