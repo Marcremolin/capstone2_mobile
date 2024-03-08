@@ -1,4 +1,7 @@
-// ignore_for_file: unused_local_variable, use_build_context_synchronously, avoid_print, missing_required_param, library_private_types_in_public_api
+// ignore_for_file: unused_local_variable, use_build_context_synchronously, avoid_print, missing_required_param, library_private_types_in_public_api, dead_code
+import 'dart:async';
+
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import 'package:client/Screens/Login/components/already_have_an_account_acheck.dart';
 import 'package:file_picker/file_picker.dart';
@@ -87,6 +90,9 @@ class _SignUpFormState extends State<SignUpForm> {
   bool _residentClassValue3 = false;
   bool isPasswordVisible = false;
   bool isConfirmPasswordVisible = false;
+
+  // final bool _isLoading = false;
+
 // Define a variable to store the age
   int age = 0;
   final lastNameController = TextEditingController();
@@ -242,36 +248,43 @@ class _SignUpFormState extends State<SignUpForm> {
     });
   }
 
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 48.0,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SpinKitThreeInOut(
+                  color: Theme.of(context).primaryColor,
+                  size: 40.0,
+                ),
+                const SizedBox(height: 16.0),
+                const Text(
+                  "Hold on, we're securely verifying your credentials!",
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
 //FUNCTION TO PASS THE DATA TO BACKEND ---------------------------------------------------
   void _registerUser() async {
-    // Check if all required fields are filled
-    List<String> emptyFields = _validateFields();
-    if (emptyFields.isNotEmpty) {
-      // If not all fields are filled, construct the error message
-      String errorMessage = 'Please fill in the following required fields:\n';
-      errorMessage += emptyFields.join(', ');
-
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Error'),
-            content: const Text('Please fill in all required fields.'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-      return; // Exit the function if validation fails
-    }
-
-    // If all fields are filled, proceed with registration
+    _showLoadingDialog();
 
     var defaultStatus = "active";
     var type = "resident";
@@ -283,6 +296,7 @@ class _SignUpFormState extends State<SignUpForm> {
           .add(await http.MultipartFile.fromPath('userImage', selectedImage!));
     }
 
+    // Populate request fields
     request.fields['lastName'] = lastNameController.text;
     request.fields['firstName'] = firstNameController.text;
     request.fields['middleName'] = middleNameController.text;
@@ -319,38 +333,42 @@ class _SignUpFormState extends State<SignUpForm> {
 
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(await response.stream.bytesToString());
+        Navigator.pop(context);
         showSuccessDialog(context);
       } else {
-        print('HTTP Error: ${response.statusCode}');
+        Navigator.pop(context);
+        showErrorDialog(context, 'HTTP Error: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error: $e');
+      Navigator.pop(context);
+      showErrorDialog(context, 'Error: $e');
     }
-  }
-
-  List<String> _validateFields() {
-    List<String> emptyFields = [];
-    // Check if all required fields are filled
-    if (lastNameController.text.isEmpty) emptyFields.add('Last Name');
-    if (firstNameController.text.isEmpty) emptyFields.add('First Name');
-    if (houseNumberController.text.isEmpty) emptyFields.add('House Number');
-    if (barangayController.text.isEmpty) emptyFields.add('Barangay');
-    if (cityMunicipalityController.text.isEmpty) {
-      emptyFields.add('City/Municipality');
-    }
-    if (selectedDistrict == null) emptyFields.add('District');
-    if (provinceController.text.isEmpty) emptyFields.add('Province');
-    if (selectedRegion == null) emptyFields.add('Region');
-    if (nationalityController.text.isEmpty) emptyFields.add('Nationality');
-    if (birthPlaceController.text.isEmpty) emptyFields.add('Birth Place');
-    if (ageController.text.isEmpty) emptyFields.add('Age');
-    return emptyFields;
   }
 
   @override
   void dispose() {
     dateController.dispose();
     super.dispose();
+  }
+
+  void showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Error"),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
 // Function to show the privacy compliance dialog

@@ -1,9 +1,8 @@
-// ignore_for_file: use_super_parameters
-
 import 'package:flutter/material.dart';
 import 'package:client/Screens/Welcome/welcome_screen.dart';
 import 'package:client/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,6 +17,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    requestPermission(); // Request permission when the app starts
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Capstone2',
@@ -50,5 +51,17 @@ class MyApp extends StatelessWidget {
       ),
       home: const WelcomeScreen(),
     );
+  }
+
+  Future<void> requestPermission() async {
+    // Request the WRITE_EXTERNAL_STORAGE permission
+    var status = await Permission.storage.request();
+    if (status.isGranted) {
+      // Permission granted, perform file operations
+      print('WRITE_EXTERNAL_STORAGE permission granted');
+    } else {
+      // Permission denied, handle it accordingly
+      print('WRITE_EXTERNAL_STORAGE permission denied');
+    }
   }
 }
