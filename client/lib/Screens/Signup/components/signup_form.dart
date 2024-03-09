@@ -1,7 +1,4 @@
-// ignore_for_file: unused_local_variable, use_build_context_synchronously, avoid_print, missing_required_param, library_private_types_in_public_api, dead_code
-import 'dart:async';
-
-import 'package:flutter_spinkit/flutter_spinkit.dart';
+// ignore_for_file: unused_local_variable, use_build_context_synchronously, avoid_print, missing_required_param, library_private_types_in_public_api
 
 import 'package:client/Screens/Login/components/already_have_an_account_acheck.dart';
 import 'package:file_picker/file_picker.dart';
@@ -11,7 +8,9 @@ import '../../../constants.dart';
 import '../../Login/login_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:io'; //FOR EMAIL VALIDATION
+
+//FOR EMAIL VALIDATION
+import 'dart:io';
 
 class SignUpForm extends StatefulWidget {
   const SignUpForm({
@@ -81,6 +80,7 @@ class _SignUpFormState extends State<SignUpForm> {
   final dateController = TextEditingController();
   String? selectedDate;
   String? selectedImage;
+
   bool _checkBoxValue1 = false;
   bool _checkBoxValue2 = false;
   bool _homeOwnershipValue1 = false;
@@ -90,9 +90,6 @@ class _SignUpFormState extends State<SignUpForm> {
   bool _residentClassValue3 = false;
   bool isPasswordVisible = false;
   bool isConfirmPasswordVisible = false;
-
-  // final bool _isLoading = false;
-
 // Define a variable to store the age
   int age = 0;
   final lastNameController = TextEditingController();
@@ -112,6 +109,7 @@ class _SignUpFormState extends State<SignUpForm> {
   final votersRegistrationController = TextEditingController();
   final barangayController = TextEditingController(text: 'Harapin ang Bukas');
   final passwordController = TextEditingController();
+  final birthplaceController = TextEditingController();
 
   //FOR EMAIL VALIDATION ---------------
   bool isEmailValid(String email) {
@@ -170,6 +168,7 @@ class _SignUpFormState extends State<SignUpForm> {
     'Region XII - SOCCSKSARGEN',
     'Region XIII - Caraga',
   ];
+
   late String selectedCivilStatus;
   List<String> civilStatusOptions = [
     'Single',
@@ -248,35 +247,30 @@ class _SignUpFormState extends State<SignUpForm> {
     });
   }
 
-  void _showLoadingDialog() {
+// Add a method to validate form fields
+  bool _validateForm() {
+    if (_formKey.currentState!.validate()) {
+      return true;
+    }
+    return false;
+  }
+
+// Add a method to handle registration errors
+  void _handleRegistrationError(String errorMessage) {
     showDialog(
       context: context,
-      barrierDismissible: false,
       builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 48.0,
+        return AlertDialog(
+          title: const Text("Registration Error"),
+          content: Text(errorMessage),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("OK"),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SpinKitThreeInOut(
-                  color: Theme.of(context).primaryColor,
-                  size: 40.0,
-                ),
-                const SizedBox(height: 16.0),
-                const Text(
-                  "Hold on, we're securely verifying your credentials!",
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
+          ],
         );
       },
     );
@@ -284,91 +278,164 @@ class _SignUpFormState extends State<SignUpForm> {
 
 //FUNCTION TO PASS THE DATA TO BACKEND ---------------------------------------------------
   void _registerUser() async {
-    _showLoadingDialog();
-
     var defaultStatus = "active";
     var type = "resident";
     var url =
         Uri.parse('https://dbarangay-mobile-e5o1.onrender.com/registration');
     var request = http.MultipartRequest('POST', url);
-    if (selectedImage != null) {
-      request.files
-          .add(await http.MultipartFile.fromPath('userImage', selectedImage!));
-    }
-
-    // Populate request fields
-    request.fields['lastName'] = lastNameController.text;
-    request.fields['firstName'] = firstNameController.text;
-    request.fields['middleName'] = middleNameController.text;
-    request.fields['suffix'] = suffixController.text;
-    request.fields['houseNumber'] = houseNumberController.text;
-    request.fields['barangay'] = barangayController.text;
-    request.fields['cityMunicipality'] = cityMunicipalityController.text;
-    request.fields['district'] = selectedDistrict!;
-    request.fields['province'] = provinceController.text;
-    request.fields['region'] = selectedRegion!;
-    request.fields['nationality'] = nationalityController.text;
-    request.fields['birthPlace'] = birthPlaceController.text;
-    request.fields['age'] = ageController.text;
-    request.fields['companyName'] = companyNameController.text;
-    request.fields['position'] = positionController.text;
-    request.fields['phoneNumber'] = phoneNumberController.text;
-    request.fields['email'] = emailController.text;
-    request.fields['civilStatus'] = selectedCivilStatus;
-    request.fields['highestEducation'] = selectedHighestEducation;
-    request.fields['employmentStatus'] = selectedEmploymentStatus;
-    request.fields['password'] = passwordController.text;
-    request.fields['dateOfBirth'] = selectedDate!;
-    request.fields['sex'] = _checkBoxValue1 ? "Male" : "Female";
-    request.fields['homeOwnership'] = _homeOwnershipValue1 ? "Own" : "Rent";
-    request.fields['residentClass'] = _residentClassValue1
-        ? "PWD"
-        : (_residentClassValue2 ? "Solo Parent" : "Out of School Youth");
-    request.fields['votersRegistration'] = selectedRegistrationStatus!;
-    request.fields['status'] = defaultStatus;
-    request.fields['type'] = type;
 
     try {
+      if (selectedImage != null) {
+        request.files.add(
+            await http.MultipartFile.fromPath('userImage', selectedImage!));
+      }
+
+      // Add debug logs to print the values being sent to the server
+      print('Registration data:');
+      print('Last Name: ${lastNameController.text}');
+      print('First Name: ${firstNameController.text}');
+      print('Middle Name: ${middleNameController.text}');
+      print('Suffix: ${suffixController.text}');
+      print('House Number: ${houseNumberController.text}');
+      print('Barangay: ${barangayController.text}');
+      print('City/Municipality: ${cityMunicipalityController.text}');
+      print('District: $selectedDistrict');
+      print('Province: ${provinceController.text}');
+      print('Region: $selectedRegion');
+      print('Nationality: ${nationalityController.text}');
+      print('Birth Place: ${birthPlaceController.text}');
+      print('Age: ${ageController.text}');
+      print('Company Name: ${companyNameController.text}');
+      print('Position: ${positionController.text}');
+      print('Phone Number: ${phoneNumberController.text}');
+      print('Email: ${emailController.text}');
+      print('Civil Status: $selectedCivilStatus');
+      print('Highest Education: $selectedHighestEducation');
+      print('Employment Status: $selectedEmploymentStatus');
+      print('Password: ${passwordController.text}');
+      print('Date of Birth: $selectedDate');
+      print('Sex: ${_checkBoxValue1 ? "Male" : "Female"}');
+      print('Home Ownership: ${_homeOwnershipValue1 ? "Own" : "Rent"}');
+      print(
+          'Resident Class: ${_residentClassValue1 ? "PWD" : (_residentClassValue2 ? "Solo Parent" : "Out of School Youth")}');
+      print('Voters Registration: $selectedRegistrationStatus');
+      print('Status: $defaultStatus');
+      print('Type: $type');
+      // Add other fields here...
+
+      // Set request fields
+      request.fields['lastName'] = lastNameController.text;
+      request.fields['firstName'] = firstNameController.text;
+      request.fields['middleName'] = middleNameController.text;
+      request.fields['suffix'] = suffixController.text;
+      request.fields['houseNumber'] = houseNumberController.text;
+      request.fields['barangay'] = barangayController.text;
+      request.fields['cityMunicipality'] = cityMunicipalityController.text;
+      request.fields['district'] = selectedDistrict!;
+      request.fields['province'] = provinceController.text;
+      request.fields['region'] = selectedRegion!;
+      request.fields['nationality'] = nationalityController.text;
+      request.fields['birthPlace'] = birthPlaceController.text;
+      request.fields['age'] = ageController.text;
+      request.fields['companyName'] = companyNameController.text;
+      request.fields['position'] = positionController.text;
+      request.fields['phoneNumber'] = phoneNumberController.text;
+      request.fields['email'] = emailController.text;
+      request.fields['civilStatus'] = selectedCivilStatus;
+      request.fields['highestEducation'] = selectedHighestEducation;
+      request.fields['employmentStatus'] = selectedEmploymentStatus;
+      request.fields['password'] = passwordController.text;
+      request.fields['dateOfBirth'] = selectedDate!;
+      request.fields['sex'] = _checkBoxValue1 ? "Male" : "Female";
+      request.fields['homeOwnership'] = _homeOwnershipValue1 ? "Own" : "Rent";
+      request.fields['residentClass'] = _residentClassValue1
+          ? "PWD"
+          : (_residentClassValue2 ? "Solo Parent" : "Out of School Youth");
+      request.fields['votersRegistration'] = selectedRegistrationStatus!;
+      request.fields['status'] = defaultStatus;
+      request.fields['type'] = type;
+      // Add other fields here...
+
+      // Send the request
       var response = await request.send();
 
+      // Check the HTTP response status
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(await response.stream.bytesToString());
-        Navigator.pop(context);
         showSuccessDialog(context);
       } else {
-        Navigator.pop(context);
-        showErrorDialog(context, 'HTTP Error: ${response.statusCode}');
+        _handleRegistrationError(
+            "Failed to register user. HTTP Error: ${response.statusCode}");
       }
     } catch (e) {
-      Navigator.pop(context);
-      showErrorDialog(context, 'Error: $e');
+      // Handle exceptions
+      _handleRegistrationError("An error occurred while registering user: $e");
     }
   }
+
+  // void _registerUser() async {
+  //   var defaultStatus = "active";
+  //   var type = "resident";
+  //   var url =
+  //       Uri.parse('https://dbarangay-mobile-e5o1.onrender.com/registration');
+  //   var request = http.MultipartRequest('POST', url);
+
+  //   // Add try-catch block to handle errors
+  //   try {
+  //     if (selectedImage != null) {
+  //       request.files.add(
+  //           await http.MultipartFile.fromPath('userImage', selectedImage!));
+  //     }
+
+  //     request.fields['lastName'] = lastNameController.text;
+  //     request.fields['firstName'] = firstNameController.text;
+  //     request.fields['middleName'] = middleNameController.text;
+  //     request.fields['suffix'] = suffixController.text;
+  //     request.fields['houseNumber'] = houseNumberController.text;
+  //     request.fields['barangay'] = barangayController.text;
+  //     request.fields['cityMunicipality'] = cityMunicipalityController.text;
+  //     request.fields['district'] = selectedDistrict!;
+  //     request.fields['province'] = provinceController.text;
+  //     request.fields['region'] = selectedRegion!;
+  //     request.fields['nationality'] = nationalityController.text;
+  //     request.fields['birthPlace'] = birthPlaceController.text;
+  //     request.fields['age'] = ageController.text;
+  //     request.fields['companyName'] = companyNameController.text;
+  //     request.fields['position'] = positionController.text;
+  //     request.fields['phoneNumber'] = phoneNumberController.text;
+  //     request.fields['email'] = emailController.text;
+  //     request.fields['civilStatus'] = selectedCivilStatus;
+  //     request.fields['highestEducation'] = selectedHighestEducation;
+  //     request.fields['employmentStatus'] = selectedEmploymentStatus;
+  //     request.fields['password'] = passwordController.text;
+  //     request.fields['dateOfBirth'] = selectedDate!;
+  //     request.fields['sex'] = _checkBoxValue1 ? "Male" : "Female";
+  //     request.fields['homeOwnership'] = _homeOwnershipValue1 ? "Own" : "Rent";
+  //     request.fields['residentClass'] = _residentClassValue1
+  //         ? "PWD"
+  //         : (_residentClassValue2 ? "Solo Parent" : "Out of School Youth");
+  //     request.fields['votersRegistration'] = selectedRegistrationStatus!;
+  //     request.fields['status'] = defaultStatus;
+  //     request.fields['type'] = type;
+
+  //     var response = await request.send();
+
+  //     if (response.statusCode == 200) {
+  //       var jsonResponse = jsonDecode(await response.stream.bytesToString());
+  //       showSuccessDialog(context);
+  //     } else {
+  //       _handleRegistrationError(
+  //           "Failed to register user. HTTP Error: ${response.statusCode}");
+  //     }
+  //   } catch (e) {
+  //     _handleRegistrationError("An error occurred while registering user: $e");
+  //   }
+  // }
 
   @override
   void dispose() {
     dateController.dispose();
     super.dispose();
-  }
-
-  void showErrorDialog(BuildContext context, String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Error"),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              child: const Text("OK"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
 // Function to show the privacy compliance dialog
@@ -930,6 +997,7 @@ class _SignUpFormState extends State<SignUpForm> {
             ),
           ),
           const SizedBox(height: 12),
+// Additional spacing
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8.0),
           ),
@@ -1178,6 +1246,26 @@ class _SignUpFormState extends State<SignUpForm> {
             ),
           ),
 
+// BIRTHPLACE ---------------------
+          Container(
+            padding: const EdgeInsets.all(defaultPadding),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: TextFormField(
+              controller: birthPlaceController,
+              textInputAction: TextInputAction.next,
+              keyboardType: TextInputType.text,
+              cursorColor: kPrimaryColor,
+              decoration: const InputDecoration(
+                hintText: "Birthplace",
+                prefixIcon: Padding(
+                  padding: EdgeInsets.all(defaultPadding),
+                  child: Icon(Icons.person),
+                ),
+              ),
+            ),
+          ),
 // Highest Educational Attaintment
           Container(
             padding:
@@ -1322,6 +1410,7 @@ class _SignUpFormState extends State<SignUpForm> {
               const Text('Renting'),
             ],
           ),
+// Additional spacing
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8.0),
           ),
@@ -1432,6 +1521,7 @@ class _SignUpFormState extends State<SignUpForm> {
               },
             ),
           ),
+// Additional spacing
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8.0),
           ),
