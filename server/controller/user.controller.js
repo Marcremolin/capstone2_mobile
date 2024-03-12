@@ -1,11 +1,10 @@
-//FETCH THE DATA that is request and respond from the user (frontend)
 const UserService = require("../services/user.services");
-//handle the request & respond from FrontEnd
 const nodemailer = require('nodemailer'); 
 const Mailgen = require('mailgen'); 
 const UserModel = require("../model/user.model");
 const config = require('../config/config');
 const jwt = require('jsonwebtoken');
+
 exports.register = async (req, res, next) => {
   try {
     let userImage;
@@ -84,9 +83,12 @@ exports.register = async (req, res, next) => {
       res.json({ status: false, error: "User image not provided." });
     }
   } catch (error) {
-    throw error;
+    // Handle registration errors
+    console.error('Error in user registration:', error);
+    res.status(500).json({ status: false, error: "Error registering user." });
   }
 }
+
 
 
 exports.login = async (req, res, next) => {

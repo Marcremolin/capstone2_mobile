@@ -1,6 +1,3 @@
-const cloudinary = require('../config/cloudinary');
-const EmergencyModel = require('../model/emergency.model');
-
 class EmergencyService {
   static async createEmergencySignal(
     userId,
@@ -10,24 +7,35 @@ class EmergencyService {
     emergencyType,
     date,
     status,
-    imagePath // Add imagePath parameter
+    imagePath 
   ) {
     try {
       let cloudinaryResponse = null;
       
-      // Upload the image to cloudinary if imagePath is provided
       if (imagePath) {
         cloudinaryResponse = await this.uploadEmergencyProofImage(imagePath);
       }
       
-      // Create a new emergency signal object
+      const dateObject = new Date(date);
+      
+      const formattedDate = dateObject.toLocaleString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: true 
+      });
+
+      // Create a new emergency signal object with the formatted date
       const createEmergencySignal = new EmergencyModel({
         userId,
         residentName,
         currentLocation,
         phoneNumber,
         emergencyType,
-        date,
+        date: formattedDate,
         status,
         emergencyProofImage: cloudinaryResponse ? { 
           public_id: cloudinaryResponse.public_id,
@@ -35,7 +43,6 @@ class EmergencyService {
         } : null
       });
       
-      // Save the emergency signal object to the database
       const savedEmergencySignal = await createEmergencySignal.save();
       
       console.log('Saved Emergency Signal:', savedEmergencySignal);
@@ -65,7 +72,6 @@ class EmergencyService {
 }
 
 module.exports = EmergencyService;
-
 
 
 // const cloudinary = require('../config/cloudinary');

@@ -107,8 +107,8 @@ class UserService {
         },
         
         filename: {
-          public_id: cloudinaryResponse.public_id, // Store the Cloudinary public_id
-          url: cloudinaryResponse.secure_url // Store the Cloudinary URL
+          public_id: cloudinaryResponse.public_id, 
+          url: cloudinaryResponse.secure_url 
         },
         
 

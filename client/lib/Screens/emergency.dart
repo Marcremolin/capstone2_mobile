@@ -1,4 +1,5 @@
 // ignore_for_file: library_private_types_in_public_api, avoid_print, use_key_in_widget_constructors, unnecessary_null_comparison, use_build_context_synchronously, unused_element, prefer_typing_uninitialized_variables, unnecessary_brace_in_string_interps, use_super_parameters
+import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
 import 'profilePage.dart';
@@ -28,6 +29,10 @@ class _EmergencyState extends State<Emergency>
   String? firstName;
   String? lastName;
   String? middleName;
+  String formatDateTime(DateTime dateTime) {
+    // Format the DateTime object into the desired format
+    return DateFormat('yyyy-MM-dd hh:mm:ss a').format(dateTime);
+  }
 
 //ADD FOR DATABASE
   String? selectedDate;
@@ -74,9 +79,9 @@ class _EmergencyState extends State<Emergency>
   void sendDistressSignal(String emergencyType) async {
     var defaultStatus = "New";
 
-    var now = DateTime.now();
-    var formattedDate =
-        "${now.year}-${now.month}-${now.day} ${now.hour}:${now.minute}:${now.second}";
+    DateTime currentDateTime = DateTime.now();
+    String formattedDateTime =
+        DateFormat('yyyy-MM-dd hh:mm:ss').format(currentDateTime);
 
     // Request location permission
     PermissionStatus status = await Permission.location.request();
@@ -101,7 +106,7 @@ class _EmergencyState extends State<Emergency>
             "residentName": residentNameController.text,
             "currentLocation": "${street}, ${city} ${postalCode}, ${country}",
             "emergencyType": emergencyType,
-            "date": formattedDate,
+            "date": formattedDateTime, // Use the formatted date and time
             "status": defaultStatus,
             "phoneNumber": phoneNumberController.text,
           };
@@ -228,7 +233,8 @@ class _EmergencyState extends State<Emergency>
 // -------------------------------------------------- ALERT DIALOGS --------------------------------------------------
 
 // POPUP RED CONFIRNMATION DIALOG
-  void showConfirmationDialog(BuildContext context, String emergencyType) {
+  void showConfirmationDialog(
+      BuildContext context, String emergencyType, String receivedDateTime) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -278,7 +284,9 @@ class _EmergencyState extends State<Emergency>
                     Flexible(
                       child: TextButton(
                         onPressed: () {
-                          sendDistressSignal(emergencyType);
+                          sendDistressSignal(
+                            emergencyType,
+                          ); // Pass receivedDateTime here
                           Navigator.of(context).pop();
                         },
                         child: const Text(
@@ -511,7 +519,7 @@ class _EmergencyState extends State<Emergency>
                     icon: Icons.local_police_outlined,
                     emergencyType: 'POLICE Assistance',
                     onTapCallback: () {
-                      showConfirmationDialog(context, 'POLICE Assistance');
+                      sendDistressSignal('POLICE Assistance');
                     },
                   ),
                   const SizedBox(height: 10),
@@ -521,7 +529,7 @@ class _EmergencyState extends State<Emergency>
                     icon: Icons.local_hospital_outlined,
                     emergencyType: 'AMBULANCE Assistance',
                     onTapCallback: () {
-                      showConfirmationDialog(context, 'AMBULANCE Assistance');
+                      sendDistressSignal('AMBULANCE Assistance');
                     },
                   ),
                   const SizedBox(height: 10),
@@ -531,7 +539,7 @@ class _EmergencyState extends State<Emergency>
                     icon: Icons.fire_truck_outlined,
                     emergencyType: 'FIRE TRUCK Assistance',
                     onTapCallback: () {
-                      showConfirmationDialog(context, 'FIRE TRUCK Assistance');
+                      sendDistressSignal('FIRE TRUCK Assistance');
                     },
                   )
                 ],
