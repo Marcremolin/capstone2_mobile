@@ -96,7 +96,6 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^3.0.0
   flutter_launcher_icons: ^0.13.1
-  permission_handler: ^11.3.0
   
 flutter_icons:
   image_path_android: "assets/icons/LOGO2-modified.png"

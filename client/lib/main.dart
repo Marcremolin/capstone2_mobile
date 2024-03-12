@@ -58,10 +58,10 @@ class MyApp extends StatelessWidget {
     var status = await Permission.storage.request();
     if (status.isGranted) {
       // Permission granted, perform file operations
-      print('WRITE_EXTERNAL_STORAGE permission granted');
+      ('WRITE_EXTERNAL_STORAGE permission granted');
     } else {
       // Permission denied, handle it accordingly
-      print('WRITE_EXTERNAL_STORAGE permission denied');
+      ('WRITE_EXTERNAL_STORAGE permission denied');
     }
   }
 }

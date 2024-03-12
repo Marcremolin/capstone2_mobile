@@ -60,7 +60,6 @@ class UserService {
 
       transporter.verify((error, success) => {
         if (error) {
-          // console.log(error);
         } else {
           console.log('Ready for messages');
           console.log(success);
@@ -108,8 +107,8 @@ class UserService {
         },
         
         filename: {
-          public_id: cloudinaryResponse.public_id, // Store the Cloudinary public_id
-          url: cloudinaryResponse.secure_url // Store the Cloudinary URL
+          public_id: cloudinaryResponse.public_id, 
+          url: cloudinaryResponse.secure_url 
         },
         
 
