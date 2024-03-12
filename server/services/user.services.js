@@ -43,7 +43,7 @@ class UserService {
       // Generate a unique user ID
       const currentDate = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       const lastCustomIdDoc = await UserModel.findOne().sort({ _id: -1 });
-      let newCustomId = currentDate + '01';
+      let newCustomId = currentDate + '0001';
       if (lastCustomIdDoc) {
         const lastIncrement = parseInt(lastCustomIdDoc._id.slice(-2));
         const newIncrement = (lastIncrement + 1).toString().padStart(2, '0');
