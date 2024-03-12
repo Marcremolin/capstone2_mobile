@@ -4,6 +4,7 @@ const nodemailer = require("nodemailer");
 require("dotenv").config(); 
 const config = require('../config/config');
 const cloudinary = require('../config/cloudinary');
+const { v4: uuidv4 } = require('uuid');
 
 
 class UserService {
