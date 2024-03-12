@@ -77,15 +77,18 @@ exports.register = async (req, res, next) => {
         type
       );
 
-      // RESPONSE BACK to frontend after successful registration from the user
-      res.json({ status: true, success: "USER REGISTERED SUCCESSFULLYYY!!" });
+      res.json({ status: true, success: "USER REGISTERED SUCCESSFULLY!!" });
     } else {
       res.json({ status: false, error: "User image not provided." });
     }
   } catch (error) {
-    // Handle registration errors
-    console.error('Error in user registration:', error);
-    res.status(500).json({ status: false, error: "Error registering user." });
+    if (error.code === 11000 && error.keyPattern && error.keyPattern._id) {
+      console.error('Duplicate key error: _id already exists');
+      res.status(400).json({ status: false, error: "Duplicate key error: _id already exists" });
+    } else {
+      console.error('Error in user registration:', error);
+      res.status(500).json({ status: false, error: "Error registering user." });
+    }
   }
 }
 

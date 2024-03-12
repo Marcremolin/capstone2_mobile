@@ -321,7 +321,6 @@ class _SignUpFormState extends State<SignUpForm> {
       print('Voters Registration: $selectedRegistrationStatus');
       print('Status: $defaultStatus');
       print('Type: $type');
-      // Add other fields here...
 
       // Set request fields
       request.fields['lastName'] = lastNameController.text;
@@ -354,7 +353,6 @@ class _SignUpFormState extends State<SignUpForm> {
       request.fields['votersRegistration'] = selectedRegistrationStatus!;
       request.fields['status'] = defaultStatus;
       request.fields['type'] = type;
-      // Add other fields here...
 
       // Send the request
       var response = await request.send();
